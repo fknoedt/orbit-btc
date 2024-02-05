@@ -2,58 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\Adapters\AdapterFactory;
 use App\Services\ExternalApiClientInterface;
 use Carbon\Carbon;
 
 class AdapterController extends Controller
 {
-    private const DEFAULT_ADAPTER = 'CoinGecko';
+    private string $externalApi;
+    private ExternalApiClientInterface $adapter;
 
-    /**
-     * @todo move to AdapterService?
-     */
-    private function getAdapter(string $adapterName = self::DEFAULT_ADAPTER): ExternalApiClientInterface
+    public function __construct()
     {
-        $adapterName = ucfirst($adapterName);
-        $adapterClassName = '\App\Adapters\\' . $adapterName . 'ApiClientAdapter';
-
-        if (class_exists($adapterClassName)) {
-            $adapter = new $adapterClassName();
-        }
-
-        if (! isset($adapter) || ! $adapter instanceof ExternalApiClientInterface) {
-            throw new \InvalidArgumentException(
-                "Invalid Adapter Class for {$adapterName}"
-            );
-        }
-
-        return $adapter;
+        $this->externalApi = request()->get('externalApi') ?? AdapterFactory::DEFAULT_ADAPTER;
+        $this->adapter = AdapterFactory::getAdapter($this->externalApi);
     }
 
-    public function getCurrentBtcPrice($externalApi = self::DEFAULT_ADAPTER)
+    public function getCurrentBtcPrice()
     {
-        $adapter = $this->getAdapter($externalApi);
         $currency = config('btc.currency');
 
-        return response()->json(["btc/{$currency}" => $adapter->getCurrentBtcPrice()]);
+        return response()->json(["btc/{$currency}" => $this->adapter->getCurrentBtcPrice()]);
     }
 
-    public function getBtcPriceInterval(string $startDate, string $endDate, string $externalApi = self::DEFAULT_ADAPTER)
-    {
-        $adapter = $this->getAdapter($externalApi);
-
+    public function getBtcPriceInterval(
+        string $startDate,
+        string $endDate,
+        string $externalApi = AdapterFactory::DEFAULT_ADAPTER
+    ) {
         $start = Carbon::createFromFormat(config('btc.date_format'), $startDate);
         $end = Carbon::createFromFormat(config('btc.date_format'), $endDate);
 
-        return response()->json($adapter->getBtcPriceInterval($start, $end));
+        return response()->json($this->adapter->getBtcPriceInterval($start, $end));
     }
 
-    public function getBtcPriceByDays(string $days, ?string $externalApi = self::DEFAULT_ADAPTER)
+    public function getBtcPriceByDays(string $days)
     {
-        throw new \BadMethodCallException(__METHOD__ . ' has not been implemented');
+        $days = explode(',', $days);
 
-        $adapter = $this->getAdapter($externalApi);
-
-        return response()->json($adapter->getBtcPriceByDays($days));
+        return response()->json($this->adapter->getBtcPriceByDays($days));
     }
 }

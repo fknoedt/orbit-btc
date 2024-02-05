@@ -10,12 +10,13 @@ use ccxt\Exchange;
 /**
  * @see https://github.com/ccxt/ccxt
  */
-class PoloniexApiClientAdapter implements ExternalApiClientInterface
+class PoloniexApiClientAdapter extends BaseClientAdapter implements ExternalApiClientInterface
 {
     private Exchange $client;
     private string $currency;
     private const ADAPTER_NAME = 'CCXT';
     private const DEFAULT_EXCHANGE = 'poloniex';
+    protected static int $dataSourceId = 0; // TODO: add it
 
     public function __construct()
     {
