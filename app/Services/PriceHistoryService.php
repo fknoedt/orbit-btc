@@ -44,9 +44,9 @@ class PriceHistoryService
 
     public function pricesMissing(Carbon $since = null): array
     {
-        if (empty($this->persistedPrices)) {
+        /*if (empty($this->persistedPrices)) {
             throw new \RuntimeException("Prices not loaded. Call `loadPersistedPrices()` first.");
-        }
+        }*/
 
         $pricesMissing = [];
         $date = $since ?? Carbon::createFromFormat($this->systemDateFormat, $this->genesisDate);

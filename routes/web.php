@@ -19,7 +19,7 @@ Route::get('/', function () {
 
 Route::get('/lightning', function () {
     $service = new \App\Services\LightningService();
-    $service->setHost('192.168.1.237:8080');
+    $service->setHost('192.168.1.238:8080');
     $service->loadMacaroon(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'admin.macaroon');
 
     $path = $_GET['path'] ?? 'getinfo';
