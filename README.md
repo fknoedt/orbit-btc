@@ -2,4 +2,6 @@
 
 bitcoin explorer prototype
 
-all values in USD; no variable (💩) coins, bitcoin only
+all values in USD
+
+don't 💩coin
