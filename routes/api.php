@@ -22,19 +22,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // wrapper general endpoints
 Route::controller(AdapterController::class)->group(function () {
     Route::get('/current-price', [
-        AdapterController::class, 'getCurrentBtcPrice'
+        'getCurrentBtcPrice'
     ])->name('api.currentPrice');
     Route::get(
         '/price-history/{startDate}/{endDate}',
-        [
-            AdapterController::class, 'getBtcPriceInterval'
-        ]
+        'getBtcPriceInterval'
     )->name('api.priceHistory');
 
     Route::get(
         '/price-by-days/{days}',
-        [
-            AdapterController::class, 'getBtcPriceByDays'
-        ]
+        'getBtcPriceByDays'
     )->name('api.priceHistory');
 });

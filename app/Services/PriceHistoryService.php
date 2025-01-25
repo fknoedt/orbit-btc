@@ -37,9 +37,9 @@ class PriceHistoryService
         return $query->orderBy('date', 'asc')->get()->keyBy('date')->toArray();
     }
 
-    public function loadPersistedPrices(): void
+    public function loadPersistedPrices(): array
     {
-        $this->persistedPrices = $this->getPersistedPrices();
+        return $this->persistedPrices = $this->getPersistedPrices();
     }
 
     public function pricesMissing(Carbon $since = null): array

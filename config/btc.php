@@ -1,6 +1,8 @@
 <?php
 
 return [
+    /** Where technical errors or info should be sent to -- mind mailpit on port 8025 */
+    'system_admin_email' => env('SYSTEM_ADMIN_EMAIL'),
     /** system-wide default date format, which should be passed to the FE and DB */
     'date_format' => env('DEFAULT_DATE_FORMAT', 'Y-m-d'),
     'datetime_format' => env('DEFAULT_DATETIME_FORMAT', 'Y-m-d H:i:s'),
@@ -19,4 +21,6 @@ return [
     'initial_data_last_day' => env('INITIAL_DATA_LAST_DAY', '2022-07-10'),
 
     'currency' => env('DEFAULT_CURRENCY', 'usd'),
+
+    'price_external_url' => env('PRICE_EXTERNAL_URL'),
 ];

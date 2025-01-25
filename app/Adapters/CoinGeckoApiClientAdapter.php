@@ -62,7 +62,7 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
     {
         $prices = [];
 
-        if ($startDate->isSameDay($endDate)) {
+        if ($startDate->isSameDay($endDate) && !$startDate->isToday()) {
             $endDate = $endDate->addDay();
         }
 
@@ -100,7 +100,6 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
     }
 
     /**
-     * @
      * @throws \Exception
      */
     public function getBtcPriceByDays(array $days): array

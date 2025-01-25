@@ -28,7 +28,7 @@ class FormatPriceHistoryCommand extends Command
     {
         $results = $service->loadPersistedPrices();
 
-        $message = $results ? "{$results} Price(s) created ✅" : 'No prices missing';
+        $message = $results ? count($results) . " Price(s) created ✅" : 'No prices missing';
 
         $this->output->writeln($message);
     }
