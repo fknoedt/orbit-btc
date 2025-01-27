@@ -55,6 +55,11 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->navigationGroups([
+                'Tools',
+                'Settings',
+                'User Management',
+            ])
             ->sidebarWidth('250')
             // ->brandLogo('images/btc-eagle-logo.png')
             ->brandName('BTC Eagle');

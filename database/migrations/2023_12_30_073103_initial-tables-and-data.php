@@ -83,7 +83,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('daily_prices');
-        Schema::dropIfExists('data_sources');
+        // this rollback caused me troubles and I was looking for a best practice to avoid it happening again and...
+        // https://medium.com/@joristein/laravel-stop-writing-the-down-function-in-migration-5afb9394befe
+        // ^ this makes a lot of sense so we're abolishing rollbacks for good 🥳
+        // leaving comments for the records
+        /*Schema::dropIfExists('daily_prices');
+        Schema::dropIfExists('data_sources');*/
     }
 };

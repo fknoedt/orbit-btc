@@ -24,7 +24,11 @@ class RpcCommandResource extends Resource
 {
     protected static ?string $model = RpcCommand::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-command-line';
+
+    protected static ?string $navigationGroup = 'Tools';
+
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
