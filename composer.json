@@ -1,7 +1,7 @@
 {
-    "name": "fknoedt/btc-scout",
+    "name": "fknoedt/orbit-btc",
     "type": "project",
-    "description": "bitcoin explorer prototype",
+    "description": "bitcoin platform",
     "keywords": [
         "bitcoin"
     ],

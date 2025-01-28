@@ -62,6 +62,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarWidth('250')
             // ->brandLogo('images/btc-eagle-logo.png')
-            ->brandName('BTC Eagle');
+            ->brandName(config('app.name'));
     }
 }

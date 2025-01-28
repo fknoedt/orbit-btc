@@ -1,7 +1,9 @@
-## btc-scout
+<img height="328" src="/images/orbit-btc-large.png" width="328"/>
 
-bitcoin explorer prototype
+## orbit-btc
+
+bitcoin platform
 
 all values in USD
 
-don't 💩coin
+no 💩coins
