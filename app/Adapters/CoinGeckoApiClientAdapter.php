@@ -3,6 +3,7 @@
 namespace App\Adapters;
 
 use App\Exceptions\AdapterException;
+use App\Models\Request;
 use App\Services\ExternalApiClientInterface;
 use Carbon\Carbon;
 use Codenixsv\CoinGeckoApi\CoinGeckoClient;
@@ -43,6 +44,8 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
             );
         }
 
+        $this->logRequest(__METHOD__, ['currency' => $this->currency], json_encode($data));
+
         /**
          * TODO:
          *  * create  ->priceTemplate():array
@@ -51,6 +54,7 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
          */
         return (float) $price;
     }
+
 
     /**
      * Get price [$date => $price] for the given date interval

@@ -3,6 +3,7 @@
 namespace App\Adapters;
 
 use App\Exceptions\AdapterException;
+use App\Models\Request;
 use App\Services\ExternalApiClientInterface;
 use Carbon\Carbon;
 use Codenixsv\CoinGeckoApi\CoinGeckoClient;
