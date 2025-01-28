@@ -1,4 +1,4 @@
-<img height="328" src="/images/orbit-btc-large.png" width="328"/>
+![orbit-btc-medium](https://github.com/user-attachments/assets/2449818b-9a61-4574-b81d-e2b6d9e35460)
 
 ## orbit-btc
 
