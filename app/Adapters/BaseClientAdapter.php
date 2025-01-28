@@ -3,6 +3,7 @@
 namespace App\Adapters;
 
 use App\Exceptions\AdapterException;
+use App\Models\Request;
 
 class BaseClientAdapter
 {
@@ -25,5 +26,27 @@ class BaseClientAdapter
         }
 
         return static::$dataSourceId;
+    }
+
+    public function logRequest(
+        string $classMethod,
+        array $args,
+        ?string $response = null,
+        ?string $httpMethod = null
+    ): void
+    {
+        $data = [
+            'class_method' => $classMethod,
+            'data_source_id' => $this->getDataSourceId(),
+            'args' => \http_build_query($args),
+            'cron' => app()->runningInConsole(),
+            'raw_response' => $response,
+        ];
+
+        if ($httpMethod) {
+            $data['http_method'] = $httpMethod;
+        }
+
+        Request::create($data);
     }
 }

@@ -25,6 +25,8 @@ class BtcRpcController extends Controller
             throw new \InvalidArgumentException("Invalid Command `{$command}`");
         }
 
+
+
         dd(bitcoind()->$command()->get());
     }
 
