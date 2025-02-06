@@ -234,6 +234,8 @@ class InitialDailyPrices extends Seeder
 
         // -- CoinGecko -- //
 
+        // TODO: change to CoinMarketCap
+
         $adapter = AdapterFactory::getAdapter('coingecko');
 
         // don't addDay() as coingecko seems to exclude the starting day
@@ -248,7 +250,7 @@ class InitialDailyPrices extends Seeder
             )
         );
 
-        $prices = $adapter->getBtcPriceInterval($start, $end);
+        $prices = $adapter->getDailyPriceInterval($start, $end);
 
         foreach ($prices as $date => $price) {
             $this->persistPrice($date, $price, config('data.data_source.coingecko_id'));

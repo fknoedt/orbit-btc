@@ -14,6 +14,6 @@ class Btc3rdPartyService
 
     public function getCurrentPrice()
     {
-        return $this->adapter->getCurrentBtcPrice();
+        return $this->adapter->getCurrentPrice();
     }
 }

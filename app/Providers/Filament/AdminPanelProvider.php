@@ -62,6 +62,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarWidth('250')
             // ->brandLogo('images/btc-eagle-logo.png')
-            ->brandName(config('app.name'));
+            ->brandName(config('app.name'))
+            ->favicon(asset('images/orbit-btc.ico'));
     }
 }

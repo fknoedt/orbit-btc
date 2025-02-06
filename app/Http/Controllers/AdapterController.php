@@ -17,14 +17,21 @@ class AdapterController extends Controller
         $this->adapter = AdapterFactory::getAdapter($this->externalApi);
     }
 
-    public function getCurrentBtcPrice()
+    public function getCurrentPrice()
     {
         $currency = config('btc.currency');
 
-        return response()->json(["btc/{$currency}" => $this->adapter->getCurrentBtcPrice()]);
+        return response()->json(["btc/{$currency}" => $this->adapter->getCurrentPrice()]);
     }
 
-    public function getBtcPriceInterval(
+    public function getCurrentPriceFull()
+    {
+        $currency = config('btc.currency');
+
+        return response()->json(["btc/{$currency}" => $this->adapter->getCurrentDailyPrice()]);
+    }
+
+    public function getDailyPriceInterval(
         string $startDate,
         string $endDate,
         string $externalApi = AdapterFactory::DEFAULT_ADAPTER
@@ -32,7 +39,7 @@ class AdapterController extends Controller
         $start = Carbon::createFromFormat(config('btc.date_format'), $startDate);
         $end = Carbon::createFromFormat(config('btc.date_format'), $endDate);
 
-        return response()->json($this->adapter->getBtcPriceInterval($start, $end));
+        return response()->json($this->adapter->getDailyPriceInterval($start, $end));
     }
 
     public function getBtcPriceByDays(string $days)

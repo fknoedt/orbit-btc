@@ -6,7 +6,7 @@ use App\Services\ExternalApiClientInterface;
 
 class AdapterFactory
 {
-    public const DEFAULT_ADAPTER = 'CoinGecko';
+    public const DEFAULT_ADAPTER = 'CoinMarketCap';
 
     /**
      * Look for a class named "{$adapterName}ApiClientAdapter" and return its instance
