@@ -63,12 +63,12 @@ class PoloniexApiClientAdapter extends BaseClientAdapter implements ExternalApiC
         //$hitbtc->create_order ('BTC/USD', 'limit', 'buy', 1, 3000, array ('clientOrderId' => '123'));
         */
 
-    public function getCurrentBtcPrice(array $options = []): array
+    public function getCurrentPrice(array $options = []): array
     {
         return $this->client->fetch_ticker('BTC/USDD');
     }
 
-    public function getBtcPriceInterval(Carbon $startDate, Carbon $endDate): array
+    public function getDailyPriceInterval(Carbon $startDate, Carbon $endDate): array
     {
         //$startDate = (new Carbon('2013-04-27'));
         //$timestampTo = (new Carbon('2013-05-01'));

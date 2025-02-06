@@ -13,6 +13,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -62,7 +63,7 @@ class DataSourceResource extends Resource
                     ->searchable(),
                 TextColumn::make('uri')
                     ->searchable(),
-                Tables\Columns\ImageColumn::make('favicon')
+                ImageColumn::make('parsed_favicon')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()

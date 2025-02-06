@@ -115,7 +115,7 @@ class PriceHistoryService
         $clientAdapter = AdapterFactory::getAdapter($client);
         $dataSourceId = $clientAdapter->getDataSourceId();
 
-        $apiPrices = $clientAdapter->getBtcPriceInterval($initialDate, $endDate);
+        $apiPrices = $clientAdapter->getDailyPriceInterval($initialDate, $endDate);
 
         if (empty($apiPrices)) {
             throw new \RuntimeException(

@@ -16,15 +16,15 @@ class RequestResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     /**
-     * @todo infolist for raw_response
+     * @todo infolist with raw_response
      * @see https://laraveldaily.com/post/filament-infolist-custom-entry-with-show-more-button
      */
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('dataSource.name')
-                    ->numeric()
+                TextColumn::make('created_at')
+                    ->dateTime('m/d/y H:i:s') // @todo centralize it
                     ->sortable(),
                 TextColumn::make('class_method')
                     ->searchable(),
@@ -49,8 +49,8 @@ class RequestResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('created_at')
-                    ->dateTime()
+                TextColumn::make('dataSource.name')
+                    ->numeric()
                     ->sortable(),
             ])
             ->filters([

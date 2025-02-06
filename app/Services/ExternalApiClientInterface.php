@@ -7,9 +7,11 @@ use Carbon\Carbon;
 interface ExternalApiClientInterface
 {
     /** Get the current BTC price in the system's default currency */
-    public function getCurrentBtcPrice(array $options = []): float;
+    public function getCurrentPrice(array $options = []): float;
+
+    public function getCurrentDailyPrice();
     /** Get price [$date => $price] for the given date interval */
-    public function getBtcPriceInterval(Carbon $startDate, Carbon $endDate): array;
+    public function getDailyPriceInterval(Carbon $startDate, Carbon $endDate): array;
     /** Get the closing BTC price in USD for all the given days */
     public function getBtcPriceByDays(array $days): array;
     /** Get the external API name of the adapter instance */

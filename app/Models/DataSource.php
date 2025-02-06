@@ -10,4 +10,13 @@ class DataSource extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    protected function getParsedFaviconAttribute(): ?string
+    {
+        if (empty($this->favicon)) {
+            return null;
+        }
+
+        return str_starts_with($this->favicon, 'https') ? url($this->favicon) : asset($this->favicon);
+    }
 }

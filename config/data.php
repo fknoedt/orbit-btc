@@ -9,5 +9,6 @@ return [
         'new_liberty_id' => 1,
         'coindesk_id' => 2,
         'coingecko_id' => 3,
+        'coinmarketcap_id' => 4,
     ]
 ];

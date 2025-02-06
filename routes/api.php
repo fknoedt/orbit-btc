@@ -15,20 +15,24 @@ use App\Http\Controllers\AdapterController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+/*Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
-});
+});*/
 
 // wrapper general endpoints
 Route::controller(AdapterController::class)->group(function () {
-    Route::get('/current-price', [
-        'getCurrentBtcPrice'
-    ])->name('api.currentPrice');
+    Route::get(
+        '/current-price',
+        'getCurrentPrice'
+    )->name('api.currentPrice');
+    Route::get(
+        '/current-price/full',
+        'getCurrentPriceFull'
+    )->name('api.currentPriceFull');
     Route::get(
         '/price-history/{startDate}/{endDate}',
-        'getBtcPriceInterval'
+        'getDailyPriceInterval'
     )->name('api.priceHistory');
-
     Route::get(
         '/price-by-days/{days}',
         'getBtcPriceByDays'

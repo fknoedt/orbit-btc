@@ -34,8 +34,9 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
      * Get the current BTC price in the system's default currency
      * @throws \Exception
      */
-    public function getCurrentBtcPrice(array $options = []): float
+    public function getCurrentPrice(array $options = []): float
     {
+        // TODO: try/catch, log request upon failure and try to add request ID to Sentry issue
         $data = $this->cgClient->simple()->getPrice('bitcoin', $this->currency);
         $price = $data['bitcoin'][$this->currency] ?? null;
         if (! $price) {
@@ -44,7 +45,7 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
             );
         }
 
-        $this->logRequest(__METHOD__, ['currency' => $this->currency], json_encode($data));
+        $this->logRequest(__METHOD__, ['currency' => $this->currency], 200, json_encode($data));
 
         /**
          * TODO:
@@ -62,7 +63,7 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
      * @throws \Exception
      * @throws AdapterException
      */
-    public function getBtcPriceInterval(Carbon $startDate, Carbon $endDate): array
+    public function getDailyPriceInterval(Carbon $startDate, Carbon $endDate): array
     {
         $prices = [];
 
