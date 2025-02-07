@@ -236,7 +236,7 @@ class InitialDailyPrices extends Seeder
 
         // TODO: change to CoinMarketCap
 
-        $adapter = AdapterFactory::getAdapter('coingecko');
+        $adapter = AdapterFactory::getAdapter();
 
         // don't addDay() as coingecko seems to exclude the starting day
         $start = Carbon::createFromFormat($dateFormat, config('btc.initial_data_last_day'));
