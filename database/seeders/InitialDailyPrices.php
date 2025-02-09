@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Adapters\AdapterFactory;
 use App\Models\DailyPrice;
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class InitialDailyPrices extends Seeder
@@ -175,15 +173,16 @@ class InitialDailyPrices extends Seeder
      */
     public function run(): void
     {
-        $dateFormat = config('btc.date_format');
-
         $this->command->info(
-            '== Seeding Initial Daily Prices (from 2009-10-05 to 2022-07-10) =='
+            '== Seeding Initial Daily Prices from hard-coded data (2009-10-05 ~ 2025-02-07) =='
         );
+
+        $this->command->warn("There's a gap between New Liberty's last day (2010-03-02) and CMC's first day
+(2010-07-14) when full daily info - high, low, volume and market cap - is first available.");
 
         // -- New Liberty -- //
 
-        $this->command->info('Loading New Liberty data');
+        $this->command->info('Loading New Liberty data from array');
         ksort($this->dailyUsdToBtc);
 
         $minDate = null;
@@ -203,65 +202,48 @@ class InitialDailyPrices extends Seeder
 
         $newLibertyPricesPersisted = $this->pricesPersisted;
 
-        // -- CoinDesk -- //
+        // -- CoinMarketCap -- //
 
-        $this->command->info('Loading CoinDesk data');
+        $this->command->info('Loading CoinMarketCap data from csv file');
 
-        $coindeskData = json_decode(
-            file_get_contents(
+        $rows = array_map(
+            fn ($row) => str_getcsv($row, ';'),
+            file(
                 database_path() . DIRECTORY_SEPARATOR . 'raw-data' . DIRECTORY_SEPARATOR .
-                'coindesk-daily-prices.json'
-            ),
-            true
+                'btc-cmc-price-2010-07-14-2025-02-07.csv'
+            )
         );
-
+        $header = array_shift($rows);
+        // clean stuck special char
+        $header[0] = 'timeOpen';
+        $cmcData = [];
+        foreach($rows as $row) {
+            $cmcData[] = array_combine($header, $row);
+        }
         $minDate = null;
-        foreach ($coindeskData['bpi'] as $date => $value) {
-            $this->persistPrice($date, $value, config('data.data_source.coindesk_id'));
+        $cmcDataSourceId = config('data.data_source.coinmarketcap_id');
+        foreach ($cmcData as $dailyPrice) {
+            $this->persistPrice(
+                substr($dailyPrice['timeOpen'],0, 10),
+                $dailyPrice['close'],
+                $cmcDataSourceId,
+                $dailyPrice['open'],
+                $dailyPrice['marketCap'],
+                $dailyPrice['volume'],
+                $dailyPrice['high'],
+                $dailyPrice['low'],
+                $dailyPrice['timeHigh'],
+                $dailyPrice['timeLow'],
+            );
             $minDate = $minDate ?? $date;
         }
 
-        $coindeskPricesPersisted = $this->pricesPersisted - $newLibertyPricesPersisted;
+        $cmcPricesPersisted = $this->pricesPersisted - $newLibertyPricesPersisted;
 
         $this->command->info(
             sprintf(
-                '%s Prices, between %s and %s, created or updated from CoinDesk hard-coded data',
-                $coindeskPricesPersisted,
-                $minDate,
-                $date
-            )
-        );
-
-        // -- CoinGecko -- //
-
-        // TODO: change to CoinMarketCap
-
-        $adapter = AdapterFactory::getAdapter();
-
-        // don't addDay() as coingecko seems to exclude the starting day
-        $start = Carbon::createFromFormat($dateFormat, config('btc.initial_data_last_day'));
-        $end = new Carbon();
-
-        $this->command->info(
-            sprintf(
-                'Fetching Prices from %s until today, %s, from CoinGecko API',
-                $start->format($dateFormat),
-                (new Carbon())->format($dateFormat)
-            )
-        );
-
-        $prices = $adapter->getDailyPriceInterval($start, $end);
-
-        foreach ($prices as $date => $price) {
-            $this->persistPrice($date, $price, config('data.data_source.coingecko_id'));
-        }
-
-        $coingeckoPricesPersisted = $this->pricesPersisted - $coindeskPricesPersisted - $newLibertyPricesPersisted;
-
-        $this->command->info(
-            sprintf(
-                '%s Prices, between %s and %s, created or updated from CoinGecko API',
-                $coingeckoPricesPersisted,
+                '%s Prices, between %s and %s, created or updated from CoinMarketCap hard-coded data',
+                $cmcPricesPersisted,
                 $minDate,
                 $date
             )
@@ -269,15 +251,29 @@ class InitialDailyPrices extends Seeder
 
         $this->command->info($this->pricesPersisted . ' Prices updated or created');
         $this->command->info('-- DONE ✅ --');
+        $this->command->warn(
+            'Run `php artisan app:populate-price-history` to populate daily_prices past this migration'
+        );
     }
 
-    private function persistPrice(string $date, float $value, int $dataSourceId): void
+    private function persistPrice(
+        string $date,
+        float  $close,
+        int    $dataSourceId,
+        float  $open = null,
+        float  $marketCap = null,
+        float  $volume = null,
+        float  $high = null,
+        float  $low = null,
+        string $timeHigh = null,
+        string $timeLow = null
+    ): void
     {
         $this->command->info(
             sprintf(
                 '%s: %s',
                 $date,
-                $value
+                $close
             )
         );
 
@@ -286,7 +282,14 @@ class InitialDailyPrices extends Seeder
             [
                 'date' => $date,
                 'data_source_id' => $dataSourceId,
-                'price' => $value,
+                'close' => $close,
+                'open' => $open,
+                'market_cap' => $marketCap,
+                'total_volume' => $volume,
+                'high' => $high,
+                'low' => $low,
+                'time_high' => $timeHigh,
+                'time_low' => $timeLow
             ]
         );
 

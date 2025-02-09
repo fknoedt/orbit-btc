@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use App\Models\DataSource;
 
@@ -69,13 +68,7 @@ return new class extends Migration
                 ->onUpdate('cascade');
         });
 
-        $output->writeln('Tables created. Seeding InitialDailyPrices...');
-
-        // Call seeder
-        Artisan::call('db:seed', [
-            '--class' => 'InitialDailyPrices',
-            '--force' => true // run on production
-        ], $output);
+        $output->writeln('Tables created');
     }
 
     /**
@@ -83,7 +76,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // this rollback caused me troubles and I was looking for a best practice to avoid it happening again and...
+        // this rollback caused me troubles, and I was looking for a best practice to avoid it happening again and...
         // https://medium.com/@joristein/laravel-stop-writing-the-down-function-in-migration-5afb9394befe
         // ^ this makes a lot of sense so we're abolishing rollbacks for good 🥳
         // leaving comments for the records

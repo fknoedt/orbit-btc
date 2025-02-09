@@ -101,10 +101,17 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
         return json_decode($body, true);
     }
 
+    /**
+     * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyOhlcvLatest
+     * @throws AdapterException
+     * @throws ExternalApiException
+     * @throws \Illuminate\Http\Client\ConnectionException
+     * @throws \Illuminate\Http\Client\RequestException
+     */
     private function getBtcQuote(array $options = []): array
     {
         // @todo cache request
-        return $this->request('get', 'cryptocurrency/quotes/latest', $options);
+        return $this->request('get', 'cryptocurrency/ohlcv/latest', $options);
     }
 
     /**
@@ -115,7 +122,7 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
     {
         $quote = $this->getBtcQuote($options);
 
-        if (! $price = $quote['data'][self::CMC_BITCOIN_ID]['quote'][$this->currency]['price'] ?? null) {
+        if (! $price = $quote['data'][self::CMC_BITCOIN_ID]['quote'][$this->currency]['close'] ?? null) {
             throw new ExternalApiException(
                 "BTC price not found for `{$this->currency}` @ " . self::ADAPTER_NAME .
                 ' -- ' . json_encode($quote)
@@ -139,14 +146,14 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
 
         return $this->quoteToDailyPrice(
             $quote['data'][self::CMC_BITCOIN_ID]['quote'][$this->currency],
-            date('Y-m-d') . ' 00:00:00'
+            date('Y-m-d')
         );
     }
 
     /**
      * Get price [$date => $price] for the given date interval
      * @warning this is a paid endpoint
-     * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyQuotesHistorical
+     * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyOhlcvHistorical
      * @throws \Exception
      * @throws AdapterException
      */
@@ -160,17 +167,21 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
 
         $data = $this->request(
             'get',
-            'cryptocurrency/quotes/historical',
+            'cryptocurrency/ohlcv/historical',
             [
                 'interval' => 'daily', // @todo use 24h as per the manual to get end of day rate (not working)
-                'time_start' => $startDate->format('Y-m-d') . 'T23:59:00.000Z',
+                'time_start' => $startDate->subDay()->format('Y-m-d') . 'T23:59:00.000Z',
                 'time_end' => $endDate->format('Y-m-d') . 'T23:59:00.000Z',
             ]
         );
 
-        foreach ($data['data']['quotes'] as $quote) {
-            $date = $quote['timestamp'];
-            $prices[$date] = $this->quoteToDailyPrice($quote['quote'][$this->currency], $date);
+        foreach ($data['data']['quotes'] as $day) {
+            $dailyPrice = $this->quoteToDailyPrice($day['quote'][$this->currency]);
+
+            $dailyPrice->time_high = $day['time_high'];
+            $dailyPrice->time_low = $day['time_low'];
+
+            $prices[$dailyPrice->date] = $dailyPrice;
         }
 
         if (empty($prices)) {
@@ -198,7 +209,7 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
         throw new \BadMethodCallException('Method not implemented: ' . __METHOD__);
     }
 
-    public function quoteToDailyPrice(array $quote, string $date): DailyPrice
+    public function quoteToDailyPrice(array $quote, string $date = null): DailyPrice
     {
         if (empty($quote)) {
             throw new AdapterException("CMC: empty quote");
@@ -206,10 +217,14 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
 
         $dailyPrice = new DailyPrice();
 
-        $dailyPrice->price = $quote['price'];
-        $dailyPrice->total_volume = $quote['volume_24h'];
-        $dailyPrice->market_cap = $quote['market_cap'];
-        $dailyPrice->date = $date;
+        $dailyPrice->data_source_id = config('data.data_source.coinmarketcap_id');
+        $dailyPrice->open = $quote['open'];
+        $dailyPrice->high = $quote['high'];
+        $dailyPrice->low = $quote['low'];
+        $dailyPrice->close = $quote['close'];
+        $dailyPrice->total_volume = $quote['volume'];
+        $dailyPrice->market_cap = $quote['market_cap'] ?? null;
+        $dailyPrice->date = $date ?? substr($quote['timestamp'], 0, 10);
 
         return $dailyPrice;
     }
