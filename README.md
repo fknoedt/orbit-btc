@@ -1,9 +1,7 @@
-![orbit-btc-medium](https://github.com/user-attachments/assets/2449818b-9a61-4574-b81d-e2b6d9e35460)
-
-## orbit-btc
+![orbit-btc-large](https://github.com/user-attachments/assets/ba47e0a6-ac7a-4ae6-b19a-62a29a61a456)
 
 bitcoin platform
 
 all values in USD
 
-no 💩coins
+no 💩coins allowed
