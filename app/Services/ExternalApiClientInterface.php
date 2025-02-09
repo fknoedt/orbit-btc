@@ -2,14 +2,15 @@
 
 namespace App\Services;
 
+use App\Models\DailyPrice;
 use Carbon\Carbon;
 
 interface ExternalApiClientInterface
 {
     /** Get the current BTC price in the system's default currency */
     public function getCurrentPrice(array $options = []): float;
-
-    public function getCurrentDailyPrice();
+    /** Get DailyPrice for the current BTC price */
+    public function getCurrentDailyPrice(): DailyPrice;
     /** Get price [$date => $price] for the given date interval */
     public function getDailyPriceInterval(Carbon $startDate, Carbon $endDate): array;
     /** Get the closing BTC price in USD for all the given days */

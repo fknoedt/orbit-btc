@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Adapters\AdapterFactory;
-use App\Exceptions\AdapterException;
 use App\Models\DailyPrice;
 use Carbon\Carbon;
 use Illuminate\Console\OutputStyle;
@@ -97,7 +96,6 @@ class PriceHistoryService
     public function fillMissingPrices(Carbon $since, OutputStyle $output, string $client = null): int
     {
         $pricesCreated = 0;
-        $prices = [];
 
         // load all existing prices in the database
         $this->loadPersistedPrices();
@@ -113,7 +111,6 @@ class PriceHistoryService
         $endDate = Carbon::createFromFormat($this->systemDateFormat, array_key_last($pricesMissing));
 
         $clientAdapter = AdapterFactory::getAdapter($client);
-        $dataSourceId = $clientAdapter->getDataSourceId();
 
         $apiPrices = $clientAdapter->getDailyPriceInterval($initialDate, $endDate);
 
@@ -132,23 +129,19 @@ class PriceHistoryService
             count($apiPrices) . ' daily price(s) fetched from ' . $clientAdapter->getClientName()
         );
 
-        foreach ($apiPrices as $date => $price) {
+        foreach ($apiPrices as $date => $dailyPrice) {
             // price is not missing: skip
             if (! isset($pricesMissing[$date])) {
                 continue;
             }
 
-            $prices[] = [
-                'date' => $date,
-                'data_source_id' => $dataSourceId,
-                'price' => $price,
-            ];
+            $dailyPrice->save();
 
             $output->writeln(
                 sprintf(
                     '%s: %s',
                     $date,
-                    $price
+                    $dailyPrice->close
                 )
             );
 
@@ -159,9 +152,6 @@ class PriceHistoryService
         if (! empty($pricesMissing)) {
             dump("One or more missing prices were not updated: " . json_encode($pricesMissing));
         }
-
-        // insert all at once
-        DailyPrice::insert($prices);
 
         return $pricesCreated;
     }

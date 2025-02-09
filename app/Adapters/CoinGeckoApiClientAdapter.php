@@ -3,8 +3,9 @@
 namespace App\Adapters;
 
 use App\Exceptions\AdapterException;
-use App\Models\Request;
+use App\Models\DailyPrice;
 use App\Services\ExternalApiClientInterface;
+use BadMethodCallException;
 use Carbon\Carbon;
 use Codenixsv\CoinGeckoApi\CoinGeckoClient;
 
@@ -47,13 +48,12 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
 
         $this->logRequest(__METHOD__, ['currency' => $this->currency], 200, json_encode($data));
 
-        /**
-         * TODO:
-         *  * create  ->priceTemplate():array
-         *  * each adapter will overwrite the template with what they have
-         *  * template should match price DB table
-         */
         return (float) $price;
+    }
+
+    public function getCurrentDailyPrice(): DailyPrice
+    {
+        throw new BadMethodCallException("TODO: Implement getCurrentDailyPrice() method.");
     }
 
 

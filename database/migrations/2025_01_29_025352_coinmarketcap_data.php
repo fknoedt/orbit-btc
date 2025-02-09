@@ -3,6 +3,7 @@
 use App\Models\DataSource;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 return new class extends Migration
 {
@@ -11,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $output = new ConsoleOutput();
+
+        $output->writeln('Adding CoinMarketCap data...');
+
         DataSource::create([
             'id' => config('data.data_source.coinmarketcap_id'),
             'name' => 'CoinMarketCap',
@@ -28,6 +33,8 @@ return new class extends Migration
         foreach ($updates as $dataSourceId => $favicon) {
             DB::table('data_sources')->where('id', $dataSourceId)->update(['favicon' => $favicon]);
         }
+
+        $output->writeln('CMC data stored.');
     }
 
     public function down(): void
