@@ -13,6 +13,7 @@ class BitcoinDominanceWidget extends BaseWidget
 {
     protected string $title = 'BTC Market Cap Dominance';
     protected string $description = 'Bitcoin x altcoins';
+    protected static ?string $pollingInterval = null;
 
     protected function getStats(): array
     {

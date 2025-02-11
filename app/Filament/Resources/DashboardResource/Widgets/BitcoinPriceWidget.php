@@ -11,6 +11,7 @@ use Illuminate\Support\Number;
 class BitcoinPriceWidget extends BaseWidget
 {
     protected string $title = 'BTC/USD';
+    protected static ?string $pollingInterval = '10s';
 
     /**
      * @todo this is using CMC's indexes and will eventually need to be standardized
