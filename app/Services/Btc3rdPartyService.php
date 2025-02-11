@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+
 use App\Adapters\AdapterFactory;
 
 class Btc3rdPartyService
@@ -12,8 +13,13 @@ class Btc3rdPartyService
         $this->adapter = AdapterFactory::getAdapter($adapter);
     }
 
-    public function getCurrentPrice()
+    public function getCurrentPrice(): float
     {
         return $this->adapter->getCurrentPrice();
+    }
+
+    public function getCurrentPriceStats(): array
+    {
+        return $this->adapter->getCurrentPriceStats();
     }
 }

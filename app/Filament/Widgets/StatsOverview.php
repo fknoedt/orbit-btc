@@ -38,12 +38,10 @@ class StatsOverview extends BaseWidget
 
     private function getBtcPriceStat(): Stat
     {
-        // TODO: look for best API -- pay?
-        // create these stat methods and make them dynamic
         // get BTC change in the last day
         $service = new Btc3rdPartyService();
         return Stat::make('BTC/USD', Number::currency($service->getCurrentPrice()))
-            ->description('32k increase')
+            ->description('33k increase')
             ->descriptionIcon('heroicon-m-arrow-trending-up')
             ->chart([7, 2, 10, 3, 15, 4, 17])
             ->color('success');

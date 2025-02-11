@@ -12,6 +12,7 @@
         "ccxt/ccxt": "1.93.1",
         "codenix-sv/coingecko-api": "^1.0",
         "denpa/laravel-bitcoinrpc": "^1.3",
+        "eightynine/filament-advanced-widgets": "^3.0",
         "filament/filament": "^3.2",
         "guzzlehttp/guzzle": "^7.9",
         "laravel-frontend-presets/tall": "^8.0",

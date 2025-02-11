@@ -102,7 +102,22 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
     }
 
     /**
+     * Uses CMC's endpoint with open, high, low, market cap and volume
      * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyOhlcvLatest
+     * @throws AdapterException
+     * @throws ExternalApiException
+     * @throws \Illuminate\Http\Client\ConnectionException
+     * @throws \Illuminate\Http\Client\RequestException
+     */
+    private function getBtcFullQuote(array $options = []): array
+    {
+        // @todo cache request
+        return $this->request('get', 'cryptocurrency/ohlcv/latest', $options);
+    }
+
+    /**
+     * Uses CMC's endpoint with latest variations
+     * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyQuotesLatest
      * @throws AdapterException
      * @throws ExternalApiException
      * @throws \Illuminate\Http\Client\ConnectionException
@@ -111,7 +126,7 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
     private function getBtcQuote(array $options = []): array
     {
         // @todo cache request
-        return $this->request('get', 'cryptocurrency/ohlcv/latest', $options);
+        return $this->request('get', 'cryptocurrency/quotes/latest', $options);
     }
 
     /**
@@ -120,7 +135,7 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
      */
     public function getCurrentPrice(array $options = []): float
     {
-        $quote = $this->getBtcQuote($options);
+        $quote = $this->getBtcFullQuote($options);
 
         if (! $price = $quote['data'][self::CMC_BITCOIN_ID]['quote'][$this->currency]['close'] ?? null) {
             throw new ExternalApiException(
@@ -132,13 +147,27 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
         return (float) $price;
     }
 
+    public function getCurrentPriceStats(array $options = []): array
+    {
+        $quote = $this->getBtcQuote($options);
+
+        if (! $lastQuote = $quote['data'][self::CMC_BITCOIN_ID]['quote'][$this->currency] ?? null) {
+            throw new ExternalApiException(
+                "BTC price not found for `{$this->currency}` @ " . self::ADAPTER_NAME .
+                ' -- ' . json_encode($quote)
+            );
+        }
+
+        return $lastQuote;
+    }
+
     /**
      * Get the current BTC price in the system's default currency and return a model hydrated with this API's data
      * @throws \Exception
      */
     public function getCurrentDailyPrice(array $options = []): DailyPrice
     {
-        $quote = $this->getBtcQuote($options);
+        $quote = $this->getBtcFullQuote($options);
 
         if (empty($quote['data'][self::CMC_BITCOIN_ID]['quote'])) {
             throw new AdapterException("CMC: malformed quote response: " . json_encode($quote));
