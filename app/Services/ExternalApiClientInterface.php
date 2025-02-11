@@ -9,6 +9,8 @@ interface ExternalApiClientInterface
 {
     /** Get the current BTC price in the system's default currency */
     public function getCurrentPrice(array $options = []): float;
+    /** Get the current BTC price and stats in the system's default currency */
+    public function getCurrentPriceStats(array $options = []): array;
     /** Get DailyPrice for the current BTC price */
     public function getCurrentDailyPrice(): DailyPrice;
     /** Get price [$date => $price] for the given date interval */

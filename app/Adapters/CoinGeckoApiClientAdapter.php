@@ -51,6 +51,11 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
         return (float) $price;
     }
 
+    public function getCurrentPriceStats(array $options = []): array
+    {
+        throw new BadMethodCallException(__METHOD__ . ' not implemented');
+    }
+
     public function getCurrentDailyPrice(): DailyPrice
     {
         throw new BadMethodCallException("TODO: Implement getCurrentDailyPrice() method.");
