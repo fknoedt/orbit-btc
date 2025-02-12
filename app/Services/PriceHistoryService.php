@@ -12,20 +12,21 @@ class PriceHistoryService
     private array $persistedPrices = [];
     private string $systemDateFormat;
     private string $systemDatetimeFormat;
-    private string $genesisDate;
+    private string $firstAvailableDate;
 
     public function __construct()
     {
         $this->systemDateFormat = config('btc.date_format');
         $this->systemDatetimeFormat = config('btc.datetime_format');
-        $this->genesisDate = config('btc.genesis_date');
+        $this->firstAvailableDate = config('btc.first_available_date');
     }
 
     public function getPersistedPrices(array $params = []): array
     {
         $query = DailyPrice::query();
 
-        foreach ($params as $param) {            $query->where(
+        foreach ($params as $param) {
+            $query->where(
                 $param['column'],
                 $param['operator'],
                 $param['value'],
@@ -47,7 +48,7 @@ class PriceHistoryService
         }*/
 
         $pricesMissing = [];
-        $date = $since ?? Carbon::createFromFormat($this->systemDateFormat, $this->genesisDate);
+        $date = $since ?? Carbon::createFromFormat($this->systemDateFormat, $this->firstAvailableDate);
         $currentDateFormatted = date($this->systemDateFormat);
         $initialMissingPricesDate = Carbon::createFromFormat(
             $this->systemDatetimeFormat,
@@ -75,15 +76,15 @@ class PriceHistoryService
         return $pricesMissing;
     }
 
-    public function fillMissingPricesFromGenesis(OutputStyle $output, string $client = null): int
+    public function fillMissingPricesFromInitialDay(OutputStyle $output, string $client = null): int
     {
-        $genesis = Carbon::createFromFormat($this->systemDateFormat, $this->genesisDate);
+        $initialDay = Carbon::createFromFormat($this->systemDateFormat, $this->firstAvailableDate);
         $output->writeln(
-            'Filling princes since bitcoin genesis, which was ' . $genesis->diffForHumans() . ' 🎢 🚀'
+            'Filling princes since bitcoin first available price (' . $initialDay->diffForHumans() . ') 🎢 🚀'
         );
 
         return $this->fillMissingPrices(
-            $genesis,
+            $initialDay,
             $output,
             $client
         );

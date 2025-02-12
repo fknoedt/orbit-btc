@@ -8,7 +8,8 @@ return [
     'datetime_format' => env('DEFAULT_DATETIME_FORMAT', 'Y-m-d H:i:s'),
 
     /** btc historical data */
-    'genesis_date' => env('GENESIS_DATE', '2009-10-05'),
+    'first_available_date' => '2009-10-05',
+    'first_cmc_available_date' => '2010-07-14',
     'initial_missing_prices_datetime' => env(
         'INITIAL_MISSING_PRICES_DATETIME',
         '2010-03-03 00:00:00'
