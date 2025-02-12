@@ -26,7 +26,7 @@ class PopulatePriceHistoryCommand extends Command
      */
     public function handle(PriceHistoryService $service)
     {
-        $results = $service->fillMissingPricesFromGenesis($this->output);
+        $results = $service->fillMissingPricesFromInitialDay($this->output);
 
         $message = $results ? "{$results} Price(s) created ✅" : 'No prices missing';
 

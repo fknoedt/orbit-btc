@@ -24,7 +24,7 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
     private string $currency;
     private string $systemDateFormat;
     public const DATE_FORMAT = 'd-m-Y';
-    private const int REQUEST_CACHE_TTL = 15;
+    private const int REQUEST_CACHE_TTL = 20;
 
     // static properties can be accessed by BaseClientAdapter methods
     protected static int $dataSourceId;
