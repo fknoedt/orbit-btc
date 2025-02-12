@@ -8,6 +8,7 @@ use App\Models\DailyPrice;
 use App\Services\ExternalApiClientInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -23,6 +24,7 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
     private string $currency;
     private string $systemDateFormat;
     public const DATE_FORMAT = 'd-m-Y';
+    private const int REQUEST_CACHE_TTL = 15;
 
     // static properties can be accessed by BaseClientAdapter methods
     protected static int $dataSourceId;
@@ -57,6 +59,18 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
 
         if (! method_exists($request, $method)) {
             throw new AdapterException('Invalid request method: ' . $method);
+        }
+
+        $cacheKey = md5(
+            __METHOD__ .
+            $url .
+            $method .
+            implode('', $args) .
+            implode('', array_keys($args))
+        );
+
+        if ($data = Cache::get($cacheKey)) {
+            return $data;
         }
 
         /** @var Response $response */
@@ -98,7 +112,11 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
             }
         }
 
-        return json_decode($body, true);
+        $data = json_decode($body, true);
+
+        Cache::put($cacheKey, $data, self::REQUEST_CACHE_TTL);
+
+        return $data;
     }
 
     /**
@@ -111,7 +129,6 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
      */
     private function getBtcFullQuote(array $options = []): array
     {
-        // @todo cache request
         return $this->request('get', 'cryptocurrency/ohlcv/latest', $options);
     }
 
@@ -125,7 +142,6 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
      */
     private function getBtcQuote(array $options = []): array
     {
-        // @todo cache request
         return $this->request('get', 'cryptocurrency/quotes/latest', $options);
     }
 

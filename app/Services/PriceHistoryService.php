@@ -25,8 +25,7 @@ class PriceHistoryService
     {
         $query = DailyPrice::query();
 
-        foreach ($params as $param) {
-            $query->where(
+        foreach ($params as $param) {            $query->where(
                 $param['column'],
                 $param['operator'],
                 $param['value'],
