@@ -1,26 +1,22 @@
 <?php
 
-namespace App\Adapters;
+namespace App\Clients;
 
-use App\Services\ExternalApiClientInterface;
+use App\Models\DailyPrice;
 use Carbon\Carbon;
-use ccxt\coinbase;
 use ccxt\Exchange;
 
 /**
  * @see https://github.com/ccxt/ccxt
  */
-class PoloniexApiClientAdapter extends BaseClientAdapter implements ExternalApiClientInterface
+class PoloniexApiAdapter extends BaseClient implements ExternalApiAdapterInterface
 {
     private Exchange $client;
-    private string $currency;
-    private const ADAPTER_NAME = 'CCXT';
-    private const DEFAULT_EXCHANGE = 'poloniex';
     protected static int $dataSourceId = 0; // TODO: add it
 
     public function __construct()
     {
-        $this->currency = config('btc.currency') ?? 'usd';
+        self::$currency = config('btc.currency') ?? 'usd';
         $this->client = new \ccxt\poloniex();
     }
 
@@ -91,5 +87,15 @@ class PoloniexApiClientAdapter extends BaseClientAdapter implements ExternalApiC
     public function getBtcPriceByDays(array $days): array
     {
         throw new \BadMethodCallException(__METHOD__ . ' is not implemented');
+    }
+
+    public function getCurrentPriceStats(array $options = []): array
+    {
+        // TODO: Implement getCurrentPriceStats() method.
+    }
+
+    public function getCurrentDailyPrice(): DailyPrice
+    {
+        // TODO: Implement getCurrentDailyPrice() method.
     }
 }

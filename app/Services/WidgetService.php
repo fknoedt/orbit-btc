@@ -5,8 +5,7 @@ namespace App\Services;
 use App\Filament\Resources\DashboardResource\Widgets\BitcoinDominanceWidget;
 use App\Filament\Resources\DashboardResource\Widgets\BitcoinPriceWidget;
 use App\Filament\Resources\DashboardResource\Widgets\BtcPriceChartWidget;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
+use App\Filament\Resources\DashboardResource\Widgets\MempoolWidget;
 
 class WidgetService
 {
@@ -19,10 +18,10 @@ class WidgetService
     {
         // TODO: persist and make it configurable
         return [
-            // AccountWidget::class,
             BitcoinPriceWidget::class,
             BitcoinDominanceWidget::class,
             BtcPriceChartWidget::class,
+            MempoolWidget::class,
         ];
     }
 }

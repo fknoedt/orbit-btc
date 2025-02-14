@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Adapters\AdapterFactory;
-use App\Services\ExternalApiClientInterface;
+use App\Clients\AdapterFactory;
+use App\Clients\ExternalApiAdapterInterface;
 use Carbon\Carbon;
 
 class AdapterController extends Controller
 {
     private string $externalApi;
-    private ExternalApiClientInterface $adapter;
+    private ExternalApiAdapterInterface $adapter;
 
     public function __construct()
     {

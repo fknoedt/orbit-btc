@@ -1,122 +1,46 @@
 <?php
 
-namespace App\Adapters;
+namespace App\Clients;
 
 use App\Exceptions\AdapterException;
 use App\Exceptions\ExternalApiException;
 use App\Models\DailyPrice;
-use App\Services\ExternalApiClientInterface;
 use Carbon\Carbon;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 
 /**
  * CMC Startup Plan trial from 1/24/25 to 2/24/25
  * @see https://github.com/vittominacori/coinmarketcap-php
  */
-class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements ExternalApiClientInterface
+class CoinMarketCapApiAdapter extends BaseClient implements ExternalApiAdapterInterface
 {
-    private const ADAPTER_NAME = 'coinmarketcap';
     private const int CMC_BITCOIN_ID = 1;
     private string $key;
     private string $version = 'v2';
-    private string $currency;
-    private string $systemDateFormat;
-    public const DATE_FORMAT = 'd-m-Y';
-    private const int REQUEST_CACHE_TTL = 20;
-
-    // static properties can be accessed by BaseClientAdapter methods
-    protected static int $dataSourceId;
-    protected static string $url;
 
     public function __construct()
     {
-        $this->currency = strtoupper(config('btc.currency') ?? 'usd');
-        $this->systemDateFormat = config('btc.date_format');
+        parent::__construct();
         self::$dataSourceId = config('data.data_source.coinmarketcap_id');
-        self::$url = config('btc.apis.coinmarketcap.url');
+        self::$url = config('btc.apis.coinmarketcap.url') . '/'. $this->version . '/';
         $this->key = config('btc.apis.coinmarketcap.key');
     }
 
     /**
-     * @todo move part of this method to BaseClientAdapter?
      * @throws AdapterException
      * @throws ExternalApiException
-     * @throws \Illuminate\Http\Client\ConnectionException
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws ConnectionException
+     * @throws RequestException
      */
-    public function request(string $method, string $endpoint, array $args = []): array
+    public function request(string $method, string $endpoint, array $args = [], array $headers = []): array
     {
         // symbol is not unique and returns crap-coins if you filter by it
         $args['id'] = self::CMC_BITCOIN_ID;
-        $url = 'https://' . self::$url . '/' . $this->version . '/' . $endpoint;
 
-        $request = Http::withHeaders([
-            'X-CMC_PRO_API_KEY' => $this->key,
-            'Accept' => 'application/json',
-        ]);
+        $headers['X-CMC_PRO_API_KEY'] = $this->key;
 
-        if (! method_exists($request, $method)) {
-            throw new AdapterException('Invalid request method: ' . $method);
-        }
-
-        $cacheKey = md5(
-            __METHOD__ .
-            $url .
-            $method .
-            implode('', $args) .
-            implode('', array_keys($args))
-        );
-
-        if ($data = Cache::get($cacheKey)) {
-            return $data;
-        }
-
-        /** @var Response $response */
-        $response = $request->$method(
-            $url,
-            $args
-        );
-
-        $body = $response->getBody()->getContents();
-
-        $this->logRequest(
-            __METHOD__,
-            $args,
-            $response->getStatusCode(),
-            $body,
-            $method,
-            $url,
-            $response->transferStats->getTransferTime()
-        );
-
-        if ($response->failed()) {
-            if ($response->clientError()) {
-                throw new AdapterException(
-                    sprintf(
-                        "Error in %s request to %s: %s",
-                        strtoupper($method),
-                        $url,
-                        $body
-                    ),
-                    $response->getStatusCode(),
-                    $response->toException()
-                );
-            } else {
-                throw new ExternalApiException(
-                    $response->getBody()->getContents(),
-                    $response->getStatusCode(),
-                    $response->toException()
-                );
-            }
-        }
-
-        $data = json_decode($body, true);
-
-        Cache::put($cacheKey, $data, self::REQUEST_CACHE_TTL);
-
-        return $data;
+        return parent::request($method, $endpoint, $args, $headers);
     }
 
     /**
@@ -124,8 +48,8 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
      * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyOhlcvLatest
      * @throws AdapterException
      * @throws ExternalApiException
-     * @throws \Illuminate\Http\Client\ConnectionException
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws ConnectionException
+     * @throws RequestException
      */
     private function getBtcFullQuote(array $options = []): array
     {
@@ -137,8 +61,8 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
      * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyQuotesLatest
      * @throws AdapterException
      * @throws ExternalApiException
-     * @throws \Illuminate\Http\Client\ConnectionException
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws ConnectionException
+     * @throws RequestException
      */
     private function getBtcQuote(array $options = []): array
     {
@@ -148,14 +72,17 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
     /**
      * Get the current BTC price in the system's default currency
      * @throws ExternalApiException
+     * @throws AdapterException
+     * @throws ConnectionException
+     * @throws RequestException
      */
     public function getCurrentPrice(array $options = []): float
     {
         $quote = $this->getBtcFullQuote($options);
 
-        if (! $price = $quote['data'][self::CMC_BITCOIN_ID]['quote'][$this->currency]['close'] ?? null) {
+        if (! $price = $quote['data'][self::CMC_BITCOIN_ID]['quote'][self::$currency]['close'] ?? null) {
             throw new ExternalApiException(
-                "BTC price not found for `{$this->currency}` @ " . self::ADAPTER_NAME .
+                'BTC full price not found for `' . self::$currency . '` @ ' . $this->getClientName() .
                 ' -- ' . json_encode($quote)
             );
         }
@@ -163,13 +90,19 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
         return (float) $price;
     }
 
+    /**
+     * @throws ExternalApiException
+     * @throws AdapterException
+     * @throws ConnectionException
+     * @throws RequestException
+     */
     public function getCurrentPriceStats(array $options = []): array
     {
         $quote = $this->getBtcQuote($options);
 
-        if (! $lastQuote = $quote['data'][self::CMC_BITCOIN_ID]['quote'][$this->currency] ?? null) {
+        if (! $lastQuote = $quote['data'][self::CMC_BITCOIN_ID]['quote'][self::$currency] ?? null) {
             throw new ExternalApiException(
-                "BTC price not found for `{$this->currency}` @ " . self::ADAPTER_NAME .
+                'BTC price not found for `' . self::$currency . '` @ ' . $this->getClientName() .
                 ' -- ' . json_encode($quote)
             );
         }
@@ -190,7 +123,7 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
         }
 
         return $this->quoteToDailyPrice(
-            $quote['data'][self::CMC_BITCOIN_ID]['quote'][$this->currency],
+            $quote['data'][self::CMC_BITCOIN_ID]['quote'][self::$currency],
             date('Y-m-d')
         );
     }
@@ -221,7 +154,7 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
         );
 
         foreach ($data['data']['quotes'] as $day) {
-            $dailyPrice = $this->quoteToDailyPrice($day['quote'][$this->currency]);
+            $dailyPrice = $this->quoteToDailyPrice($day['quote'][self::$currency]);
 
             $dailyPrice->time_high = $day['time_high'];
             $dailyPrice->time_low = $day['time_low'];
@@ -233,10 +166,10 @@ class CoinMarketCapApiClientAdapter extends BaseClientAdapter implements Externa
             throw new AdapterException(
                 sprintf(
                     'No %s price found for interval (%s, %s) @ %s: %s',
-                    $this->currency,
-                    $startDate->format($this->systemDateFormat),
-                    $endDate->format($this->systemDateFormat),
-                    self::ADAPTER_NAME,
+                    self::$currency,
+                    $startDate->format(self::$systemDateFormat),
+                    $endDate->format(self::$systemDateFormat),
+                    $this->getClientName(),
                     json_encode($data)
                 )
             );
