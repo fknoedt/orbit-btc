@@ -10,8 +10,12 @@ use Illuminate\Support\Number;
 
 class MempoolWidget extends BaseWidget
 {
-    protected string $title = 'Mempool';
-    protected static ?string $pollingInterval = '10s';
+    protected string $title = 'Recommended Fee';
+    protected static ?string $pollingInterval = '30s';
+
+    protected const int GOOD_FEE_THRESHOLD = 3;
+    protected const int COMMON_FEE_THRESHOLD = 8;
+    protected const int HIGH_FEE_THRESHOLD = 20;
 
     /**
      * @return array|Stat[]
@@ -20,27 +24,26 @@ class MempoolWidget extends BaseWidget
     {
         $client = new MempoolClient();
 
-        dd($client->request(
+        $recommendedFees = $client->request(
             'get',
-            'mining/blocks/fee-rates/1y',
-            [],
-            []
-        ));
+            "fees/recommended"
+        );
 
-        $color = $stats['percent_change_24h'] > 0 ? 'success' : 'danger';
+        $color = ($recommendedFees['fastestFee'] <= self::GOOD_FEE_THRESHOLD) ? 'success' :
+            (($recommendedFees['fastestFee'] <= self::COMMON_FEE_THRESHOLD) ? 'info':
+                (($recommendedFees['fastestFee'] <= self::HIGH_FEE_THRESHOLD) ? 'warning':
+                    'danger'));
 
         return [
-            Stat::make($this->title, Number::currency($stats['price']))
+            Stat::make($this->title, $recommendedFees['fastestFee'] . ' sats/vB')
                 ->description(
-                    PHP_EOL . 'Last 24h:
-    price ' . Number::percentage($stats['percent_change_24h'], 2) . ' |
-    volume ' . Number::percentage($stats['volume_change_24h'], 2)
+                    'half-hour: ' . $recommendedFees['halfHourFee'] . ' sats/vB | ' .
+                    'economy: ' . $recommendedFees['economyFee'] . ' sats/vB'
                 )
                 ->descriptionColor($color)
                 ->textColor('default', $color, $color)
-                ->icon('heroicon-o-scale')
+                ->icon('heroicon-o-document-currency-dollar')
                 ->iconColor('warning')
-                ->descriptionIcon('heroicon-m-arrow-trending-' . ($stats['percent_change_24h'] > 0 ? 'up' : 'down'))
         ];
     }
 }
