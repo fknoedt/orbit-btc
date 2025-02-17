@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Services;
+namespace App\Clients;
 
 use App\Models\DailyPrice;
 use Carbon\Carbon;
 
-interface ExternalApiClientInterface
+interface ExternalApiAdapterInterface
 {
     /** Get the current BTC price in the system's default currency */
     public function getCurrentPrice(array $options = []): float;

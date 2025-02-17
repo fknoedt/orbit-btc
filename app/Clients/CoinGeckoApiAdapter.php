@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Adapters;
+namespace App\Clients;
 
 use App\Exceptions\AdapterException;
 use App\Models\DailyPrice;
-use App\Services\ExternalApiClientInterface;
 use BadMethodCallException;
 use Carbon\Carbon;
 use Codenixsv\CoinGeckoApi\CoinGeckoClient;
@@ -13,21 +12,17 @@ use Codenixsv\CoinGeckoApi\CoinGeckoClient;
  * BTC data starts on 2013-04-27
  * @see https://github.com/codenix-sv/coingecko-api
  */
-class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApiClientInterface
+class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterface
 {
     private CoinGeckoClient $cgClient;
-    private const ADAPTER_NAME = 'coingecko';
-    private string $currency;
-    private string $systemDateFormat;
     public const DATE_FORMAT = 'd-m-Y';
 
     protected static int $dataSourceId;
 
     public function __construct()
     {
+        parent::__construct();
         $this->cgClient = new \Codenixsv\CoinGeckoApi\CoinGeckoClient();
-        $this->currency = config('btc.currency') ?? 'usd';
-        $this->systemDateFormat = config('btc.date_format');
         self::$dataSourceId = config('data.data_source.coingecko_id');
     }
 
@@ -38,15 +33,15 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
     public function getCurrentPrice(array $options = []): float
     {
         // TODO: try/catch, log request upon failure and try to add request ID to Sentry issue
-        $data = $this->cgClient->simple()->getPrice('bitcoin', $this->currency);
-        $price = $data['bitcoin'][$this->currency] ?? null;
+        $data = $this->cgClient->simple()->getPrice('bitcoin', self::$currency);
+        $price = $data['bitcoin'][self::$currency] ?? null;
         if (! $price) {
             throw new AdapterException(
-                "price not found for `{$this->currency}` @ " . self::ADAPTER_NAME
+                'price not found for `' . self::$currency . '` @ ' . $this->getClientName()
             );
         }
 
-        $this->logRequest(__METHOD__, ['currency' => $this->currency], 200, json_encode($data));
+        $this->logRequest(__METHOD__, ['currency' => self::$currency], 200, json_encode($data));
 
         return (float) $price;
     }
@@ -78,7 +73,7 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
 
         $data = $this->cgClient->coins()->getMarketChartRange(
             'bitcoin',
-            $this->currency,
+            self::$currency,
             $startDate->getTimestamp(),
             $endDate->getTimestamp()
         );
@@ -86,7 +81,7 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
         foreach ($data['prices'] as $price) {
             // $lastPriceOfDay = end($data['prices']);
             $timestampInSeconds = intval($price[0] / 1000);
-            $date = Carbon::createFromTimestamp($timestampInSeconds)->format($this->systemDateFormat);
+            $date = Carbon::createFromTimestamp($timestampInSeconds)->format(self::$systemDateFormat);
             if (! $date) {
                 throw new AdapterException(__METHOD__ . ": Could not parse date from timestamp {$price[0]}");
             }
@@ -97,10 +92,10 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
             throw new AdapterException(
                 sprintf(
                     'No %s price found for interval (%s, %s) @ %s: %s',
-                    $this->currency,
-                    $startDate->format($this->systemDateFormat),
-                    $endDate->format($this->systemDateFormat),
-                    self::ADAPTER_NAME,
+                    self::$currency,
+                    $startDate->format(self::$systemDateFormat),
+                    $endDate->format(self::$systemDateFormat),
+                    $this->getClientName(),
                     json_encode($data)
                 )
             );
@@ -118,7 +113,7 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
         throw new \BadMethodCallException('Method not implemented: ' . __METHOD__);
         foreach ($days as $day) {
             // standard input => adapter format
-            $date = Carbon::createFromFormat($this->systemDateFormat, $day);
+            $date = Carbon::createFromFormat(self::$systemDateFormat, $day);
             $day = $date->format(self::DATE_FORMAT);
             $marketChart = $this->cgClient
                 ->coins()
@@ -128,30 +123,30 @@ class CoinGeckoApiClientAdapter extends BaseClientAdapter implements ExternalApi
             if ($marketData) {
                 $currentPrice = $marketData['current_price'] ?? null;
                 if ($currentPrice) {
-                    $price = $marketData[$this->currency] ?? null;
+                    $price = $marketData[self::$currency] ?? null;
                     if (! $price) {
                         throw new \RuntimeException(
-                            "price not found for `{$this->currency}` @ " . self::ADAPTER_NAME
+                            'price not found for `' . self::$currency . '` @ ' . $this->getClientName()
                         );
                     }
                     $btcData[$startDate->format(self::DATE_FORMAT)]['price'] = $price;
                 }
                 $marketCap = $marketData['market_cap'] ?? null;
                 if ($marketCap) {
-                    $marketCapValue = $marketCap[$this->currency] ?? null;
+                    $marketCapValue = $marketCap[self::$currency] ?? null;
                     if (! $marketCapValue) {
                         throw new \RuntimeException(
-                            "market_cap not found for `{$this->currency}` @ " . self::ADAPTER_NAME
+                            "market_cap not found for `" . self::$currency . "` @ " . $this->getClientName()
                         );
                     }
                     $btcData[$startDate->format(self::DATE_FORMAT)]['market_cap'] = $marketCapValue;
                 }
                 $totalVolume = $marketData['total_volume'] ?? null;
                 if ($totalVolume) {
-                    $totalVolumeValue = $totalVolume[$this->currency] ?? null;
+                    $totalVolumeValue = $totalVolume[self::$currency] ?? null;
                     if (! $totalVolumeValue) {
                         throw new \RuntimeException(
-                            "total_volume not found for `{$this->currency}` @ " . self::ADAPTER_NAME
+                            "total_volume not found for `" . self::$currency . "` @ " . $this->getClientName()
                         );
                     }
                     $btcData[$startDate->format(self::DATE_FORMAT)]['volume'] = [

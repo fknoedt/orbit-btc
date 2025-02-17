@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Adapters\AdapterFactory;
+use App\Clients\AdapterFactory;
 use App\Models\DailyPrice;
 use Carbon\Carbon;
 use Illuminate\Console\OutputStyle;

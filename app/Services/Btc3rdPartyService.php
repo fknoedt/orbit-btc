@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
-use App\Adapters\AdapterFactory;
+use App\Clients\AdapterFactory;
+use App\Clients\ExternalApiAdapterInterface;
 
 class Btc3rdPartyService
 {
-    private ExternalApiClientInterface $adapter;
+    private ExternalApiAdapterInterface $adapter;
 
     public function __construct(string $adapter = null)
     {

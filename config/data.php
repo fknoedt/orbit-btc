@@ -10,5 +10,6 @@ return [
         'coindesk_id' => 2,
         'coingecko_id' => 3,
         'coinmarketcap_id' => 4,
+        'mempool_space_id' => 5,
     ]
 ];

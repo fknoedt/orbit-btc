@@ -29,6 +29,10 @@ return [
         'coinmarketcap' => [
             'url' => env('COINMARKETCAP_URL'),
             'key' => env('COINMARKETCAP_KEY'),
-        ]
+        ],
+        'mempool_space' => [
+            'url' => env('MEMPOOL_URL'),
+            'key' => env('MEMPOOL_KEY'),
+        ],
     ]
 ];
