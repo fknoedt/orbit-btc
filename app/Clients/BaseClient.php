@@ -8,6 +8,7 @@ use App\Models\Request;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use RuntimeException;
 
 /**
  * Adapters are clients that implement ExternalApiAdapterInterface
@@ -98,8 +99,18 @@ abstract class BaseClient
 
         $url = $this->getUrl() . $endpoint;
 
+        $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2);
+        if (! is_array($caller) || empty($caller[1])) {
+            report(new RuntimeException('Could not detect caller through backtrace in ' . __METHOD__));
+            $callerMethod = __METHOD__;
+        } else {
+            $callerClass = $caller[1]['class'];
+            $callerMethod = substr($callerClass, strrpos("\\{$callerClass}", '\\') - 1) . ':' .
+                $caller[1]['function'];
+        }
+
         $cacheKey = md5(
-            __METHOD__ .
+            $callerMethod .
             $url .
             $method .
             implode('', $args) .
@@ -119,7 +130,7 @@ abstract class BaseClient
         $body = $response->getBody()->getContents();
 
         $this->logRequest(
-            __METHOD__,
+            $callerMethod,
             $args,
             $response->getStatusCode(),
             $body,
