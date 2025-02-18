@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BtcRpcController;
+use App\Http\Controllers\SandboxController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,6 +21,8 @@ Route::get('/', function () {
 
 Route::get('/counter', \App\Http\Livewire\Counter::class);
 Route::get('/prices', \App\Http\Livewire\Counter::class);
+
+Route::get('/sandbox', [SandboxController::class, 'index']);
 
 Route::get('/lightning', function () {
     $service = new \App\Services\LightningService();
