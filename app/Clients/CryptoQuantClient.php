@@ -7,6 +7,7 @@ use Symfony\Component\Mime\Exception\RuntimeException;
 
 /**
  * This class is using the web auth token and charts "live-api" 🤷‍♂️
+ * To authenticate, you need to login to the web interface and copy the Authorization: Bearer token to your .env
  * @todo test out and evaluate paying for the plan
  * @see https://cryptoquant.com/pricing
  */
