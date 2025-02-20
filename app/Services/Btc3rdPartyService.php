@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Clients\AdapterFactory;
-use App\Clients\ExternalApiAdapterInterface;
+use App\Adapters\AdapterFactory;
+use App\Adapters\ExternalApiAdapterInterface;
 
 class Btc3rdPartyService
 {

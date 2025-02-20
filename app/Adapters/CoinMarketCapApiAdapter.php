@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Clients;
+namespace App\Adapters;
 
+use App\Clients\BaseClient;
 use App\Exceptions\AdapterException;
 use App\Exceptions\ExternalApiException;
 use App\Models\DailyPrice;

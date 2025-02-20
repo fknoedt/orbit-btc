@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Clients;
+namespace App\Adapters;
 
 use App\Models\DailyPrice;
 use Carbon\Carbon;

@@ -11,5 +11,6 @@ return [
         'coingecko_id' => 3,
         'coinmarketcap_id' => 4,
         'mempool_space_id' => 5,
+        'cryptoquant_id' => 6,
     ]
 ];
