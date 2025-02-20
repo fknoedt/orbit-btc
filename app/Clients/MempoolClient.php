@@ -2,7 +2,6 @@
 
 namespace App\Clients;
 
-use RuntimeException;
 
 class MempoolClient extends BaseClient
 {
@@ -13,10 +12,8 @@ class MempoolClient extends BaseClient
         parent::__construct();
         self::$dataSourceId = config('data.data_source.mempool_space_id');
         if (! $url = config('btc.apis.mempool_space.url')) {
-            throw new RuntimeException('could not load config: btc.apis.mempool_space.url');
+            throw new \RuntimeException('could not load config: btc.apis.mempool_space.url');
         }
         self::$url = $url . '/api/'. $this->version . '/';
     }
-
-
 }

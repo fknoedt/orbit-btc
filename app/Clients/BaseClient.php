@@ -90,7 +90,8 @@ abstract class BaseClient
      */
     public function request(string $method, string $endpoint, array $args = [], array $headers = []): array
     {
-        $headers['Accept'] = 'application/json';
+        $headers['Accept'] = 'application/json, text/plain, */*';
+
         $request = Http::withHeaders($headers);
 
         if (! method_exists($request, $method)) {

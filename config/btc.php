@@ -34,5 +34,9 @@ return [
             'url' => env('MEMPOOL_URL'),
             'key' => env('MEMPOOL_KEY'),
         ],
+        'cryptoquant' => [
+            'url' => env('CRYPTOQUANT_URL'),
+            'auth_token' => env('CRYPTOQUANT_ACCESS_TOKEN'),
+        ],
     ]
 ];

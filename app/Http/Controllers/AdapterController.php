@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Clients\AdapterFactory;
-use App\Clients\ExternalApiAdapterInterface;
+use App\Adapters\AdapterFactory;
+use App\Adapters\ExternalApiAdapterInterface;
 use Carbon\Carbon;
 
 class AdapterController extends Controller

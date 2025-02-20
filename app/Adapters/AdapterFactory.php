@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Clients;
+namespace App\Adapters;
 
 class AdapterFactory
 {
@@ -18,7 +18,7 @@ class AdapterFactory
         $adapterName = ucfirst($adapterName);
 
         if (! isset(self::$adapters[$adapterName])) {
-            $adapterClassName = '\App\Clients\\' . $adapterName . 'ApiAdapter';
+            $adapterClassName = '\App\Adapters\\' . $adapterName . 'ApiAdapter';
 
             if (class_exists($adapterClassName)) {
                 $adapter = new $adapterClassName();

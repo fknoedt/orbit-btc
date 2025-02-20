@@ -8,6 +8,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "ext-curl": "*",
         "calebporzio/sushi": "^2.5",
         "ccxt/ccxt": "1.93.1",
         "codenix-sv/coingecko-api": "^1.0",
