@@ -131,31 +131,3 @@ class CryptoQuantClient extends BaseClient
         return parent::request($method, $endpoint, $args, $headers);
     }
 }
-
-
-//curl 'https://live-api.cryptoquant.com/api/v3/charts/61adc7976bc0e955292d7316?window=DAY&from=1108702800000&to=1739936154332&limit=70000' \
-//  -H 'accept: application/json, text/plain, */*' \
-//  -H 'accept-language: en-US,en;q=0.9' \
-//  -H 'authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2NjQzNjIiLCJpc3MiOiJDcnlwdG9RdWFudCIsImlhdCI6MTczOTkzNTA5OSwiZXhwIjoxNzM5OTM4Njk5fQ.MNchWYJTQBBaRpx2k_PgJYDSpsbn9Lndo9AXHGoNkAk' \
-//  -H 'origin: https://cryptoquant.com' \
-//  -H 'priority: u=1, i' \
-//  -H 'referer: https://cryptoquant.com/' \
-//  -H 'sec-ch-ua: "Not(A:Brand";v="99", "Brave";v="133", "Chromium";v="133"' \
-//  -H 'sec-ch-ua-mobile: ?0' \
-//  -H 'sec-ch-ua-platform: "macOS"' \
-//  -H 'sec-fetch-dest: empty' \
-//  -H 'sec-fetch-mode: cors' \
-//  -H 'sec-fetch-site: same-site' \
-//  -H 'sec-gpc: 1' \
-//  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
-//
-//curl 'https://live-api.cryptoquant.com/api/v3/charts/61adc7976bc0e955292d7316?window=DAY&from=1704067200000&to=1739865600000&limit=1000' \
-//  -H 'accept: application/json, text/plain, */*' \
-//  -H 'accept-language: en-US,en;q=0.9' \
-//  -H 'authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2NjQzNjIiLCJpc3MiOiJDcnlwdG9RdWFudCIsImlhdCI6MTczOTk0MjkxNiwiZXhwIjoxNzM5OTQ2NTE2fQ.e8WvWona_5TZ5oW56oZohukanMvLCOta0_A3bn0Yrqs' \
-//  -H 'origin: https://cryptoquant.com' \
-//  -H 'referer: https://cryptoquant.com/' \
-//  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
-
-
-
