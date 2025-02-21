@@ -51,8 +51,13 @@ class CryptoQuantClient extends BaseClient
      */
     public function curlRequest(string $endpoint, string $method = 'GET'): array
     {
-        $url = $this->getUrl() . $endpoint .
-            "?window=DAY&from={$this->initialTimestamp}&to={$this->finalTimestamp}&limit=70000";
+        $args = [
+            'window' => 'DAY',
+            'from' => $this->initialTimestamp,
+            'to' => $this->finalTimestamp,
+            'limit' => 70000
+        ];
+        $url = $this->getUrl() . $endpoint . '?' . http_build_query($args);
 
         $headers = [
             'Authorization: Bearer ' . $this->authToken,
@@ -74,6 +79,27 @@ class CryptoQuantClient extends BaseClient
         if ($httpCode >= 300) {
             throw new RuntimeException("Invalid ({$httpCode}) response from " . $this->getUrl());
         }
+
+        $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2);
+        if (! is_array($caller) || empty($caller[1])) {
+            report(new RuntimeException('Could not detect caller through backtrace in ' . __METHOD__));
+            $callerMethod = __METHOD__;
+        } else {
+            $callerClass = $caller[1]['class'];
+            $callerMethod = substr($callerClass, strrpos("\\{$callerClass}", '\\') - 1) . ':' .
+                $caller[1]['function'];
+        }
+
+        $this->logRequest(
+            $callerMethod,
+            $args,
+            $httpCode,
+            substr($output, 0, 100),
+            $method,
+            $url,
+            curl_getinfo($ch, CURLINFO_TOTAL_TIME)
+        );
+
         curl_close($ch);
 
         return json_decode($output, true);
@@ -130,5 +156,6 @@ class CryptoQuantClient extends BaseClient
 //  -H 'origin: https://cryptoquant.com' \
 //  -H 'referer: https://cryptoquant.com/' \
 //  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
+
 
 
