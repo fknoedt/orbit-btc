@@ -3,7 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\DailyPrice;
+use App\Services\DailyStatsService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Mime\Exception\RuntimeException;
 
 class InitialDailyPrices extends Seeder
 {
@@ -250,10 +253,45 @@ class InitialDailyPrices extends Seeder
         );
 
         $this->command->info($this->pricesPersisted . ' Prices updated or created');
-        $this->command->info('-- DONE ✅ --');
-        $this->command->warn(
-            'Run `php artisan app:populate-price-history` to populate daily_prices past this migration'
+
+        $this->command->info(
+            'Running `btc:populate-price-history` to populate daily_prices past this migration...'
         );
+        Artisan::call('btc:populate-price-history');
+        echo Artisan::output();
+
+        $this->command->info('Done.');
+
+        $this->command->info('Importing historical fear and greed data from json file into daily_prices...');
+
+        $fearAndGreedData = json_decode(
+            file_get_contents(
+                database_path() . DIRECTORY_SEPARATOR . 'raw-data' . DIRECTORY_SEPARATOR .
+                'alternative-to-fear-and-greed-historical.json'
+            ),
+            true
+        );
+
+        $service = new DailyStatsService();
+        $parsedData = [];
+        foreach ($fearAndGreedData as $date => $value) {
+            $parsedData[$date]['fear_and_greed'] = $value;
+        }
+        $daysFilled = $service->fillStats($parsedData, true);
+        $this->command->info("{$daysFilled} days filled in.");
+
+        $this->command->info('Running `btc:crypto-quant-daily-stats` to populate daily_prices stats');
+
+        try {
+            Artisan::call('btc:crypto-quant-daily-stats');
+        } catch (RuntimeException $e) {
+            $this->command->error($e->getMessage());
+            $this->command->warn("Make sure you have a valid/fresh CryptoQuant's access token in your .env file");
+        }
+        echo Artisan::output();
+
+        $this->command->info('-- ALL DONE ✅ --');
+
     }
 
     private function persistPrice(
@@ -267,7 +305,7 @@ class InitialDailyPrices extends Seeder
         float  $low = null,
         string $timeHigh = null,
         string $timeLow = null
-    ): void
+    ): bool
     {
         $this->command->info(
             sprintf(
@@ -277,8 +315,7 @@ class InitialDailyPrices extends Seeder
             )
         );
 
-        DailyPrice::updateOrCreate(
-            ['date' => $date],
+        $persisted = DailyPrice::insertOrIgnore(
             [
                 'date' => $date,
                 'data_source_id' => $dataSourceId,
@@ -293,6 +330,10 @@ class InitialDailyPrices extends Seeder
             ]
         );
 
-        $this->pricesPersisted++;
+        if ($persisted) {
+            $this->pricesPersisted++;
+        }
+
+        return $persisted;
     }
 }

@@ -7,7 +7,14 @@ use App\Models\DailyPrice;
 
 class DailyStatsService
 {
-    public function fillStats(array $data, bool $force): int
+    /**
+     * Receives $data dataset in the following format (has to be ordered by date ASC):
+     * [$date][$columnName] => $value -- where $date is in Y-m-d format and $columnName matches daily_prices.column_name
+     * $value will be set for each of the daily_prices matching the given data set (daily_prices.date x $date)
+     * @param bool $force will update records even when $columnName is not null
+     * @throws DailyPriceStatsException
+     */
+    public function fillStats(array $data, bool $force = false): int
     {
         $fillData = [];
         $columnsToUpdate = [];
