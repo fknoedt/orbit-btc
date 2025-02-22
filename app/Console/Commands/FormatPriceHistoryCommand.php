@@ -12,7 +12,7 @@ class FormatPriceHistoryCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:format-price-history';
+    protected $signature = 'btc:format-price-history';
 
     /**
      * The console command description.

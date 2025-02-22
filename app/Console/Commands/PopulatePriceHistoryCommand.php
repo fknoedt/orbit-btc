@@ -12,7 +12,7 @@ class PopulatePriceHistoryCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:populate-price-history';
+    protected $signature = 'btc:populate-price-history';
 
     /**
      * The console command description.

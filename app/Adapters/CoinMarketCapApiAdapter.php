@@ -17,12 +17,14 @@ use Illuminate\Http\Client\RequestException;
 class CoinMarketCapApiAdapter extends BaseClient implements ExternalApiAdapterInterface
 {
     private const int CMC_BITCOIN_ID = 1;
+    private const string DEFAULT_API_VERSION = 'v2';
     private string $key;
-    private string $version = 'v2';
+    private string $version;
 
-    public function __construct()
+    public function __construct(string $apiVersion = self::DEFAULT_API_VERSION)
     {
         parent::__construct();
+        $this->version = $apiVersion;
         self::$dataSourceId = config('data.data_source.coinmarketcap_id');
         self::$url = config('btc.apis.coinmarketcap.url') . '/'. $this->version . '/';
         $this->key = config('btc.apis.coinmarketcap.key');
@@ -126,6 +128,26 @@ class CoinMarketCapApiAdapter extends BaseClient implements ExternalApiAdapterIn
         return $this->quoteToDailyPrice(
             $quote['data'][self::CMC_BITCOIN_ID]['quote'][self::$currency],
             date('Y-m-d')
+        );
+    }
+
+    /**
+     * Fear & Greed data
+     * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV3FearandgreedHistorical
+     * @throws AdapterException
+     * @throws ConnectionException
+     * @throws ExternalApiException
+     * @throws RequestException
+     */
+    public function getMarketSentiment(?int $offset = null, ?int $limit = null): array
+    {
+        return $this->request(
+            'get',
+            'fear-and-greed/historical',
+            [
+                'start' => $offset ?? 500,
+                'limit' => $limit ?? 500
+            ]
         );
     }
 

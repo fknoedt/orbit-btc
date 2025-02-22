@@ -9,14 +9,14 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
-class CryptoQuantDailyStats extends Command
+class CryptoQuantDailyStatsCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:crypto-quant-daily-stats {metrics?} {--force}';
+    protected $signature = 'btc:crypto-quant-daily-stats {metrics?} {--force}';
 
     /**
      * The console command description.
@@ -30,7 +30,7 @@ class CryptoQuantDailyStats extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(DailyStatsService $service)
     {
         $output = new ConsoleOutput();
         $metrics = $this->argument('metrics');
@@ -67,7 +67,6 @@ class CryptoQuantDailyStats extends Command
             }
         }
 
-        $service = new DailyStatsService();
         $output->writeln('<info>Running upsertStats for ' . count($newData) . ' days</info>');
         $recordsSaved = $service->fillStats($newData, $this->option('force'));
         $output->writeln('<info>' . $recordsSaved . ' record(s) saved</info>');

@@ -21,7 +21,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('app:populate-price-history')
+Schedule::command('btc:populate-price-history')
     ->everyMinute()
     ->emailOutputOnFailure(
         config('btc.system_admin_email')
