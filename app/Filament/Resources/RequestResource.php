@@ -30,14 +30,15 @@ class RequestResource extends Resource
                     ->searchable(),
                 TextColumn::make('url')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->limit(50),
                 TextColumn::make('http_method')
                     ->searchable()
                     ->label('HTTP'),
                 TextColumn::make('args')
                     ->searchable()
                     ->limit(50)
-                    ->label('Arguments'),
+                    ->label('Arguments')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('http_status_code')
                     ->numeric()
                     ->sortable()

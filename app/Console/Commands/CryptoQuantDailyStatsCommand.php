@@ -60,7 +60,7 @@ class CryptoQuantDailyStatsCommand extends Command
 
         foreach ($endpoints as $metric => $endpoint) {
             $response = $client->curlRequest($endpoint);
-            $output->writeln("<success>{$metric} data fetched</success>");
+            $output->writeln("<info>{$metric} data fetched</info>");
             foreach ($response['result']['data'] as $day) {
                 $dateTime = Carbon::createFromTimestamp($day[0] / 1000);
                 $newData[$dateTime->format('Y-m-d')][$metric] = $day[1];
@@ -70,6 +70,6 @@ class CryptoQuantDailyStatsCommand extends Command
         $output->writeln('<info>Running upsertStats for ' . count($newData) . ' days</info>');
         $recordsSaved = $service->fillStats($newData, $this->option('force'));
         $output->writeln('<info>' . $recordsSaved . ' record(s) saved</info>');
-        $output->writeln('<success>Done ✅</success>');
+        $output->writeln('<info>Done ✅</info>');
     }
 }

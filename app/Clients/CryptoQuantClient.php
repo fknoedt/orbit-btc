@@ -96,7 +96,7 @@ class CryptoQuantClient extends BaseClient
             $httpCode,
             substr($output, 0, 100),
             $method,
-            $url,
+            $this->getUrl() . $endpoint,
             curl_getinfo($ch, CURLINFO_TOTAL_TIME)
         );
 
