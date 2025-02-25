@@ -76,7 +76,7 @@ class PriceHistoryService
         return $pricesMissing;
     }
 
-    public function fillMissingPricesFromInitialDay(OutputStyle $output, string $client = null): int
+    public function fillMissingPricesFromInitialDay(OutputStyle $output): int
     {
         $initialDay = Carbon::createFromFormat($this->systemDateFormat, $this->firstAvailableDate);
         $output->writeln(
@@ -85,8 +85,20 @@ class PriceHistoryService
 
         return $this->fillMissingPrices(
             $initialDay,
-            $output,
-            $client
+            $output
+        );
+    }
+
+    public function fillMissingPricesSince(OutputStyle $output, string $start): int
+    {
+        $initialDay = Carbon::createFromFormat($this->systemDateFormat, $start);
+        $output->writeln(
+            'Filling princes since ' . $start
+        );
+
+        return $this->fillMissingPrices(
+            $initialDay,
+            $output
         );
     }
 
