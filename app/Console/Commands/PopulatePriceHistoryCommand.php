@@ -12,21 +12,27 @@ class PopulatePriceHistoryCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:populate-price-history';
+    protected $signature = 'btc:populate-price-history {--since=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Fetch and save BTC price since genesis (use `format-price-history` first to rebuild)';
+    protected $description = 'Fetch and save BTC price since genesis or --since (use `format-price-history` first to rebuild)';
 
     /**
      * Execute the console command.
      */
     public function handle(PriceHistoryService $service)
     {
-        $results = $service->fillMissingPricesFromInitialDay($this->output);
+        $since = $this->option('since') ?? null;
+
+        if ($since) {
+            $results = $service->fillMissingPricesSince($this->output, $since);
+        } else {
+            $results = $service->fillMissingPricesFromInitialDay($this->output);
+        }
 
         $message = $results ? "{$results} Price(s) created ✅" : 'No prices missing';
 

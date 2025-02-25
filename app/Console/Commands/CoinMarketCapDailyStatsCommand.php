@@ -3,10 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Adapters\CoinMarketCapApiAdapter;
+use App\Exceptions\AdapterException;
 use App\Exceptions\DailyPriceStatsException;
+use App\Exceptions\ExternalApiException;
 use App\Services\DailyStatsService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 
 class CoinMarketCapDailyStatsCommand extends Command
 {
@@ -26,11 +30,15 @@ class CoinMarketCapDailyStatsCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = "Read CMC's data from their API and update daily_prices";
 
     /**
      * Execute the console command.
      * @throws DailyPriceStatsException
+     * @throws AdapterException
+     * @throws ExternalApiException
+     * @throws ConnectionException
+     * @throws RequestException
      */
     public function handle()
     {

@@ -16,7 +16,7 @@ class CryptoQuantDailyStatsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:crypto-quant-daily-stats {metrics?} {--force}';
+    protected $signature = 'btc:crypto-quant-daily-stats {metrics?} {--force} {--ignore-errors}';
 
     /**
      * The console command description.
@@ -57,19 +57,25 @@ class CryptoQuantDailyStatsCommand extends Command
         }
 
         $newData = [];
-
-        foreach ($endpoints as $metric => $endpoint) {
-            $response = $client->curlRequest($endpoint);
-            $output->writeln("<info>{$metric} data fetched</info>");
-            foreach ($response['result']['data'] as $day) {
-                $dateTime = Carbon::createFromTimestamp($day[0] / 1000);
-                $newData[$dateTime->format('Y-m-d')][$metric] = $day[1];
+        try {
+            foreach ($endpoints as $metric => $endpoint) {
+                $response = $client->curlRequest($endpoint);
+                $output->writeln("<info>{$metric} data fetched</info>");
+                foreach ($response['result']['data'] as $day) {
+                    $dateTime = Carbon::createFromTimestamp($day[0] / 1000);
+                    $newData[$dateTime->format('Y-m-d')][$metric] = $day[1];
+                }
             }
-        }
 
-        $output->writeln('<info>Running upsertStats for ' . count($newData) . ' days</info>');
-        $recordsSaved = $service->fillStats($newData, $this->option('force'));
-        $output->writeln('<info>' . $recordsSaved . ' record(s) saved</info>');
-        $output->writeln('<info>Done ✅</info>');
+            $output->writeln('<info>Running upsertStats for ' . count($newData) . ' days</info>');
+            $recordsSaved = $service->fillStats($newData, $this->option('force'));
+            $output->writeln('<info>' . $recordsSaved . ' record(s) saved</info>');
+            $output->writeln('<info>Done ✅</info>');
+        } catch (\Throwable $e) {
+            if (! $this->option('ignore-errors')) {
+                throw $e;
+            }
+            \Log::error("Command (" . $this->signature . '): ' . $e->getMessage());
+        }
     }
 }
