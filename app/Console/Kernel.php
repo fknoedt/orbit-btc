@@ -38,6 +38,11 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 
+        $schedule->command('btc:update-mayer-multiple')
+            ->everyMinute()->when($this->shouldUpdateMayerMultiple())
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo);
+
         $cqMetrics = array_keys(CryptoQuantClient::METRICS_TO_ENDPOINT);
 
         $schedule->command(
@@ -92,6 +97,16 @@ class Kernel extends ConsoleKernel
     {
         if (DailyPrice::where('date', '>', self::STATS_START_DATE)->whereNull('fear_and_greed')->count()) {
             Log::info('Running CMC stats update');
+            return true;
+        }
+
+        return false;
+    }
+
+    private function shouldUpdateMayerMultiple(): bool
+    {
+        if (DailyPrice::getLastEmptyMayerMultipleDay()) {
+            Log::info('Running Mayer Multiple stats update');
             return true;
         }
 

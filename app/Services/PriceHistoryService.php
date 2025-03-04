@@ -162,9 +162,52 @@ class PriceHistoryService
         }
 
         if (! empty($pricesMissing)) {
-            dump("One or more missing prices were not updated: " . json_encode($pricesMissing));
+            $output->writeln("One or more missing prices were not updated: " . json_encode($pricesMissing));
         }
 
         return $pricesCreated;
+    }
+
+    /**
+     * Mayer Multiple is the average of the last 200 days' price
+     * @see https://charts.bitbo.io/mayer-multiple-bars/
+     */
+    public function updateMayerMultiple(string $since = null): int
+    {
+        if (! $since) {
+            $since = DailyPrice::getLastEmptyMayerMultipleDay();
+
+            // no empty days
+            if (! $since) {
+                return 0;
+            }
+        }
+
+        $startDate = Carbon::createFromFormat($this->systemDateFormat, $since)
+            ->subDays(200)->format($this->systemDateFormat);
+
+        $prices = DailyPrice::where('date', '>=', $startDate)
+            ->select(['date', 'close'])
+            ->orderBy('date', 'asc')
+            ->get()
+            ->keyBy('date')
+            ->toArray();
+
+        $last200prices = array_slice($prices, 0, 200, true);
+        $prices = array_slice($prices, 200);
+        $fillStats = [];
+
+        do {
+            $nextDay = array_shift($prices);
+            $average = array_sum(array_column($last200prices, 'close')) / 200;
+            $mayerMultiple = $nextDay['close'] / $average;
+
+            $fillStats[$nextDay['date']]['mayer_multiple'] = $mayerMultiple;
+
+            array_shift($last200prices);
+            $last200prices[$nextDay['date']] = $nextDay;
+        } while (! empty($prices));
+
+        return (new DailyStatsService())->fillStats($fillStats);
     }
 }
