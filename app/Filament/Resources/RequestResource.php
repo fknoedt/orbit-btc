@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\RequestResource\Pages;
 use App\Models\Request;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -22,7 +22,7 @@ class RequestResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
+            ->columns(components: [
                 TextColumn::make('created_at')
                     ->dateTime('m/d/y H:i:s') // @todo centralize it
                     ->sortable(),
@@ -43,7 +43,7 @@ class RequestResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->label('Status'),
-                Tables\Columns\IconColumn::make('cron')
+                IconColumn::make('cron')
                     ->boolean()
                     ->label('Console'),
                 TextColumn::make('elapsed_time')

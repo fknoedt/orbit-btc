@@ -74,7 +74,7 @@ App\\Filament\\Resources\\DashboardResource\\Widgets"
             Metric::create($metric);
         }
 
-        Schema::create('telemetries', function (Blueprint $table) {
+        Schema::create('user_models', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained();
             $table->string('name')->unique();
@@ -87,12 +87,13 @@ App\\Filament\\Resources\\DashboardResource\\Widgets"
             )->nullable();
             $table->string('email_to_notify')->nullable();
             $table->string('telegram_to_notify')->nullable();
+            $table->boolean('is_paused')->default(false);
             $table->timestamps();
         });
 
-        Schema::create('telemetries_metrics', function (Blueprint $table) {
+        Schema::create('user_model_metrics', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('telemetry_id')->constrained();
+            $table->foreignId('user_model_id')->constrained();
             $table->foreignId('metric_id')->constrained();
             $table->enum('operator', ['+', '-', '+-'])->default('+');
             $table
@@ -101,7 +102,7 @@ App\\Filament\\Resources\\DashboardResource\\Widgets"
                     'Oscillation from one day to another beyond (depending on operator) this percentage
 will score points that will be weighted based on `weight`'
                 );
-            $table->float('weight')->comment("How much this metric's score should affect the telemetry");
+            $table->float('weight')->comment("How much this metric's score should affect your Model");
             $table->timestamp('created_at');
         });
     }
