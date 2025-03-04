@@ -4,15 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\DailyPriceResource\Pages;
 use App\Models\DailyPrice;
-use App\Tables\Columns\PriceLinkColumn;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\Filter;
-use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -64,17 +61,32 @@ class DailyPriceResource extends Resource
                     ->date()
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('price')
+                TextColumn::make('close')
                     ->money()
-                    ->sortable(),
-                TextColumn::make('dataSource.name')
-                    ->numeric()
                     ->sortable(),
                 TextColumn::make('market_cap')
                     ->money()
                     ->sortable(),
                 TextColumn::make('total_volume')
                     ->money()
+                    ->sortable(),
+                TextColumn::make('average_fee')
+                    ->money()
+                    ->sortable(),
+                TextColumn::make('exchanges_reserve')
+                    ->money()
+                    ->sortable(),
+                TextColumn::make('fear_and_greed')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('high')
+                    ->money()
+                    ->sortable(),
+                TextColumn::make('low')
+                    ->money()
+                    ->sortable(),
+                TextColumn::make('dataSource.name')
+                    ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
