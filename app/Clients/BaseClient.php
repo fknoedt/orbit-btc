@@ -26,7 +26,7 @@ abstract class BaseClient
     protected static string $url;
 
     protected static string $currency;
-    protected static string $systemDateFormat;
+    public static string $systemDateFormat;
 
     public function __construct()
     {

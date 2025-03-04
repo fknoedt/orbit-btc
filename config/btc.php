@@ -38,5 +38,9 @@ return [
             'url' => env('CRYPTOQUANT_URL'),
             'auth_token' => env('CRYPTOQUANT_ACCESS_TOKEN'),
         ],
+        'serpapi' => [
+            'url' => env('SERPAPI_URL'),
+            'key' => env('SERPAPI_KEY'),
+        ]
     ]
 ];
