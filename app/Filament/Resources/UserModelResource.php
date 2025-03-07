@@ -45,7 +45,7 @@ class UserModelResource extends Resource
                 TextColumn::make('threshold')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('current_score')
+                TextColumn::make('last_score')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('email_to_notify')
@@ -119,7 +119,7 @@ class UserModelResource extends Resource
             TextInput::make('threshold')
                 ->numeric()
                 ->hidden(),
-            TextInput::make('current_score')
+            TextInput::make('last_score')
                 ->numeric()
                 ->hidden(),
             TextInput::make('email_to_notify')

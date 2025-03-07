@@ -29,4 +29,24 @@ class UserModel extends Model
     {
         return $this->hasManyThrough(Metric::class, UserModelMetric::class);
     }
+
+    /**
+     * Retrieve the furthest date when every metric had data available
+     * Warning: avoid calling this method if you didn't eager load these relationships first
+     */
+    public function getMetricsDataCappedAt(): ?string
+    {
+        $cappedAt = null;
+        foreach ($this->userModelMetrics as $userModelMetric) {
+            if ($userModelMetric->metrics) {
+                foreach ($userModelMetric->metrics as $metric) {
+                    if (is_null($cappedAt) || $metric->data_limited_at > $cappedAt) {
+                        $cappedAt = $metric->data_limited_at;
+                    }
+                }
+            }
+        }
+
+        return $cappedAt;
+    }
 }
