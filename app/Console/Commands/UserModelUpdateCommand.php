@@ -13,7 +13,7 @@ class UserModelUpdateCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:user-model-update-command';
+    protected $signature = 'btc:update-all-user-model-scores';
 
     /**
      * The console command description.
