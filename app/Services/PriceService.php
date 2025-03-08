@@ -90,7 +90,7 @@ class PriceService
     public function getAllDailyPricesKeyByDate(
         Carbon $startDate = null,
         Carbon $endDate = null,
-        bool   $singleton = false
+        bool   $singleton = true
     ): Collection
     {
         if (! $startDate) {

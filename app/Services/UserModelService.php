@@ -69,7 +69,7 @@ class UserModelService
                         $previousDailyPrice = null;
 
                         // clear all entries for the User Model being calculated
-                        UserModelDailyScore::where('id', $userModel->id)->delete();
+                        UserModelDailyScore::where('user_model_id', $userModel->id)->delete();
 
                         // get the earliest date when all metrics of this model had data
                         $userModelMetricsCappedAt = $userModel->getMetricsDataCappedAt();
