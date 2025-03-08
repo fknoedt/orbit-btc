@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DailyPrice;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class PriceService
@@ -16,6 +17,15 @@ class PriceService
     protected const int NUMBER_OF_DAYS_IN_REDUCTION = 100;
 
     protected static ?string $pollingInterval = null;
+
+    /** Collection of DailyPrice indexed by date (warning: different date intervals will be mixed up) */
+    protected Collection $dailyPricesByDate;
+
+    public function __construct(Collection $dailyPricesByDate = null)
+    {
+        $this->dailyPricesByDate = $dailyPricesByDate ?? new Collection();
+    }
+
 
     /**
      * Return array of DailyPrice arrays indexed by dates (useful for charts)
@@ -70,5 +80,58 @@ class PriceService
         }
 
         return $data;
+    }
+
+    /**
+     * This method fetches from cache all daily_price into a singleton to avoid multiple queries if called repeatedly
+     * WARNING: don't use it if you don't want to allocate a lot of data in memory (should be used to repeated access)
+     * @param bool $singleton will keep all DailyPrices allocated for further access
+     */
+    public function getAllDailyPricesKeyByDate(
+        Carbon $startDate = null,
+        Carbon $endDate = null,
+        bool   $singleton = false
+    ): Collection
+    {
+        if (! $startDate) {
+            $startDate = Carbon::createFromFormat('Y-m-d', config('btc.first_cmc_available_date'));
+        }
+        $cacheKey = md5(
+            __METHOD__ .
+            $startDate->format('Y-m-d') .
+            ($endDate ? $endDate->format('Y-m-d') : '')
+        );
+        $data = Cache::remember($cacheKey, (new Carbon())->endOfDay(), function () use ($startDate, $endDate) {
+            $query = DailyPrice::query();
+            if ($startDate) {
+                $query->where('date', '>=', $startDate);
+            }
+            if ($endDate) {
+                $query->where('date', '<=', $endDate);
+            }
+            return $query->get()->keyBy('date');
+        });
+
+        if ($singleton) {
+            $this->dailyPricesByDate = $this->dailyPricesByDate->union($data);
+        }
+
+        return $data;
+    }
+
+    public function getDailyPrice(string $date, bool $findOrFail = false): ?DailyPrice
+    {
+        // first time called
+        if ($this->dailyPricesByDate->isEmpty()) {
+            throw new \BadMethodCallException(
+                "You should call getAllDailyPricesByDate() to load initial data before calling getDailyPrice()"
+            );
+        }
+
+        if ($findOrFail && ! isset($this->dailyPricesByDate[$date])) {
+            throw new \InvalidArgumentException("Daily Price not found for date {$date}");
+        }
+
+        return $this->dailyPricesByDate[$date] ?? null;
     }
 }

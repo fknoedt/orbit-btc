@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Clients\CryptoQuantClient;
 use App\Models\DailyPrice;
+use App\Models\UserModelDailyScore;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -54,6 +55,11 @@ class Kernel extends ConsoleKernel
             ->onFailure(function (\Throwable $e) {
                 \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
             });
+
+        $schedule->command('btc:update-all-user-model-scores')
+            ->everyMinute()->when($this->shouldUpdateUserModels())
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo);
     }
 
     /**
@@ -97,6 +103,19 @@ class Kernel extends ConsoleKernel
     {
         if (DailyPrice::where('date', '>', self::STATS_START_DATE)->whereNull('fear_and_greed')->count()) {
             Log::info('Running CMC stats update');
+            return true;
+        }
+
+        return false;
+    }
+
+    private function shouldUpdateUserModels(): bool
+    {
+        $lastDailyPrice = DailyPrice::max('date');
+        $lastUserModelScore = UserModelDailyScore::max('date');
+
+        if ($lastDailyPrice > $lastUserModelScore) {
+            Log::info('Running UserModels update all scores');
             return true;
         }
 
