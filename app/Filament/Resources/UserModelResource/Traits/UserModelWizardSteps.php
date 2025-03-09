@@ -35,7 +35,7 @@ trait UserModelWizardSteps
                 ->icon('heroicon-o-adjustments-horizontal'),
             Step::make('Threshold')
                 ->description('Tune your Model')
-                ->schema(UserModelResource::getThresholdSchema())
+                ->schema(UserModelResource::getThresholdSchema($this->record->id))
                 ->icon('heroicon-o-presentation-chart-bar'),
         ];
     }

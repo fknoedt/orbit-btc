@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\UserModelScore;
 use App\Services\WidgetService;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -37,6 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                UserModelScore::class
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets($service->getUserWidgets())
@@ -63,13 +66,14 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make('Sandbox')
                     ->url('/sandbox', shouldOpenInNewTab: true)
                     ->icon('heroicon-o-inbox')
-                    ->group('Tools')
+                    ->group('Dev')
                     ->sort(5)
                 ]
             )
             ->sidebarWidth('250')
             // ->brandLogo('images/btc-eagle-logo.png')
             ->brandName(config('app.name'))
-            ->favicon(asset('images/orbit-btc.ico'));
+            ->favicon(asset('images/orbit-btc.ico'))
+            ->plugins([FilamentApexChartsPlugin::make()]);
     }
 }

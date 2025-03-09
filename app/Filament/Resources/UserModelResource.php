@@ -6,7 +6,6 @@ use App\Enum\Operators;
 use App\Filament\Resources\UserModelResource\Pages;
 use App\Models\Metric;
 use App\Models\UserModel;
-use Exception;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Radio;
@@ -16,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ViewField;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -193,7 +193,7 @@ class UserModelResource extends Resource
         ];
     }
 
-    public static function getThresholdSchema(): array
+    public static function getThresholdSchema(int $userModelId): array
     {
         return [
             Toggle::make('is_paused')
@@ -211,6 +211,10 @@ class UserModelResource extends Resource
                 ->columns(1)
                 ->default(1)
                 ->required(),
+            ViewField::make('chart')
+                ->view('livewire.user-model-score-chart')
+                ->label('Model Score Chart')
+                ->viewData(['userModelId' => $userModelId]),
         ];
     }
 }

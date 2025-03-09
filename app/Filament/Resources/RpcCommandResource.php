@@ -26,7 +26,7 @@ class RpcCommandResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-command-line';
 
-    protected static ?string $navigationGroup = 'Tools';
+    protected static ?string $navigationGroup = 'Dev';
 
     protected static ?int $navigationSort = 3;
 
