@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserModelResource\Pages;
 
+use App\Filament\Charts\UserModelChart;
 use App\Filament\Resources\UserModelResource;
 use App\Filament\Resources\UserModelResource\Traits\UserModelWizardSteps;
 use Filament\Actions;
@@ -15,7 +16,7 @@ use Illuminate\Support\HtmlString;
 
 class EditUserModel extends EditRecord
 {
-    use HasWizard, UserModelWizardSteps;
+    use HasWizard, UserModelWizardSteps, UserModelChart;
 
     protected static string $resource = UserModelResource::class;
 

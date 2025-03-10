@@ -1,0 +1,11 @@
+<x-filament-panels::page>
+    <x-filament-apex-charts::chart
+        :chartId="'dailyScoresChart'"
+        :chartOptions="$options"
+        :contentHeight="300"
+        :deferLoading="false"
+        :readyToLoad="true"
+        :darkMode="true"
+        :pollingInterval="null"
+    />
+</x-filament-panels::page>

@@ -13,7 +13,11 @@ class RequestResource extends Resource
 {
     protected static ?string $model = Request::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-link';
+
+    protected static ?string $navigationGroup = 'Dev';
+
+    protected static ?int $navigationSort = 3;
 
     /**
      * @todo infolist with raw_response
