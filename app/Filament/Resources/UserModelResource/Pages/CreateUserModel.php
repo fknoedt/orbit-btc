@@ -2,22 +2,20 @@
 
 namespace App\Filament\Resources\UserModelResource\Pages;
 
+use App\Filament\Charts\UserModelChart;
 use App\Filament\Resources\UserModelResource;
-
 use App\Filament\Resources\UserModelResource\Traits\UserModelWizardSteps;
 use Filament\Actions\Concerns\HasWizard;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Resources\Pages\CreateRecord;
-use Filament\Support\Facades\FilamentView;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
-use function Filament\Support\is_app_url;
 
 class CreateUserModel extends CreateRecord
 {
-    use HasWizard, UserModelWizardSteps;
+    use HasWizard, UserModelWizardSteps, UserModelChart;
 
     protected static string $resource = UserModelResource::class;
 
