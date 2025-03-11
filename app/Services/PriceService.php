@@ -109,7 +109,7 @@ class PriceService
             if ($endDate) {
                 $query->where('date', '<=', $endDate);
             }
-            return $query->get()->keyBy('date');
+            return $query->orderBy('date')->get()->keyBy('date');
         });
 
         if ($singleton) {

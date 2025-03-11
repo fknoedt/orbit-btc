@@ -16,6 +16,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ViewField;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Support\RawJs;
+use Rupadana\FilamentSlider\Components\InputSlider;
+use Rupadana\FilamentSlider\Components\InputSliderGroup;
 
 trait UserModelWizardSteps
 {
@@ -136,21 +138,36 @@ trait UserModelWizardSteps
                 ->label('Monitoring Paused?')
                 ->default(false)
                 ->columns(1),
-            TextInput::make('threshold')
+            /*TextInput::make('threshold')
                 ->numeric()
                 ->placeholder('%')
                 ->label('Final Threshold')
                 ->hint('Sum of each of this Model\'s Metrics will be compared against the threshold')
                 ->columns(1)
                 ->default(1)
-                ->required(),
+                ->required(),*/
             Radio::make('buy_or_sell')
                 ->label('Signal')
-                ->columns(1)
-                ->inline()
                 ->default('sell')
-                ->options(['buy' => 'Buy', 'sell' => 'Sell']),
+                ->inline()
+                ->options(['buy' => 'Buy', 'sell' => 'Sell'])
+                ->extraAttributes(['class' => 'flex items-center space-x-2']),
+            InputSliderGroup::make()
+                ->hint('Sum of each Metric\'s daily score will be compared against the threshold')
+                ->sliders([
+                    InputSlider::make('threshold') // Maps directly to UserModel->threshold
+                    ->default($this->record->threshold ?? 1) // default
+                    //->disabled(true) // Remove or set to false to allow editing
+                    ->extraAttributes(['data-slider-disabled' => 'true']) // Mark it in a way we can detect
+                    ->label('Model Threshold'), // Move label to slider
+                ])
+                ->connect([true, false]) // Matches sliders length + 1
+                ->range(['min' => 1, 'max' => 200])
+                ->step(1)
+                ->enableTooltips(),
             ViewField::make('chart')
+                ->label("Model's Daily Score")
+                ->hint("")
                 ->view('filament.components.user-model-chart')
                 ->viewData(['options' => $this->getChartOptions($userModelId)])
                 ->dehydrated(false),

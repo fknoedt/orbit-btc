@@ -5,7 +5,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var options = @json($options);
-        console.log('Chart options:', options);
         var chart = new ApexCharts(document.querySelector("#chart-{{ $getName() }}"), options);
         chart.render();
     });

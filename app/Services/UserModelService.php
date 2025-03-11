@@ -14,7 +14,7 @@ class UserModelService
     /** How far back a user_model will span */
     public const int MAX_DAYS_BACK = 1096;
 
-    public function updateAll(
+    public function updateDailyScores(
         int           $userModelId = null,
         int           $userId = null,
         Carbon        $since = null,

@@ -9,14 +9,16 @@ use Carbon\Carbon;
 
 trait UserModelChart
 {
+    public const int MONTHS_BACK = 3;
+
     private function getChartOptions(int $userModelId = null): array
     {
         if (! $userModelId) {
             return [];
         }
         $service = new PriceService();
-        $since = (new Carbon())->subMonths(3);
-        $dailyPrices = $service->getAllDailyPricesKeyByDate($since)->toArray();
+        $since = (new Carbon())->subMonths(self::MONTHS_BACK);
+        $dailyPrices = $service->getAllDailyPricesKeyByDate($since, null, false)->toArray();
         $dailyScores = UserModelDailyScore::where('user_model_id', $userModelId)
             ->where('date', '>=', $since->format('Y-m-d'))
             ->get()
@@ -28,10 +30,14 @@ trait UserModelChart
         $prices = array_column($dailyPrices, 'close');
         $scores = array_column($dailyScores, 'score');
 
+        // y-axis scale
+        $maxPrice = max($prices);
+        $minPrice = $maxPrice / 2;
+
         $userModel = UserModel::findOrFail($userModelId);
         $threshold = $userModel->threshold ?? 0;
 
-        $options = [
+        return [
             'series' => [
                 [
                     'name' => 'Model Score',
@@ -52,7 +58,7 @@ trait UserModelChart
                 'width' => [0, 2]
             ],
             'title' => [
-                'text' => ''
+                'text' => 'BTC Price x Model Score per day since ' . Carbon::now()->subMonths(self::MONTHS_BACK)->format('d M Y'),
             ],
             'dataLabels' => [
                 'enabled' => false,
@@ -84,9 +90,14 @@ trait UserModelChart
                     'title' => [
                         'text' => 'BTC Price',
                     ],
+                    'min' => $minPrice, // Set minimum BTC price
+                    'max' => $maxPrice,
                     'decimalsInFloat' => 0,
                     'tickAmount' => 10,
                 ],
+            ],
+            'tooltip' => [
+                'theme' => 'dark',
             ],
             'grid' => [
                 'yaxis' => [
@@ -98,7 +109,7 @@ trait UserModelChart
                 'strokeDashArray' => 0,
             ],
             'colors' => [
-                '#1A237E',
+                '#897F7F',
                 '#FF9800'
             ],
             'fill' => [
@@ -107,11 +118,11 @@ trait UserModelChart
                     'shade' => 'light',
                     'type' => 'vertical',
                     'shadeIntensity' => 0.5,
-                    'gradientToColors' => ['#FF9800'],
-                    'inverseColors' => false,
-                    'opacityFrom' => 0,
-                    'opacityTo' => 0.6,
-                    'stops' => [0, 100]
+                    'gradientToColors' => ['#FF9800'], // End color (bottom)
+                    'inverseColors' => true,
+                    'opacityFrom' => 0.7, // Bottom opacity (fades to transparent)
+                    'opacityTo' => 0.2, // Top opacity (solid orange)
+                    'stops' => [0, 100] // Gradient stops from top (0%) to bottom (100%)
                 ]
             ],
             'plotOptions' => [
@@ -121,8 +132,13 @@ trait UserModelChart
                         'ranges' => [
                             [
                                 'from' => 0,
+                                'to' => $threshold-1,
+                                'color' => '#897F7F'
+                            ],
+                            [
+                                'from' => $threshold,
                                 'to' => $threshold,
-                                'color' => '#485FD4'
+                                'color' => '#FF3F2B'
                             ],
                             [
                                 'from' => $threshold + 1,
@@ -134,7 +150,5 @@ trait UserModelChart
                 ]
             ]
         ];
-
-        return $options;
     }
 }
