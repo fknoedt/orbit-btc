@@ -21,6 +21,20 @@ class CreateUserModel extends CreateRecord
 
     protected static bool $canCreateAnother = false;
 
+    public $threshold;
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $this->threshold = $data['threshold'] ?? 0;
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $data['threshold'] = $this->threshold;
+        return $data;
+    }
+
     public function form(Form $form): Form
     {
         return parent::form($form)
