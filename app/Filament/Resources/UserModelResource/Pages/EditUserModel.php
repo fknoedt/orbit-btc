@@ -24,6 +24,21 @@ class EditUserModel extends EditRecord
     private array $originalMetrics;
     private bool $scoreUpdated;
 
+    public $threshold;
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $this->threshold = $data['threshold'] ?? 0;
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $data['threshold'] = $this->threshold;
+        return $data;
+    }
+
+
     protected function getHeaderActions(): array
     {
         return [
@@ -89,8 +104,18 @@ class EditUserModel extends EditRecord
         if ($this->scoreUpdated) {
             $service = app(UserModelService::class);
             $service->updateDailyScores($userModelId);
+
+            // Debug the dispatch data
+            $dispatchData = [
+                'chartId' => 'chart-daily-score',
+                'options' => $this->getChartOptions($userModelId)
+            ];
+
+            // Dispatch a Filament event to refresh the chart
+            $this->dispatch('refresh-chart', $dispatchData);
         }
     }
+
 
     protected function getSavedNotification(): ?\Filament\Notifications\Notification
     {

@@ -24,7 +24,6 @@
         "livewire/livewire": "^3.5",
         "nesbot/carbon": "^2.72",
         "nunomaduro/termwind": "^2.0",
-        "rupadana/filament-slider": "^1.0",
         "sentry/sentry-laravel": "^4.1"
     },
     "require-dev": {

@@ -13,30 +13,61 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\View;
 use Filament\Forms\Components\ViewField;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Support\RawJs;
-use Rupadana\FilamentSlider\Components\InputSlider;
-use Rupadana\FilamentSlider\Components\InputSliderGroup;
 
 trait UserModelWizardSteps
 {
+
     protected function getSteps(): array
     {
         return [
             Step::make('Info')
                 ->description('Define your Model')
                 ->schema($this->getInfoSchema())
-                ->icon('heroicon-o-identification'),
+                ->icon('heroicon-o-identification')
+                ->completedIcon('heroicon-o-identification'),
             Step::make('Metrics')
                 ->description("Manage your Model's Metrics")
                 ->schema($this->getMetricsSchema())
-                ->icon('heroicon-o-adjustments-horizontal'),
-            Step::make('Threshold')
+                ->icon('heroicon-o-adjustments-horizontal')
+                ->completedIcon('heroicon-o-adjustments-horizontal'),
+            Step::make('Tuning')
                 ->description('Tune your Model')
-                ->schema($this->getThresholdSchema($this->record->id ?? null))
-                ->icon('heroicon-o-presentation-chart-bar'),
+                ->schema($this->getTuningSchema($this->record->id ?? null))
+                ->icon('heroicon-o-presentation-chart-bar')
+                ->completedIcon('heroicon-o-presentation-chart-bar'),
         ];
+    }
+
+    /**
+     * $this->form not built yet at this point, so...
+     */
+    protected function getCurrentOperation(): ?string
+    {
+        // on create form is submitted, the route is livewire.update so we need to look at the previous route
+        $routes = [
+            request()->route()->getName()
+        ];
+
+        if ($this->previousUrl ?? null) {
+            $routes[] = $this->previousUrl;
+        }
+
+        foreach ($routes as $route) {
+            if (str_ends_with($route, 'edit')) {
+                return 'edit';
+            } elseif (str_ends_with($route, 'view')) {
+                return 'view';
+            } elseif (str_ends_with($route, 'create')) {
+                return 'create';
+            }
+        }
+
+
+        return null; // Fallback for unexpected routes
     }
 
     public function getInfoSchema(): array
@@ -54,9 +85,6 @@ trait UserModelWizardSteps
                 ->placeholder('What is your Model looking for?')
                 ->required()
                 ->columnSpanFull(),
-            TextInput::make('threshold')
-                ->numeric()
-                ->hidden(),
             TextInput::make('last_score')
                 ->numeric()
                 ->hidden(),
@@ -131,46 +159,42 @@ trait UserModelWizardSteps
         ];
     }
 
-    public function getThresholdSchema(int $userModelId = null): array
+    public function getTuningSchema(int $userModelId = null): array
     {
-        return [
+        $operation = $this->getCurrentOperation();
+
+        $schema = [
             Toggle::make('is_paused')
                 ->label('Monitoring Paused?')
                 ->default(false)
                 ->columns(1),
-            /*TextInput::make('threshold')
-                ->numeric()
-                ->placeholder('%')
-                ->label('Final Threshold')
-                ->hint('Sum of each of this Model\'s Metrics will be compared against the threshold')
-                ->columns(1)
-                ->default(1)
-                ->required(),*/
             Radio::make('buy_or_sell')
                 ->label('Signal')
                 ->default('sell')
                 ->inline()
                 ->options(['buy' => 'Buy', 'sell' => 'Sell'])
                 ->extraAttributes(['class' => 'flex items-center space-x-2']),
-            InputSliderGroup::make()
-                ->hint('Sum of each Metric\'s daily score will be compared against the threshold')
-                ->sliders([
-                    InputSlider::make('threshold') // Maps directly to UserModel->threshold
-                    ->default($this->record->threshold ?? 1) // default
-                    //->disabled(true) // Remove or set to false to allow editing
-                    ->extraAttributes(['data-slider-disabled' => 'true']) // Mark it in a way we can detect
-                    ->label('Model Threshold'), // Move label to slider
-                ])
-                ->connect([true, false]) // Matches sliders length + 1
-                ->range(['min' => 1, 'max' => 200])
-                ->step(1)
-                ->enableTooltips(),
-            ViewField::make('chart')
-                ->label("Model's Daily Score")
-                ->hint("")
+            View::make('components.range-slider')
+                ->viewData([
+                    'name' => 'threshold',
+                    'min' => 0,
+                    'max' => 250,
+                    'step' => 1,
+                    'value' => $this->record->threshold ?? 0,
+                    'label' => 'Threshold (0-250): ',
+                    'disabled' => ($operation === 'view')
+                ]),
+        ];
+
+        if ($operation !== 'create') {
+            $schema[] = ViewField::make('daily-score')
+                ->label('Daily Score')
+                ->hint($operation === 'edit' ? 'Save your Model to see the updated chart' : '')
                 ->view('filament.components.user-model-chart')
                 ->viewData(['options' => $this->getChartOptions($userModelId)])
-                ->dehydrated(false),
-        ];
+                ->dehydrated(false);
+        }
+
+        return $schema;
     }
 }

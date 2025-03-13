@@ -31,11 +31,13 @@ trait UserModelChart
         $scores = array_column($dailyScores, 'score');
 
         // y-axis scale
-        $maxPrice = max($prices);
+        $maxPrice = round(max($prices), -3);
         $minPrice = $maxPrice / 2;
 
         $userModel = UserModel::findOrFail($userModelId);
         $threshold = $userModel->threshold ?? 0;
+
+        \Log::warning(__METHOD__ . ' rodou com ' . $threshold);
 
         return [
             'series' => [
@@ -51,7 +53,7 @@ trait UserModelChart
                 ]
             ],
             'chart' => [
-                'height' => 400,
+                'height' => 300,
                 'type' => 'line'
             ],
             'stroke' => [
