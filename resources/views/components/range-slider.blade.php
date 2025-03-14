@@ -20,8 +20,11 @@
         x-model="sliderValue"
         {{ isset($disabled) && $disabled ? 'disabled' : '' }}
     >
-    <div class="text-sm text-black-500 mt-1 flex items-center space-x-2">
-        <span>{{ $label }}</span>
-        <span x-text="sliderValue" class="font-extrabold text-gray-900 dark:text-gray-100 ml-2"></span>
+    <div class="text-sm text-black-500 mt-1 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <span>{{ $label }}</span>
+            <span x-text="sliderValue" class="font-extrabold text-gray-900 dark:text-gray-100"></span>
+        </div>
+        <span class="text-gray-400">{{ $hint ?? '' }}</span> <!-- Hint aligned to the right -->
     </div>
 </div>

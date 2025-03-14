@@ -4,6 +4,7 @@ namespace App\Filament\Resources\UserModelResource\Traits;
 
 use App\Enum\Operators;
 use App\Models\Metric;
+use App\Services\UserModelService;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
@@ -162,6 +163,8 @@ trait UserModelWizardSteps
     public function getTuningSchema(int $userModelId = null): array
     {
         $operation = $this->getCurrentOperation();
+        $service = app(UserModelService::class);
+        $maxThreshold = $service->getMaxThreshold($userModelId);
 
         $schema = [
             Toggle::make('is_paused')
@@ -178,11 +181,13 @@ trait UserModelWizardSteps
                 ->viewData([
                     'name' => 'threshold',
                     'min' => 0,
-                    'max' => 250,
+                    'max' => $maxThreshold,
                     'step' => 1,
                     'value' => $this->record->threshold ?? 0,
-                    'label' => 'Threshold (0-250): ',
-                    'disabled' => ($operation === 'view')
+                    'label' => "Threshold (0-{$maxThreshold}): ",
+                    'disabled' => ($operation === 'view'),
+                    'hint' => 'Max. threshold is related to the weight of each metric x ' .
+                        UserModelService::MAX_OSCILLATION_PER_METRIC . '% of oscillation'
                 ]),
         ];
 
