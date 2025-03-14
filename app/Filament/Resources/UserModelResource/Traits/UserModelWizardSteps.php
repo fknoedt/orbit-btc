@@ -155,7 +155,18 @@ trait UserModelWizardSteps
                                 ->minValue(0)
                                 ->numeric()
                                 ->hint("daily oscillation x 0~10")
-                                ->required(),
+                                ->required()
+                                ->live() // Triggers updates on change
+                                // TODO: move to JS? blur was not working in any way
+                                ->afterStateUpdated(function ($state, $set, $get, $component) {
+                                    // Only apply correction if the field has been blurred (state has changed)
+                                    $value = (int)$state; // Convert to integer
+                                    if ($value > 10) {
+                                        $set('weight', 10);
+                                    } elseif ($value < 0) {
+                                        $set('weight', 0);
+                                    }
+                                }),
                             Placeholder::make('')
                                 ->visible(fn ($get) => !$get('oscillation_threshold_enabled') ?? false)
                                 ->columns(1),
