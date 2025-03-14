@@ -7,6 +7,7 @@ use App\Models\Metric;
 use App\Services\UserModelService;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -24,6 +25,8 @@ trait UserModelWizardSteps
 
     protected function getSteps(): array
     {
+        $operation = $this->getCurrentOperation();
+
         return [
             Step::make('Info')
                 ->description('Define your Model')
@@ -32,12 +35,12 @@ trait UserModelWizardSteps
                 ->completedIcon('heroicon-o-identification'),
             Step::make('Metrics')
                 ->description("Manage your Model's Metrics")
-                ->schema($this->getMetricsSchema())
+                ->schema($this->getMetricsSchema($operation))
                 ->icon('heroicon-o-adjustments-horizontal')
                 ->completedIcon('heroicon-o-adjustments-horizontal'),
             Step::make('Tuning')
                 ->description('Tune your Model')
-                ->schema($this->getTuningSchema($this->record->id ?? null))
+                ->schema($this->getTuningSchema($operation, $this->record->id ?? null))
                 ->icon('heroicon-o-presentation-chart-bar')
                 ->completedIcon('heroicon-o-presentation-chart-bar'),
         ];
@@ -100,25 +103,41 @@ trait UserModelWizardSteps
         ];
     }
 
-    public function getMetricsSchema(): array
+    public function getMetricsSchema(string $operation = null): array
     {
         $metrics = Metric::with('dataSource')->get();
 
+        $extraActions = $operation === 'view' ? [] :
+            [
+                Action::make('toggleOscillation')
+                    ->icon('heroicon-o-adjustments-horizontal')
+                    ->label(fn ($get) => $get('oscillation_threshold_enabled') ? 'Hide Oscillation' : 'Show Oscillation')
+                    ->tooltip('Toggle Oscillation Threshold')
+                    ->action(function ($set, $get, $arguments) {
+                        $itemKey = $arguments['item'] ?? 'no key';
+                        $statePath = "userModelMetrics.{$itemKey}.oscillation_threshold_enabled";
+                        $currentState = $get($statePath) ?? false;
+                        $set($statePath, !$currentState);
+
+                        // Force re-render
+                        $this->dispatch('refresh');
+                    })
+                    ->color('secondary')
+            ];
+
         return [
             Section::make()
-                //->columns(4)
                 ->schema([
-                    // Repeatable field for invoice items
                     Repeater::make('userModelMetrics')
                         ->label('Model Metrics')
-                        // Defined as a relationship to the InvoiceProduct model
                         ->relationship()
                         ->lazy()
                         ->defaultItems(1)
-                        ->addAction(fn (Action $action) => $action->label('Add another Metric')) // Customize the label here
+                        ->addAction(fn (Action $action) => $action->label('Add another Metric'))
                         ->deleteAction(
                             fn (Action $action) => $action->requiresConfirmation(),
                         )
+                        ->extraItemActions($extraActions)
                         ->schema([
                             Select::make('metric_id')
                                 ->label('Metric')
@@ -129,12 +148,29 @@ trait UserModelWizardSteps
                                 )
                                 ->columns(1)
                                 ->required(),
+                            TextInput::make('weight')
+                                ->label('Weight')
+                                ->columns(1)
+                                ->maxValue(10)
+                                ->minValue(0)
+                                ->numeric()
+                                ->hint("daily oscillation x 0~10")
+                                ->required(),
+                            Placeholder::make('')
+                                ->visible(fn ($get) => !$get('oscillation_threshold_enabled') ?? false)
+                                ->columns(1),
+                            ViewField::make('no_threshold_message')
+                                ->view('forms.components.no-threshold-message')
+                                ->columns(1)
+                                ->visible(function ($get) use ($operation) {
+                                    return ($operation ?? 'edit') !== 'view' && !($get('oscillation_threshold_enabled') ?? false);
+                                }),
                             Select::make('operator')
                                 ->label('Operator')
                                 ->columns(1)
-                                ->options(
-                                    Operators::class
-                                ),
+                                ->options(Operators::class)
+                                ->visible(fn ($get) => $get('oscillation_threshold_enabled') ?? false)
+                                ->required(fn ($get) => $get('oscillation_threshold_enabled') ?? false),
                             TextInput::make('oscillation_threshold')
                                 ->mask(
                                     RawJs::make("parseFloat(\$input) > 100 ? '100' : (\$input[2] === '.' ? '99.99' : (\$input[1] === '.' ? '9.99' : '999'))")
@@ -143,28 +179,22 @@ trait UserModelWizardSteps
                                 ->placeholder('%')
                                 ->label('Oscillation')
                                 ->columns(1)
-                                ->default(1),
-                            Radio::make('weight')
-                                ->label('Weight')
-                                ->inline()
-                                ->columns(1)
-                                ->options(
-                                    [0, 1, 2, 3, 4, 5],
-                                )
-                                ->required(),
+                                ->visible(fn ($get) => $get('oscillation_threshold_enabled') ?? false)
+                                ->required(fn ($get) => $get('oscillation_threshold_enabled') ?? false),
+                            Hidden::make('oscillation_threshold_enabled')
+                                ->default(false)
+                                ->live(),
                         ])
-                        // Disable reordering
                         ->reorderable(false)
                         ->columns(4)
                 ]),
         ];
     }
 
-    public function getTuningSchema(int $userModelId = null): array
+    public function getTuningSchema(string $operation = null, int $userModelId = null): array
     {
-        $operation = $this->getCurrentOperation();
         $service = app(UserModelService::class);
-        $maxThreshold = $service->getMaxThreshold($userModelId);
+        $maxThreshold = $userModelId ? $service->getMaxThreshold($userModelId) : 100;
 
         $schema = [
             Toggle::make('is_paused')
@@ -187,7 +217,7 @@ trait UserModelWizardSteps
                     'label' => "Threshold (0-{$maxThreshold}): ",
                     'disabled' => ($operation === 'view'),
                     'hint' => 'Max. threshold is related to the weight of each metric x ' .
-                        UserModelService::MAX_OSCILLATION_PER_METRIC . '% of oscillation'
+                        UserModelService::MAX_OSCILLATION_PER_METRIC . '% of daily oscillation'
                 ]),
         ];
 

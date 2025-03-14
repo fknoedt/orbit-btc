@@ -24,6 +24,26 @@ class ViewUserModel extends ViewRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->threshold = $data['threshold'] ?? 0;
+
+        // Load the userModelMetrics relationship
+        $record = $this->getRecord();
+        $metrics = $record->userModelMetrics()->get();
+
+        if ($metrics->isNotEmpty()) {
+            // Update oscillation_threshold_enabled in the database based on oscillation_threshold
+            foreach ($metrics as $metric) {
+                $shouldEnable = !empty($metric->oscillation_threshold);
+                if ($metric->oscillation_threshold_enabled !== $shouldEnable) {
+                    $metric->oscillation_threshold_enabled = $shouldEnable;
+                    $metric->save();
+                }
+            }
+
+            // Reload the updated metrics to ensure the form uses the latest data
+            $data['userModelMetrics'] = $record->userModelMetrics()->get()->toArray();
+            $this->form->fill($data);
+        }
+
         return $data;
     }
 
