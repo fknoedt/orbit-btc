@@ -29,6 +29,26 @@ class EditUserModel extends EditRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->threshold = $data['threshold'] ?? 0;
+
+        // Load the userModelMetrics relationship
+        $record = $this->getRecord();
+        $metrics = $record->userModelMetrics()->get();
+
+        if ($metrics->isNotEmpty()) {
+            // Update oscillation_threshold_enabled in the database based on oscillation_threshold
+            foreach ($metrics as $metric) {
+                $shouldEnable = !empty($metric->oscillation_threshold);
+                if ($metric->oscillation_threshold_enabled !== $shouldEnable) {
+                    $metric->oscillation_threshold_enabled = $shouldEnable;
+                    $metric->save();
+                }
+            }
+
+            // Reload the updated metrics to ensure the form uses the latest data
+            $data['userModelMetrics'] = $record->userModelMetrics()->get()->toArray();
+            $this->form->fill($data);
+        }
+
         return $data;
     }
 
@@ -81,11 +101,26 @@ class EditUserModel extends EditRecord
         return [];
     }
 
-    // Hook to capture original data before save
+    /**
+     * Hook to capture original data before save and set values to null when threshold is disabled
+     */
     protected function beforeSave(): void
     {
         $this->originalRecord = $this->getRecord()->toArray();
-        $this->originalMetrics = $this->getRecord()->userModelMetrics->toArray(); // Original related metrics
+        $this->originalMetrics = $this->getRecord()->userModelMetrics->toArray();
+
+        // Update userModelMetrics to set operator and oscillation_threshold to null when oscillation_threshold_enabled is false
+        $formData = $this->form->getState();
+        if (isset($formData['userModelMetrics'])) {
+            $formData['userModelMetrics'] = array_map(function ($item) {
+                if (isset($item['oscillation_threshold_enabled']) && $item['oscillation_threshold_enabled'] === false) {
+                    $item['operator'] = null;
+                    $item['oscillation_threshold'] = null;
+                }
+                return $item;
+            }, $formData['userModelMetrics']);
+            $this->form->fill($formData);
+        }
     }
 
     // Hook to detect changes and run service method after save

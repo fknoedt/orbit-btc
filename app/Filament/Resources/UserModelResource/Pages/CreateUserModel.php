@@ -26,6 +26,16 @@ class CreateUserModel extends CreateRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->threshold = $data['threshold'] ?? 0;
+
+        // Initialize userModelMetrics for new record
+        if (isset($data['userModelMetrics'])) {
+            $data['userModelMetrics'] = array_map(function ($item) {
+                $item['oscillation_threshold_enabled'] = !empty($item['oscillation_threshold']);
+                return $item;
+            }, $data['userModelMetrics']);
+            $this->form->fill($data);
+        }
+
         return $data;
     }
 
@@ -45,7 +55,7 @@ class CreateUserModel extends CreateRecord
                     ->skippable(false)
                     ->columnSpanFull()
                     ->nextAction(
-                        fn (Action $action) => $action->label( '>>')
+                        fn (Action $action) => $action->label('>>')
                     )
                     ->previousAction(
                         fn (Action $action) => $action->label('<<')

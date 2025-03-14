@@ -37,8 +37,6 @@ trait UserModelChart
         $userModel = UserModel::findOrFail($userModelId);
         $threshold = $userModel->threshold ?? 0;
 
-        \Log::warning(__METHOD__ . ' rodou com ' . $threshold);
-
         return [
             'series' => [
                 [
