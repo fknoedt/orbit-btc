@@ -14,6 +14,26 @@ class UserModelService
     /** How far back a user_model will span */
     public const int MAX_DAYS_BACK = 1096;
 
+    /** used to calculate max threshold */
+    public const int MAX_OSCILLATION_PER_METRIC = 10;
+
+    public function getMaxThreshold(int $userModelId): int
+    {
+        $max = 0;
+
+        $metrics = UserModelMetric::where('user_model_id', $userModelId)->get();
+
+        if (empty($metrics)) {
+            return $max;
+        }
+
+        foreach ($metrics as $metric) {
+            $max += $metric->weight * self::MAX_OSCILLATION_PER_METRIC;
+        }
+
+        return $max;
+    }
+
     public function updateDailyScores(
         int           $userModelId = null,
         int           $userId = null,
