@@ -154,7 +154,7 @@ trait UserModelWizardSteps
                                 ->maxValue(10)
                                 ->minValue(0)
                                 ->numeric()
-                                ->hint("daily oscillation x 0~10")
+                                ->hint("0~10")
                                 ->required()
                                 ->live() // Triggers updates on change
                                 // TODO: move to JS? blur was not working in any way
@@ -179,6 +179,7 @@ trait UserModelWizardSteps
                             Select::make('operator')
                                 ->label('Operator')
                                 ->columns(1)
+                                ->hint('oscil. up or down')
                                 ->options(Operators::class)
                                 ->visible(fn ($get) => $get('oscillation_threshold_enabled') ?? false)
                                 ->required(fn ($get) => $get('oscillation_threshold_enabled') ?? false),
@@ -188,7 +189,7 @@ trait UserModelWizardSteps
                                 )
                                 ->numeric()
                                 ->placeholder('%')
-                                ->label('Oscillation')
+                                ->label('Oscillation Threshold')
                                 ->columns(1)
                                 ->visible(fn ($get) => $get('oscillation_threshold_enabled') ?? false)
                                 ->required(fn ($get) => $get('oscillation_threshold_enabled') ?? false),
