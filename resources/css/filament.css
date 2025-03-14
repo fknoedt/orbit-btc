@@ -1,0 +1,71 @@
+/* Sidebar header (minimal layout for button positioning) */
+.fi-sidebar-header {
+    position: relative !important; /* Positioning context for buttons */
+    display: flex !important; /* Ensure flex layout for button positioning */
+    align-items: center !important; /* Center items vertically */
+    height: 64px !important; /* Match Filament's default height */
+    padding: 0 2.5rem 0 0 !important; /* Add right padding to make space for the button */
+}
+
+/* Resize the logo wrapper (reduced by 10%) */
+.orbit-btc-logo-wrapper {
+    width: 153px !important; /* Reduced from 170px to 153px */
+    height: 43px !important; /* Reduced from 48px to 43px */
+    margin: 0 0 0 1.5rem !important; /* 24px left margin */
+    padding: 0 !important;
+    line-height: 0 !important;
+}
+
+/* Resize the logo image (reduced by 10%) */
+.orbit-btc-logo {
+    width: 153px !important; /* Reduced from 170px to 153px */
+    height: 43px !important; /* Reduced from 48px to 43px */
+    object-fit: contain !important; /* Ensure the logo scales properly without cropping */
+    display: block !important;
+}
+
+/* Resize Filament's default logo container (reduced by 10%) */
+.fi-logo {
+    height: 43px !important; /* Reduced from 48px to 43px */
+    width: 153px !important; /* Reduced from 170px to 153px */
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Hide the logo when sidebar is collapsed */
+.fi-sidebar-collapsed .orbit-btc-logo-wrapper {
+    display: none; /* Hide the logo in collapsed state */
+}
+
+/* Style the collapse/expand buttons to match Filament's original theme */
+.fi-sidebar-header button[title="Collapse sidebar"],
+.fi-sidebar-header button[title="Expand sidebar"] {
+    position: absolute !important;
+    bottom: 1rem !important; /* Place at the bottom with some spacing */
+    right: 1rem !important; /* Align to the right with some spacing */
+    top: auto !important; /* Override any top positioning */
+    z-index: 20 !important; /* Ensure it’s above other elements */
+    padding: 0.5rem !important; /* Match Filament's default padding (p-2) */
+    border-radius: 9999px !important; /* Make it circular (rounded-full) */
+    background-color: transparent !important; /* Transparent background to match sidebar */
+    color: #f97316 !important; /* Use your primary color (orange, equivalent to text-primary-600) */
+    transition: background-color 0.2s ease-in-out !important; /* Smooth hover transition */
+}
+
+/* Hover effect for light mode */
+.fi-sidebar-header button[title="Collapse sidebar"]:hover,
+.fi-sidebar-header button[title="Expand sidebar"]:hover {
+    background-color: #f3f4f6 !important; /* Equivalent to hover:bg-gray-50 */
+}
+
+/* Dark mode styling */
+.dark .fi-sidebar-header button[title="Collapse sidebar"],
+.dark .fi-sidebar-header button[title="Expand sidebar"] {
+    color: #fb923c !important; /* Slightly lighter orange for dark mode (text-primary-500) */
+}
+
+/* Dark mode hover effect */
+.dark .fi-sidebar-header button[title="Collapse sidebar"]:hover,
+.dark .fi-sidebar-header button[title="Expand sidebar"]:hover {
+    background-color: #1f2937 !important; /* Equivalent to hover:bg-gray-800 */
+}

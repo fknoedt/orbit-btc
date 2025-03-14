@@ -31,6 +31,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandLogo(fn() => view('filament.components.header-left'))
+            ->sidebarCollapsibleOnDesktop()
+            ->viteTheme('resources/css/filament.css')
             ->maxContentWidth('full')
             ->colors([
                 'primary' => Color::Orange,
@@ -60,7 +63,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Tools',
                 'Settings',
-                'User Management',
+                'User Admin',
             ])
             ->navigationItems([
                 NavigationItem::make('Sandbox')
