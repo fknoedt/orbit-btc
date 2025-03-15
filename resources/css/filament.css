@@ -69,3 +69,20 @@
 .dark .fi-sidebar-header button[title="Expand sidebar"]:hover {
     background-color: #1f2937 !important; /* Equivalent to hover:bg-gray-800 */
 }
+
+/* Dashboard Widgets */
+
+/* Apply 136px height to single-stat widgets only (excluding charts) */
+.fi-wi-widget:not(.fi-wi-chart),
+.fi-wi-stats-overview-stat {
+    height: 136px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow: hidden !important;
+}
+
+.fi-wi-stats-overview-stat-value {
+    margin-bottom: 1rem; /* Adds 16px of space below the value */
+}
+

@@ -13,6 +13,14 @@ class BitcoinPriceWidget extends BaseWidget
     protected string $title = 'BTC/USD';
     protected static ?string $pollingInterval = '10s';
 
+    protected static ?int $sort = 2;
+    protected int | string | array $columnSpan = 1;
+
+    public function getColumns(): int
+    {
+        return 1;
+    }
+
     /**
      * @todo this is using CMC's indexes and will eventually need to be standardized
      * @return array|Stat[]

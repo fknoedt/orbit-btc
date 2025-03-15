@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\CustomDashboard;
 use App\Filament\Pages\UserModelScore;
 use App\Services\WidgetService;
 use Filament\Http\Middleware\Authenticate;
@@ -41,7 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                CustomDashboard::class,
                 UserModelScore::class
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
@@ -74,7 +75,6 @@ class AdminPanelProvider extends PanelProvider
                 ]
             )
             ->sidebarWidth('250')
-            // ->brandLogo('images/btc-eagle-logo.png')
             ->brandName(config('app.name'))
             ->favicon(asset('images/orbit-btc.ico'))
             ->plugins([FilamentApexChartsPlugin::make()]);

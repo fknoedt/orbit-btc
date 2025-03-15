@@ -30,6 +30,11 @@ class UserModel extends Model
         return $this->hasManyThrough(Metric::class, UserModelMetric::class);
     }
 
+    public function dailyScores(): HasMany
+    {
+        return $this->hasMany(UserModelDailyScore::class);
+    }
+
     /**
      * Retrieve the furthest date when every metric had data available
      * Warning: avoid calling this method if you didn't eager load these relationships first
