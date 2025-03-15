@@ -37,8 +37,8 @@ class BitcoinPriceWidget extends BaseWidget
             Stat::make($this->title, Number::currency($stats['price']))
                 ->description(
                     PHP_EOL . 'Last 24h:
-    price ' . Number::percentage($stats['percent_change_24h'], 2) . ' |
-    volume ' . Number::percentage($stats['volume_change_24h'], 2)
+    vol. ' . Number::percentage($stats['volume_change_24h'], 2) . ' |
+    price ' . Number::percentage($stats['percent_change_24h'], 2)
                 )
                 ->descriptionColor($color)
                 ->textColor('default', $color, $color)
