@@ -12,8 +12,16 @@ use Illuminate\Support\Number;
 class BitcoinDominanceWidget extends BaseWidget
 {
     protected string $title = 'BTC Market Cap Dominance';
-    protected string $description = 'Bitcoin x altcoins';
+    protected string $description = 'Bitcoin x 💩coins';
     protected static ?string $pollingInterval = null;
+
+    protected static ?int $sort = 3;
+    protected int | string | array $columnSpan = 1;
+
+    public function getColumns(): int
+    {
+        return 1;
+    }
 
     protected function getStats(): array
     {
@@ -24,7 +32,6 @@ class BitcoinDominanceWidget extends BaseWidget
         return [
             Stat::make($this->title, Number::percentage($stats['market_cap_dominance'], 2))
                 ->icon('heroicon-o-chart-pie')
-                ->description($this->description)
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->progress($stats['market_cap_dominance'])
                 ->progressBarColor('success')

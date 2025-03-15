@@ -220,4 +220,33 @@ class UserModelService
 
         return $totalMetricsCalculated;
     }
+
+    public function getUserStats(int $userId): array
+    {
+        // Fetch UserModel records for the given user_id with counts of dailyScores and userModelMetrics
+        $userModels = UserModel::where('user_id', $userId)
+            ->withCount(['dailyScores', 'userModelMetrics'])
+            ->get();
+
+        // Count the total UserModel records
+        $totalModels = $userModels->count();
+
+        // Sum the counts of dailyScores and userModelMetrics across all UserModel records
+        $totalDailyScores = $userModels->sum('daily_scores_count');
+        $totalUserModelMetrics = $userModels->sum('user_model_metrics_count');
+
+        return [
+            'total_models' => $totalModels,
+            'total_daily_scores' => $totalDailyScores,
+            'total_metrics' => $totalUserModelMetrics,
+        ];
+    }
+
+    /**
+     *
+     */
+    public function getUserTopModel(int $userId)
+    {
+        return UserModel::where('user_id', $userId)->inRandomOrder()->first();
+    }
 }

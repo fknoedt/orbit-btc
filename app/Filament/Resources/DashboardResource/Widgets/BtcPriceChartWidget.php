@@ -26,6 +26,9 @@ class BtcPriceChartWidget extends AdvancedChartWidget
 
     public ?string $filter = '30d';
 
+    protected static ?int $sort = 5;
+    protected int | string | array $columnSpan = 'full'; // Full width
+
     protected function getFilters(): ?array
     {
         return [
@@ -62,6 +65,7 @@ class BtcPriceChartWidget extends AdvancedChartWidget
                     'data' => array_map(fn ($item) => $item['close'], $prices),
                     'backgroundColor' => '#FA9902FF',
                     'borderColor' => '#CCCCCC',
+                    'chartColor' => 'success'
                 ]
             ],
             'labels' => array_keys($prices),
@@ -90,7 +94,26 @@ class BtcPriceChartWidget extends AdvancedChartWidget
                 ],
                 'colors' => [
                     'forceOverride' => true,
-                ]
+                ],
+            ],
+            'maintainAspectRatio' => false, // Allow custom height
+            'height' => 120, // Reduced to 120px (adjust as needed)
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => false,
+                    'ticks' => [
+                        'font' => [
+                            'size' => 10, // Reduce tick label size for compactness
+                        ],
+                    ],
+                ],
+                'x' => [
+                    'ticks' => [
+                        'font' => [
+                            'size' => 10, // Reduce x-axis label size
+                        ],
+                    ],
+                ],
             ],
         ];
     }
