@@ -5,6 +5,7 @@ namespace App\Filament\Resources\UserModelResource\Pages;
 use App\Filament\Charts\UserModelChart;
 use App\Filament\Resources\UserModelResource;
 use App\Filament\Resources\UserModelResource\Traits\UserModelWizardSteps;
+use App\Services\UserModelService;
 use Filament\Actions\Concerns\HasWizard;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Wizard;
@@ -21,7 +22,7 @@ class CreateUserModel extends CreateRecord
 
     protected static bool $canCreateAnother = false;
 
-    public $threshold;
+    public $threshold = 0; // Default value
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
@@ -39,9 +40,13 @@ class CreateUserModel extends CreateRecord
         return $data;
     }
 
-    protected function mutateFormDataBeforeSave(array $data): array
+    protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['threshold'] = $this->threshold;
+        // Ensure threshold is pulled from the form state if available
+        $formData = $this->form->getState();
+        $data['threshold'] = $formData['threshold'] ?? $this->threshold;
+        $data['user_id'] = auth()->id();
+
         return $data;
     }
 
@@ -74,15 +79,28 @@ class CreateUserModel extends CreateRecord
             ->columns(null);
     }
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        $data['user_id'] = auth()->id();
-
-        return $data;
-    }
-
     protected function getFormActions(): array
     {
         return [];
+    }
+
+    /**
+     * Hook to calculate UserModelDailyScore upon creation
+     */
+    protected function afterCreate(): void
+    {
+        $userModel = $this->getRecord();
+        if ($userModel->userModelMetrics->count()) {
+            $service = app(UserModelService::class);
+            $service->updateDailyScores($userModel->id);
+            // Debug the dispatch data
+            $dispatchData = [
+                'chartId' => 'chart-daily-score',
+                'options' => $this->getChartOptions($userModel->id)
+            ];
+
+            // Dispatch a Filament event to refresh the chart
+            $this->dispatch('refresh-chart', $dispatchData);
+        }
     }
 }
