@@ -39,6 +39,11 @@ class EditUserModel extends EditRecord
             foreach ($metrics as $metric) {
                 $shouldEnable = !empty($metric->oscillation_threshold);
                 if ($metric->oscillation_threshold_enabled !== $shouldEnable) {
+                    // clean-up
+                    if (! $shouldEnable) {
+                        $metric->oscillation_threshold = null;
+                        $metric->operator = null;
+                    }
                     $metric->oscillation_threshold_enabled = $shouldEnable;
                     $metric->save();
                 }
@@ -109,21 +114,36 @@ class EditUserModel extends EditRecord
         $this->originalRecord = $this->getRecord()->toArray();
         $this->originalMetrics = $this->getRecord()->userModelMetrics->toArray();
 
-        // Update userModelMetrics to set operator and oscillation_threshold to null when oscillation_threshold_enabled is false
-        $formData = $this->form->getState();
-        if (isset($formData['userModelMetrics'])) {
-            $formData['userModelMetrics'] = array_map(function ($item) {
-                if (isset($item['oscillation_threshold_enabled']) && $item['oscillation_threshold_enabled'] === false) {
+        $livewire = $this->form->getLivewire();
+        $formData = $livewire->data;
+
+        if (!empty($formData['userModelMetrics'])) {
+            $updatedMetrics = [];
+            foreach ($formData['userModelMetrics'] as $key => $item) {
+                if (!($item['oscillation_threshold_enabled'] ?? false)) {
                     $item['operator'] = null;
                     $item['oscillation_threshold'] = null;
                 }
-                return $item;
-            }, $formData['userModelMetrics']);
-            $this->form->fill($formData);
+                $updatedMetrics[$key] = $item;
+
+                // Sync the changes to the database
+                if (isset($item['id'])) {
+                    $this->getRecord()->userModelMetrics()->where('id', $item['id'])->update([
+                        'oscillation_threshold_enabled' => $item['oscillation_threshold_enabled'],
+                        'operator' => $item['operator'],
+                        'oscillation_threshold' => $item['oscillation_threshold'],
+                    ]);
+                }
+            }
+
+            $formData['userModelMetrics'] = $updatedMetrics;
+            $livewire->data = $formData;
         }
     }
 
-    // Hook to detect changes and run service method after save
+    /**
+     * Hook to detect changes and run service method after save
+     */
     protected function afterSave(): void
     {
         $userModel = $this->getRecord();
@@ -140,7 +160,6 @@ class EditUserModel extends EditRecord
             $service = app(UserModelService::class);
             $service->updateDailyScores($userModelId);
 
-            // Debug the dispatch data
             $dispatchData = [
                 'chartId' => 'chart-daily-score',
                 'options' => $this->getChartOptions($userModelId)
