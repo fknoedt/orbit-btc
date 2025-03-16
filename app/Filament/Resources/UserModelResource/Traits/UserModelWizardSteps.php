@@ -115,14 +115,21 @@ trait UserModelWizardSteps
                     ->tooltip('Toggle Oscillation Threshold')
                     ->action(function ($set, $get, $arguments) {
                         $itemKey = $arguments['item'] ?? 'no key';
-                        $statePath = "userModelMetrics.{$itemKey}.oscillation_threshold_enabled";
-                        $currentState = $get($statePath) ?? false;
-                        $set($statePath, !$currentState);
+                        $statePath = "userModelMetrics.{$itemKey}";
+                        $enabledPath = "{$statePath}.oscillation_threshold_enabled";
+                        $currentState = $get($enabledPath) ?? false;
 
-                        // Force re-render
+                        $newState = !$currentState;
+                        $set($enabledPath, $newState);
+
+                        if (!$newState) {
+                            $set("{$statePath}.operator", null);
+                            $set("{$statePath}.oscillation_threshold", null);
+                        }
+
                         $this->dispatch('refresh');
                     })
-                    ->color('secondary')
+                    ->color('secondary'),
             ];
 
         return [
@@ -154,6 +161,7 @@ trait UserModelWizardSteps
                                 ->maxValue(10)
                                 ->minValue(0)
                                 ->numeric()
+                                ->default('1')
                                 ->hint("daily oscillation x 0~10")
                                 ->required()
                                 ->live() // Triggers updates on change
@@ -194,7 +202,8 @@ trait UserModelWizardSteps
                                 ->required(fn ($get) => $get('oscillation_threshold_enabled') ?? false),
                             Hidden::make('oscillation_threshold_enabled')
                                 ->default(false)
-                                ->live(),
+                                ->live()
+                                ->dehydrated(true), // Ensure it’s always included in the form state
                         ])
                         ->reorderable(false)
                         ->columns(4)
