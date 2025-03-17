@@ -119,7 +119,7 @@ class PriceService
         return $data;
     }
 
-    public function getDailyPrice(string $date, bool $findOrFail = false): ?DailyPrice
+    public function getDailyPrice(string $date, bool $findOrFail = false, int $fallback = 0): ?DailyPrice
     {
         // first time called
         if ($this->dailyPricesByDate->isEmpty()) {
@@ -128,10 +128,31 @@ class PriceService
             );
         }
 
-        if ($findOrFail && ! isset($this->dailyPricesByDate[$date])) {
+        // If date exists, return it immediately
+        if (isset($this->dailyPricesByDate[$date])) {
+            return $this->dailyPricesByDate[$date];
+        }
+
+        // Handle fallback logic if price not found and fallback > 0
+        if ($fallback > 0) {
+            $currentDate = Carbon::parse($date);
+
+            // Try previous days up to $fallback times
+            for ($i = 1; $i <= $fallback; $i++) {
+                $previousDate = $currentDate->copy()->subDay()->toDateString();
+
+                if (isset($this->dailyPricesByDate[$previousDate])) {
+                    return $this->dailyPricesByDate[$previousDate];
+                }
+            }
+        }
+
+        // If findOrFail is true and we still haven't found a price
+        if ($findOrFail) {
             throw new \InvalidArgumentException("Daily Price not found for date {$date}");
         }
 
-        return $this->dailyPricesByDate[$date] ?? null;
+        // Return null if no price found and findOrFail is false
+        return null;
     }
 }

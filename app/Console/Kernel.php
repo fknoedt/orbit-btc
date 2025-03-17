@@ -39,6 +39,11 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 
+        $schedule->command('btc:update-future-price-change')
+            ->everyMinute()->when($this->shouldUpdateFuturePriceChange())
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo);
+
         $schedule->command('btc:update-mayer-multiple')
             ->everyMinute()->when($this->shouldUpdateMayerMultiple())
             ->appendOutputTo($logPath)
@@ -126,6 +131,16 @@ class Kernel extends ConsoleKernel
     {
         if (DailyPrice::getLastEmptyMayerMultipleDay()) {
             Log::info('Running Mayer Multiple stats update');
+            return true;
+        }
+
+        return false;
+    }
+
+    private function shouldUpdateFuturePriceChange(): bool
+    {
+        if (DailyPrice::getLastEmptyFuturePriceDay()) {
+            Log::info('Running Future Price Change update');
             return true;
         }
 
