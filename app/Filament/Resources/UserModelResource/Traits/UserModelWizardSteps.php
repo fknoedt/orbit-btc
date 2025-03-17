@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserModelResource\Traits;
 
 use App\Enum\Operators;
+use App\Enum\TimeHorizon;
 use App\Models\Metric;
 use App\Services\UserModelService;
 use Filament\Forms\Components\Actions\Action;
@@ -221,12 +222,6 @@ trait UserModelWizardSteps
                 ->label('Monitoring Paused?')
                 ->default(false)
                 ->columns(1),
-            Radio::make('buy_or_sell')
-                ->label('Signal')
-                ->default('sell')
-                ->inline()
-                ->options(['buy' => 'Buy', 'sell' => 'Sell'])
-                ->extraAttributes(['class' => 'flex items-center space-x-2']),
             View::make('components.range-slider')
                 ->viewData([
                     'name' => 'threshold',
@@ -239,6 +234,18 @@ trait UserModelWizardSteps
                     'hint' => 'Max. threshold is related to the weight of each metric x ' .
                         UserModelService::MAX_OSCILLATION_PER_METRIC . '% of daily oscillation'
                 ]),
+            Radio::make('buy_or_sell')
+                ->label('Signal')
+                ->default('sell')
+                ->inline()
+                ->options(['buy' => 'Buy', 'sell' => 'Sell'])
+                ->helperText('On each day, a buy or sell operation will be simulated depending on the threshold (none if not met)'),
+            Radio::make('time_horizon')
+                ->label('Time Horizon')
+                ->default('1')
+                ->inline()
+                ->options(TimeHorizon::class)
+                ->helperText('Price N Days ahead when considering if the buy or sell operation had a positive outcome or not'),
         ];
 
         if ($operation !== 'create') {
