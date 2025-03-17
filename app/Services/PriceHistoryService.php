@@ -210,4 +210,64 @@ class PriceHistoryService
 
         return (new DailyStatsService())->fillStats($fillStats);
     }
+
+    public function updateFuturePriceChange(string $since = null, OutputStyle $output = null): int
+    {
+        if (! $output) {
+            throw new \InvalidArgumentException('$output is necessary');
+        }
+
+        if (! $since) {
+            $since = DailyPrice::getLastEmptyFuturePriceDay();
+            // no empty days
+            if (! $since) {
+                return 0;
+            }
+        }
+
+        // cache all days needed
+        $daysUpdated = 0;
+        $today = Carbon::now();
+        $startDay = Carbon::parse($since);
+        $priceService = new PriceService();
+        $priceService->getAllDailyPricesKeyByDate($startDay, $today, true);
+
+        $currentDay = $startDay->copy();
+
+        do {
+            $dailyPrice = $priceService->getDailyPrice($currentDay->format('Y-m-d'));
+            if (! $dailyPrice) {
+                $output->writeln(
+                    "Day not found: " . $currentDay->format('Y-m-d'),
+                    $output::VERBOSITY_VERBOSE
+                );
+                $currentDay->addDay();
+                continue;
+            }
+
+            if (empty($dailyPrice->price_change_1d)) {
+                foreach ([1, 3, 5, 10] as $numberOfDays) {
+                    $dailyPricePlusN = $priceService->getDailyPrice(
+                        $currentDay->copy()->addDays($numberOfDays)->format('Y-m-d'),
+                        false,
+                        $numberOfDays
+                    );
+                    $dailyPricePlusN = $dailyPricePlusN ?? $dailyPrice;
+                    $columnName = 'price_change_' . $numberOfDays . 'd';
+                    $dailyPrice->{$columnName} = ($dailyPricePlusN->close - $dailyPrice->close) / $dailyPrice->close * 100;
+                }
+                $dailyPrice->save();
+                $output->writeln(
+                    'DailyPrice ' . $dailyPrice->date . ' saved',
+                    $output::VERBOSITY_VERBOSE
+                );
+                $daysUpdated++;
+
+            }
+
+            $currentDay->addDay();
+        } while ($currentDay <= $today);
+
+        return $daysUpdated;
+    }
 }

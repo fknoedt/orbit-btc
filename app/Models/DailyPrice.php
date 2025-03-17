@@ -27,4 +27,14 @@ class DailyPrice extends Model
             ->pluck('date')
             ->first();
     }
+
+    public static function getLastEmptyFuturePriceDay(): ?string
+    {
+        // they're always updated together
+        return self::whereNull('price_change_1d')
+            ->where('date', '>=', config('btc.first_cmc_available_date'))
+            ->orderBy('date', 'asc')
+            ->pluck('date')
+            ->first();
+    }
 }
