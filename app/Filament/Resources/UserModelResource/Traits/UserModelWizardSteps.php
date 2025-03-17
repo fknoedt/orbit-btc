@@ -232,7 +232,7 @@ trait UserModelWizardSteps
                     'name' => 'threshold',
                     'min' => 0,
                     'max' => $maxThreshold,
-                    'step' => 1,
+                    'step' => 0.1,
                     'value' => $this->record->threshold ?? 0,
                     'label' => "Threshold (0-{$maxThreshold}): ",
                     'disabled' => ($operation === 'view'),

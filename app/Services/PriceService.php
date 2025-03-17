@@ -58,7 +58,7 @@ class PriceService
                 $cacheKey,
                 now()->endOfDay(),
                 function () use ($days) {
-                    return DailyPrice::whereIn('date', $days)->get()->keyBy('date')->toArray();
+                    return DailyPrice::whereIn('date', $days)->orderBy('date', 'asc')->get()->keyBy('date')->toArray();
                 }
             );
         } else {
@@ -67,7 +67,7 @@ class PriceService
                 $cacheKey,
                 now()->endOfDay(),
                 function () use ($startDate, $endDate) {
-                    return DailyPrice::whereBetween('date', [$startDate, $endDate])->get()->keyBy('date')->toArray();
+                    return DailyPrice::whereBetween('date', [$startDate, $endDate])->orderBy('date')->get()->keyBy('date')->toArray();
                 }
             );
         }
