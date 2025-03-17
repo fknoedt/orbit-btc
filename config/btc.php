@@ -38,5 +38,9 @@ return [
             'url' => env('CRYPTOQUANT_URL'),
             'auth_token' => env('CRYPTOQUANT_ACCESS_TOKEN'),
         ],
+        'x' => [
+            'url' => env('X_URL'),
+            'token' => env('X_BEARER_TOKEN'),
+        ]
     ]
 ];

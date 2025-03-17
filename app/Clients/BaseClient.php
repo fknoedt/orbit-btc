@@ -88,11 +88,23 @@ abstract class BaseClient
      * @throws \Illuminate\Http\Client\ConnectionException
      * @throws \Illuminate\Http\Client\RequestException
      */
-    public function request(string $method, string $endpoint, array $args = [], array $headers = []): array
-    {
+    public function request(
+        string $method,
+        string $endpoint,
+        array  $args = [],
+        array  $headers = [],
+        bool   $ignoreErrors = false,
+        int    $ttl = self::REQUEST_CACHE_TTL
+    ): array {
         $headers['Accept'] = 'application/json, text/plain, */*';
 
         $request = Http::withHeaders($headers);
+
+        if ($ignoreErrors) {
+            $request->withOptions([
+                'debug' => false,
+            ]);
+        }
 
         if (! method_exists($request, $method)) {
             throw new AdapterException('Invalid request method: ' . $method);
@@ -140,7 +152,7 @@ abstract class BaseClient
             $response->transferStats->getTransferTime()
         );
 
-        if ($response->failed()) {
+        if (! $ignoreErrors && $response->failed()) {
             if ($response->clientError()) {
                 throw new AdapterException(
                     sprintf(
@@ -163,7 +175,7 @@ abstract class BaseClient
 
         $data = json_decode($body, true);
 
-        Cache::put($cacheKey, $data, self::REQUEST_CACHE_TTL);
+        Cache::put($cacheKey, $data, $ttl);
 
         return $data;
     }
