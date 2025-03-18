@@ -79,15 +79,15 @@ class UserModelService
         }
 
         // calculate every Metric of every UserMetric and upsert all related tables
-        $totalMetricsCalculated = 0;
+        $totalDailyScoresCreated = 0;
         foreach ($query->get() as $userModel) {
             try {
-                $totalMetricsCalculated += $userModel->userModelMetrics->count();
                 // if one UserModel fail processing, we'll try every other one
-                $totalMetricsCalculated += DB::transaction(
+                $totalDailyScoresCreated += DB::transaction(
                     function () use ($userModel, $since, $metricService, $priceService) {
                         $now = Carbon::now();
                         $dailyScoresCreated = 0;
+                        $totalSignalValue = 0;
                         $warnings = [];
                         // needed to compare oscillation between the current and previous day
                         $previousDailyPrice = null;
@@ -176,11 +176,13 @@ class UserModelService
                                 // and normalize it (maybe it should be stored like that in the first place?)
                                 $futureTradeValueChange = ($dailyPrice->{$futurePriceColumnName} / 100);
                                 // total gained or saved this day
-                                // TODO: add `total_profits` and `total_saved` (and lost and missed?) to the model
+                                // TODO: add `total_profits` + `total_saved` + lost and missed + threshold_hits to model
                                 $futureValueDelta = $tradeValue * $futureTradeValueChange;
                                 // if signal was to sell, invert value (price going up is bad while down is good)
                                 $dailySignalValue = ($userModel->buy_or_sell === 'buy') ?
-                                    $futureValueDelta : (-1 * $futureTradeValueChange);
+                                    $futureValueDelta : (-1 * $futureValueDelta);
+                                // sum to the model's grand signal score
+                                $totalSignalValue += $dailySignalValue;
                             }
 
                             $userModel->last_score = $userModelDailyScore;
@@ -198,6 +200,7 @@ class UserModelService
                             $previousDailyPrice = $dailyPrice;
                         }
 
+                        // if not necessary to have detailed information on user_model_metrics, remove this ASAP
                         /*foreach ($userModelMetricsToUpdate as $userModelMetricId => $data) {
                             if (! empty($warnings[$userModelMetricId])) {
                                 $data['warning'] = implode(' | ', array_map(
@@ -212,13 +215,12 @@ class UserModelService
                             UserModelMetric::where('id', $userModelMetricId)->update($data);
                         }*/
 
+                        $userModel->total_signal_value = $totalSignalValue;
                         $userModel->scores_last_updated_at = $now->format('Y-m-d H:i:s');
 
                         $userModel->warning = !empty($warnings);
 
-                        if ($dailyScoresCreated === 0) {
-                            $userModel->error = true;
-                        }
+                        $userModel->error = ($dailyScoresCreated === 0);
 
                         $userModel->save();
 
@@ -226,13 +228,12 @@ class UserModelService
                     }
                 );
             } catch (\Throwable $e) {
-                // TODO: if $e instanceof UserModelFunctionalException, save UserModel with error info
+                // TODO: if $e instanceof UserModelFunctionalException, save UserModel with error info?
                 report($e);
-                dd($e);
             }
         }
 
-        return $totalMetricsCalculated;
+        return $totalDailyScoresCreated;
     }
 
     public function getUserStats(int $userId): array
@@ -261,6 +262,6 @@ class UserModelService
      */
     public function getUserTopModel(int $userId)
     {
-        return UserModel::where('user_id', $userId)->inRandomOrder()->first();
+        return UserModel::where('user_id', $userId)->orderBy('total_signal_value', 'desc')->first();
     }
 }

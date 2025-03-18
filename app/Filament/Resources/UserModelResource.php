@@ -33,17 +33,37 @@ class UserModelResource extends Resource
                     ->hidden(),
                 TextColumn::make('name')
                     ->searchable(),
+                TextColumn::make('time_horizon')
+                    ->label('Horizon')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('buy_or_sell')
+                    ->label('Signal')
+                    ->sortable(),
                 TextColumn::make('threshold')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('last_score')
+                TextColumn::make('total_signal_value')
+                    ->label('Signal Value')
                     ->numeric()
                     ->sortable(),
+                IconColumn::make('warning')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-exclamation-triangle')
+                    ->falseIcon('')
+                    ->trueColor('warning'),
+                IconColumn::make('error')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-exclamation-circle')
+                    ->falseIcon('')
+                    ->trueColor('danger'),
                 TextColumn::make('email_to_notify')
                     ->label('Email')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 TextColumn::make('telegram_to_notify')
                     ->label('Telegram')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 IconColumn::make('is_paused')
                     ->boolean()

@@ -5,9 +5,7 @@ namespace App\Filament\Widgets;
 use App\Filament\Resources\DashboardResource\Widgets\MempoolWidget;
 use App\Services\UserModelService;
 use App\Services\WidgetService;
-use Filament\Support\Enums\IconPosition;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-//use Filament\Widgets\StatsOverviewWidget\Stat;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
@@ -66,7 +64,7 @@ class StatsOverview extends BaseWidget
                 ->description(
                     sprintf(
                         'score: %s | rank: %s',
-                        rand(100, 3000),
+                        Number::format($topModel->total_signal_value, 1),
                         rand(1, 50000),
                     )
                 )
