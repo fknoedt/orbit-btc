@@ -17,6 +17,9 @@ class UserModelService
     /** used to calculate max threshold */
     public const int MAX_OSCILLATION_PER_METRIC = 20;
 
+    /** to calculate each day's signal_value, we need to simulate a trade weighted against the threshold */
+    public const int TRADE_SIZE_IN_USD = 100;
+
     public function getMaxThreshold(int $userModelId): int
     {
         $max = 0;
@@ -99,13 +102,12 @@ class UserModelService
                                 $userModelMetricsCappedAt : $since->format('Y-m-d');
                         $startDate = Carbon::parse($userModel->data_limited_at);
 
-                        // each UserModelMetric should be saved only once, not per day
-                        $userModelMetricsToUpdate = [];
+                        // each Metric should be saved only once, not per day
+                        // $metricsToUpdate = []; // remove when done
                         $userModelMetricsWarnings = [];
 
                         // iterate through every day of the time series and, on each day, go through every metric
                         for ($date = $startDate->copy(); $date->lte($now); $date->addDay()) {
-                            $firstDay = ($date == $startDate);
                             $userModelDailyScore = 0;
 
                             $dailyPrice = $priceService->getDailyPrice($date->format('Y-m-d'));
@@ -140,16 +142,10 @@ class UserModelService
                                 $currentMetricValue = $dailyPrice->{$metric->column_name};
 
                                 if (! $currentMetricValue) {
+                                    $warnings[$userModelMetric->id] ??= []; // Initialize if not set
                                     $warnings[$userModelMetric->id]['Day(s) missing value'] ??= 0; // Initialize if not set
                                     $warnings[$userModelMetric->id]['Day(s) missing value']++;
                                     continue;
-                                }
-
-                                if ($firstDay) {
-                                    $metricStartDate = Carbon::parse($metric->data_limited_at);
-                                    $warnings[$userModelMetric->id] ??= []; // Initialize if not set
-                                    $userModelMetricsToUpdate[$userModelMetric->id]['data_capped'] =
-                                        $metricStartDate > $since;
                                 }
 
                                 // calculate current metric score based on oscillation from the previous day
@@ -162,28 +158,48 @@ class UserModelService
                                 // apply weight and use absolute value to sum up to the score
                                 $userModelMetricLastScore = abs($dailyOscillation) * $userModelMetric->weight;
 
-                                // ensure that the last calculated score will be saved for each UserModelMetric
-                                // (cannot rely on the last day as they might fail validations)
-                                $userModelMetricsToUpdate[$userModelMetric->id] ??= []; // Initialize if not set
-                                $userModelMetricsToUpdate[$userModelMetric->id]['last_score'] =
-                                    $userModelMetricLastScore;
-
-                                // add points to User Model grand score
+                                // add points to User Model grand score for the day
                                 $userModelDailyScore += $userModelMetricLastScore;
 
-                                $metricsCalculated++;
+                                if ($date == $startDate) {
+                                    $metricsCalculated++;
+                                }
                             }
+
+                            // with (all metrics) daily score set, calculate signal_value
+                            // @see https://x.com/i/grok/share/XiAVBLPa6nPxfLwZPxqP4Eo4N (last question)
+                            $dailySignalValue = 0;
+                            if ($userModelDailyScore >= $userModel->threshold) {
+                                // how strong - above the threshold - the model is today
+                                $tradeStrength = ($userModelDailyScore - $userModel->threshold) / $userModel->threshold;
+                                // amount bought or sold depends on conviction (cap to full value)
+                                $tradeValue = min($tradeStrength, 1) * self::TRADE_SIZE_IN_USD;
+                                // get the future price change
+                                $futurePriceColumnName = 'price_change_' . $userModel->time_horizon . 'd';
+                                // and normalize it (maybe it should be stored like that in the first place?)
+                                $futureTradeValueChange = ($dailyPrice->{$futurePriceColumnName} / 100);
+                                // total gained or saved this day
+                                $futureValueDelta = $tradeValue * $futureTradeValueChange;
+                                // if signal was to sell, invert value (price going up is bad while down is good)
+                                $dailySignalValue = ($userModel->buy_or_sell === 'buy') ?
+                                    $futureValueDelta : (-1 * $futureTradeValueChange);
+                            }
+
                             $userModel->last_score = $userModelDailyScore;
+                            $userModel->last_date_calculated = $date->format('Y-m-d');
+                            $userModel->last_signal_value = $dailySignalValue;
+
                             // save day in user_model_daily_scores
                             UserModelDailyScore::create([
                                 'date' => $date->format('Y-m-d'),
                                 'user_model_id' => $userModel->id,
-                                'score' => $userModel->last_score
+                                'score' => $userModelDailyScore,
+                                'signal_value' => $dailySignalValue,
                             ]);
                             $previousDailyPrice = $dailyPrice;
                         }
 
-                        foreach ($userModelMetricsToUpdate as $userModelMetricId => $data) {
+                        /*foreach ($userModelMetricsToUpdate as $userModelMetricId => $data) {
                             if (! empty($warnings[$userModelMetricId])) {
                                 $data['warning'] = implode(' | ', array_map(
                                     function ($warning, $count) {
@@ -196,7 +212,7 @@ class UserModelService
                             }
                             $data['scores_last_updated_at'] = $now->format('Y-m-d H:i:s');
                             UserModelMetric::where('id', $userModelMetricId)->update($data);
-                        }
+                        }*/
 
                         $userModel->scores_last_updated_at = $now->format('Y-m-d H:i:s');
 
