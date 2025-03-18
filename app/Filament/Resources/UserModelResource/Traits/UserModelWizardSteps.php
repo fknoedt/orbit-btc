@@ -113,7 +113,7 @@ trait UserModelWizardSteps
                 Action::make('toggleOscillation')
                     ->icon('heroicon-o-adjustments-horizontal')
                     ->label(fn ($get) => $get('oscillation_threshold_enabled') ? 'Hide Oscillation' : 'Show Oscillation')
-                    ->tooltip('Toggle Oscillation Threshold')
+                    ->tooltip('Toggle Change Threshold')
                     ->action(function ($set, $get, $arguments) {
                         $itemKey = $arguments['item'] ?? 'no key';
                         $statePath = "userModelMetrics.{$itemKey}";
@@ -137,7 +137,8 @@ trait UserModelWizardSteps
             Section::make()
                 ->schema([
                     Repeater::make('userModelMetrics')
-                        ->label('Model Metrics')
+                        ->label('Weighted Metrics')
+                        ->hint('The Model final Daily Score is the sum of each Metric\'s daily variation x weight (threshold optional)')
                         ->relationship()
                         ->lazy()
                         ->defaultItems(1)
@@ -149,6 +150,7 @@ trait UserModelWizardSteps
                         ->schema([
                             Select::make('metric_id')
                                 ->label('Metric')
+                                ->hint('daily change %')
                                 ->options(
                                     $metrics->mapWithKeys(function (Metric $metric) {
                                         return [$metric->id => sprintf('%s (%s)', $metric->name, $metric->dataSource->name)];
@@ -163,7 +165,7 @@ trait UserModelWizardSteps
                                 ->minValue(0)
                                 ->numeric()
                                 ->default('1')
-                                ->hint("daily oscillation x 0~10")
+                                ->hint("multiply change %")
                                 ->required()
                                 ->live() // Triggers updates on change
                                 // TODO: move to JS? blur was not working in any way
@@ -186,7 +188,7 @@ trait UserModelWizardSteps
                                     return ($operation ?? 'edit') !== 'view' && !($get('oscillation_threshold_enabled') ?? false);
                                 }),
                             Select::make('operator')
-                                ->label('Operator')
+                                ->label('Threshold Operator')
                                 ->columns(1)
                                 ->options(Operators::class)
                                 ->visible(fn ($get) => $get('oscillation_threshold_enabled') ?? false)
@@ -197,7 +199,8 @@ trait UserModelWizardSteps
                                 )
                                 ->numeric()
                                 ->placeholder('%')
-                                ->label('Oscillation')
+                                ->label('Change')
+                                ->hint('if % not met score is 0')
                                 ->columns(1)
                                 ->visible(fn ($get) => $get('oscillation_threshold_enabled') ?? false)
                                 ->required(fn ($get) => $get('oscillation_threshold_enabled') ?? false),
@@ -231,8 +234,8 @@ trait UserModelWizardSteps
                     'value' => $this->record->threshold ?? 0,
                     'label' => "Threshold (0-{$maxThreshold}): ",
                     'disabled' => ($operation === 'view'),
-                    'hint' => 'Max. threshold is related to the weight of each metric x ' .
-                        UserModelService::MAX_OSCILLATION_PER_METRIC . '% of daily oscillation'
+                    'hint' => 'Maximum threshold is the weight of each Metric x ' .
+                        UserModelService::MAX_OSCILLATION_PER_METRIC . ' (fixed daily change percentage)'
                 ]),
             Radio::make('buy_or_sell')
                 ->label('Signal')
@@ -245,7 +248,7 @@ trait UserModelWizardSteps
                 ->default('1')
                 ->inline()
                 ->options(TimeHorizon::class)
-                ->helperText('Price N Days ahead when considering if the buy or sell operation had a positive outcome or not'),
+                ->helperText('Price N days ahead when considering if the buy or sell operation had a positive outcome or not'),
         ];
 
         if ($operation !== 'create') {
