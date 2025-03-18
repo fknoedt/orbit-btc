@@ -31,8 +31,8 @@ class UserModelUpdateCommand extends Command
         $since = Carbon::now()->subDays(UserModelService::MAX_DAYS_BACK)->format('Y-m-d');
         $this->output->info('UserModelDailyScore will be refreshed for every User Model with data since ' . $since);
 
-        $metricsCalculated = $userModelService->updateDailyScores();
+        $dailyScoreCreated = $userModelService->updateDailyScores();
 
-        $this->output->success("{$metricsCalculated} Metrics calculated");
+        $this->output->success("{$dailyScoreCreated} days processed");
     }
 }

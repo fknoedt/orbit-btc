@@ -36,7 +36,7 @@ return new class extends Migration
         });
 
         Schema::table('user_model_metrics', function (Blueprint $table) {
-            $table->dropColumn(['data_capped', 'error', 'warning', 'last_score']);
+            $table->dropColumn(['data_capped', 'error', 'warning', 'last_score', 'scores_last_updated_at']);
         });
     }
 };

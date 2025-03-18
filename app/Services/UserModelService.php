@@ -18,7 +18,7 @@ class UserModelService
     public const int MAX_OSCILLATION_PER_METRIC = 20;
 
     /** to calculate each day's signal_value, we need to simulate a trade weighted against the threshold */
-    public const int TRADE_SIZE_IN_USD = 100;
+    public const int TRADE_SIZE_IN_USD = 1000;
 
     public function getMaxThreshold(int $userModelId): int
     {
@@ -82,11 +82,12 @@ class UserModelService
         $totalMetricsCalculated = 0;
         foreach ($query->get() as $userModel) {
             try {
+                $totalMetricsCalculated += $userModel->userModelMetrics->count();
                 // if one UserModel fail processing, we'll try every other one
                 $totalMetricsCalculated += DB::transaction(
                     function () use ($userModel, $since, $metricService, $priceService) {
                         $now = Carbon::now();
-                        $metricsCalculated = 0;
+                        $dailyScoresCreated = 0;
                         $warnings = [];
                         // needed to compare oscillation between the current and previous day
                         $previousDailyPrice = null;
@@ -160,14 +161,10 @@ class UserModelService
 
                                 // add points to User Model grand score for the day
                                 $userModelDailyScore += $userModelMetricLastScore;
-
-                                if ($date == $startDate) {
-                                    $metricsCalculated++;
-                                }
                             }
 
                             // with (all metrics) daily score set, calculate signal_value
-                            // @see https://x.com/i/grok/share/XiAVBLPa6nPxfLwZPxqP4Eo4N (last question)
+                            // @see https://x.com/i/grok/share/qc9u88jiSlSnW9liwos5Ogc3q
                             $dailySignalValue = 0;
                             if ($userModelDailyScore >= $userModel->threshold) {
                                 // how strong - above the threshold - the model is today
@@ -179,6 +176,7 @@ class UserModelService
                                 // and normalize it (maybe it should be stored like that in the first place?)
                                 $futureTradeValueChange = ($dailyPrice->{$futurePriceColumnName} / 100);
                                 // total gained or saved this day
+                                // TODO: add `total_profits` and `total_saved` (and lost and missed?) to the model
                                 $futureValueDelta = $tradeValue * $futureTradeValueChange;
                                 // if signal was to sell, invert value (price going up is bad while down is good)
                                 $dailySignalValue = ($userModel->buy_or_sell === 'buy') ?
@@ -196,6 +194,7 @@ class UserModelService
                                 'score' => $userModelDailyScore,
                                 'signal_value' => $dailySignalValue,
                             ]);
+                            $dailyScoresCreated++;
                             $previousDailyPrice = $dailyPrice;
                         }
 
@@ -210,7 +209,6 @@ class UserModelService
                                 ));
 
                             }
-                            $data['scores_last_updated_at'] = $now->format('Y-m-d H:i:s');
                             UserModelMetric::where('id', $userModelMetricId)->update($data);
                         }*/
 
@@ -218,13 +216,13 @@ class UserModelService
 
                         $userModel->warning = !empty($warnings);
 
-                        if ($metricsCalculated === 0) {
+                        if ($dailyScoresCreated === 0) {
                             $userModel->error = true;
                         }
 
                         $userModel->save();
 
-                        return $metricsCalculated;
+                        return $dailyScoresCreated;
                     }
                 );
             } catch (\Throwable $e) {
