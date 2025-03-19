@@ -46,7 +46,7 @@ return new class extends Migration
             $table->string('warning', 2048)->nullable();
             $table->float('last_score')->nullable();
             // operator and oscillation threshold are optional
-            $table->enum('operator', ['+', '-', '+-'])->default('+')->nullable()->change();
+            $table->string('operator')->default('+')->nullable()->change();
             $table
                 ->float('oscillation_threshold')
                 ->comment(
