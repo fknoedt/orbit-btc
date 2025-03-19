@@ -58,6 +58,7 @@ class CreateUserModel extends CreateRecord
                     ->cancelAction($this->getCancelFormAction())
                     ->submitAction($this->getSubmitFormAction())
                     ->skippable(false)
+                    ->startOnStep(2)
                     ->columnSpanFull()
                     ->nextAction(
                         fn (Action $action) => $action->label('>>')

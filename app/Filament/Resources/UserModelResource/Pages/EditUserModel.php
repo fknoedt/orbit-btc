@@ -81,6 +81,7 @@ class EditUserModel extends EditRecord
                     ->submitAction($this->getSubmitFormAction())
                     ->skippable(true)
                     ->columnSpanFull()
+                    ->startOnStep(4)
                     ->nextAction(
                         fn (Action $action) => $action->label('>>')
                     )

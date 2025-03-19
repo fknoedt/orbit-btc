@@ -29,6 +29,11 @@ trait UserModelWizardSteps
         $operation = $this->getCurrentOperation();
 
         return [
+            Step::make('Help')
+                ->description("I'm lost")
+                ->schema([View::make('help.user-model')])
+                ->icon('heroicon-o-lifebuoy')
+                ->completedIcon('heroicon-o-lifebuoy'),
             Step::make('Info')
                 ->description('Define your Model')
                 ->schema($this->getInfoSchema())

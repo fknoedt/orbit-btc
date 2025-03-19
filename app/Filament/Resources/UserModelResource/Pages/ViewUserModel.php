@@ -59,6 +59,7 @@ class ViewUserModel extends ViewRecord
             ->schema([
                 Wizard::make($this->getSteps())
                     ->skippable(true)
+                    ->startOnStep(4)
                     ->columnSpanFull()
                     ->nextAction(
                         fn (Action $action) => $action->label('>>')
