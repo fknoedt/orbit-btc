@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -25,6 +26,12 @@ return new class extends Migration
                 ->nullable()
                 ->comment('Percentage change in closing price 10 days after this date');
         });
+
+        // Call seeder (this was moved here from initial-tables-and-data migration as all data is necessary to run it
+        Artisan::call('db:seed', [
+            '--class' => 'InitialDailyPrices',
+            '--force' => true // run on production
+        ]);
     }
 
     public function down()
