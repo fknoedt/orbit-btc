@@ -86,3 +86,89 @@
     margin-bottom: 1rem; /* Adds 16px of space below the value */
 }
 
+.katex-formula {
+    display: inline-block;
+    background-color: #ffffff; /* gray-200 for light mode */
+    padding: 3px 8px;
+    margin: 2px 0;
+    border-radius: 5px;
+    text-align: center;
+    color: #fff;
+    max-width: 100%;
+    line-height: 1;
+    min-width: 280px; /* Match the width of the widest box */
+}
+
+html.dark .katex-formula {
+    background-color: inherit; /* black for dark mode */
+}
+
+.katex-formula .katex-display {
+    margin: 0;
+}
+
+.katex-html .base {
+    color: #fff;
+}
+
+.highlight-orange .katex {
+    color: #f97316;
+}
+
+ul li {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+}
+
+ul li p {
+    margin-top: 0.5rem;
+}
+
+html.dark .bg-gray-900 {
+    color: #9ca3af !important;
+}
+
+html.dark .bg-gray-900 :not(h2) {
+    color: #9ca3af !important;
+}
+
+html.dark .fi-fo-wizard-step .bg-gray-900 {
+    color: #9ca3af !important;
+}
+
+html.dark .fi-fo-wizard-step .bg-gray-900 :not(h2) {
+    color: #9ca3af !important;
+}
+
+html.dark .bg-gray-900 h2.text-orange-500 {
+    color: #f97316 !important;
+}
+
+.fi-fo-wizard-step:not(.dark) .bg-gray-900 {
+    color: #000000 !important;
+}
+
+.fi-fo-wizard-step:not(.dark) .bg-gray-900 * {
+    color: #000000 !important;
+}
+
+.fi-fo-wizard-step:not(.dark) .bg-gray-900 h2 {
+    color: #000000 !important;
+}
+
+.bg-gray-900 section:not(:first-child) {
+    padding-top: 2rem !important;
+}
+
+.bg-gray-900 h2 {
+    margin-top: 0 !important;
+    margin-bottom: 1rem !important;
+}
+
+.bg-gray-900 ul.list-disc {
+    padding-left: 1.25rem !important; /* pl-5, 20px */
+    list-style-position: outside !important;
+}
