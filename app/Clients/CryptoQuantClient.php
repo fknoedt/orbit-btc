@@ -36,7 +36,7 @@ class CryptoQuantClient extends BaseClient
         if (! $url = config('btc.apis.cryptoquant.url')) {
             throw new \RuntimeException('could not load config: data.data_source.cryptoquant_id');
         }
-        self::$url = $url . '/api/'. $this->version . '/charts/';
+        self::$url = $url . '/' . $this->version . '/charts/';
         $this->authToken = config('btc.apis.cryptoquant.auth_token');
         if (! $this->authToken) {
             throw new \RuntimeException('could not load config: btc.apis.cryptoquant.auth_token');
