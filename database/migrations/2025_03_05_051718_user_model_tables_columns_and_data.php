@@ -27,7 +27,7 @@ return new class extends Migration
         Schema::table('user_models', function (Blueprint $table) {
             $table->boolean('warning')->default(false)->change();
             $table->boolean('error')->default(false)->change();
-            $table->enum('buy_or_sell', ['buy', 'sell'])->default('sell')->change();
+            $table->string('buy_or_sell')->default('sell')->change();
         });
 
         Schema::table('metrics', function (Blueprint $table) {
