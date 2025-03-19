@@ -257,7 +257,13 @@ class InitialDailyPrices extends Seeder
         $this->command->info(
             'Running `btc:populate-price-history` to populate daily_prices past this migration...'
         );
-        Artisan::call('btc:populate-price-history');
+        try {
+            Artisan::call('btc:populate-price-history');
+        } catch (\Exception $e) {
+            report ($e);
+            $this->command->warn('Failed to run `btc:populate-price-history`');
+        }
+
         echo Artisan::output();
 
         $this->command->info('Done.');
