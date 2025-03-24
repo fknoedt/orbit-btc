@@ -23,7 +23,6 @@ use Filament\Support\RawJs;
 
 trait UserModelWizardSteps
 {
-
     protected function getSteps(): array
     {
         $operation = $this->getCurrentOperation();
@@ -52,9 +51,6 @@ trait UserModelWizardSteps
         ];
     }
 
-    /**
-     * $this->form not built yet at this point, so...
-     */
     protected function getCurrentOperation(): ?string
     {
         // on create form is submitted, the route is livewire.update so we need to look at the previous route
@@ -75,7 +71,6 @@ trait UserModelWizardSteps
                 return 'create';
             }
         }
-
 
         return null; // Fallback for unexpected routes
     }
@@ -172,11 +167,9 @@ trait UserModelWizardSteps
                                 ->default('1')
                                 ->hint("multiply change %")
                                 ->required()
-                                ->live() // Triggers updates on change
-                                // TODO: move to JS? blur was not working in any way
+                                ->live()
                                 ->afterStateUpdated(function ($state, $set, $get, $component) {
-                                    // Only apply correction if the field has been blurred (state has changed)
-                                    $value = (int)$state; // Convert to integer
+                                    $value = (int)$state;
                                     if ($value > 10) {
                                         $set('weight', 10);
                                     } elseif ($value < 0) {
@@ -257,12 +250,16 @@ trait UserModelWizardSteps
         ];
 
         if ($operation !== 'create') {
-            $schema[] = ViewField::make('daily-score')
-                ->label('Daily Score')
-                ->hint($operation === 'edit' ? 'Save your Model to see the updated chart' : '')
-                ->view('filament.components.user-model-chart')
-                ->viewData(['options' => $this->getChartOptions($userModelId)])
-                ->dehydrated(false);
+            $chartName = "user-model-chart-{$operation}-{$this->record->id}";
+            $schema[] = View::make('filament.components.user-model-chart')
+                ->viewData([
+                    'label' => 'Daily Score',
+                    'name' => $chartName,
+                    'hint' => $operation === 'edit' ? 'Save your Model to see the updated chart' : '',
+                    'options' => $this->getChartOptions($this->record->id),
+                    'rawExtraJsOptions' => $this->getExtraJsOptions(),
+                ])
+                ->extraAttributes(['style' => 'min-width: 100%; min-height: 400px;']);
         }
 
         return $schema;
