@@ -4,19 +4,19 @@ namespace App\Filament\Pages;
 
 use App\Filament\Charts\UserModelChart;
 use App\Filament\Resources\UserModelResource;
+use App\Models\DailyPrice;
 use App\Models\UserModel;
+use App\Models\UserModelDailyScore;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 
 class UserModelScore extends Page
 {
-    use UserModelChart {
-        getChartData as parentGetChartData;
-    }
+    use UserModelChart;
 
-    // Filament page configuration
     protected static string $view = 'filament.pages.user-model-score';
 
     protected static ?string $title = 'Performance';
@@ -25,12 +25,15 @@ class UserModelScore extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-trending-up';
 
-    // Properties
     public int $selectedUserModelId;
 
     public array $modelData = [];
 
     public array $chartData = [];
+
+    public ?string $selectedDate = null;
+
+    public bool $showChartModal = false;
 
     public function mount(): void
     {
@@ -43,7 +46,6 @@ class UserModelScore extends Page
     #[Computed]
     public function userModels()
     {
-        // Fetch all user models for the authenticated user
         return UserModel::where('user_id', auth()->id())
             ->pluck('name', 'id')
             ->toArray();
@@ -65,7 +67,7 @@ class UserModelScore extends Page
 
         // Dispatch refresh-chart event to update the chart in the frontend
         $dispatchData = [
-            'chartId' => 'chart-user-model-score-chart',
+            'chartId' => 'daily-score',
             'options' => $this->chartData['options'] ?? [],
         ];
         $this->dispatch('refresh-chart', $dispatchData);
@@ -79,7 +81,6 @@ class UserModelScore extends Page
             return;
         }
 
-        // Fetch the selected user model with its metrics
         $userModel = UserModel::with(['userModelMetrics', 'userModelMetrics.metric'])
             ->find($this->selectedUserModelId);
 
@@ -122,39 +123,62 @@ class UserModelScore extends Page
         $this->chartData = $this->getChartData();
     }
 
-    public function getChartData(): array
+    #[On('open-chart-modal')]
+    public function handleChartModal($date = null)
     {
-        // Override to ensure the correct userModelId is used for chart data
-        $this->userModelId = $this->selectedUserModelId;
-        $options = $this->getChartOptions($this->userModelId);
+        $date = is_array($date) ? ($date['date'] ?? null) : $date;
 
-        return [
-            'options' => $options,
-            'fullDates' => $this->fullDates,
-            'extraJsOptions' => $this->getExtraJsOptions(),
-        ];
+        if ($date) {
+            $this->selectedDate = $date;
+            $this->showChartModal = true;
+
+            $dispatchData = [
+                'chartId' => 'daily-score',
+                'options' => $this->getChartOptions($this->userModelId)
+            ];
+            $this->dispatch('refresh-chart', $dispatchData);
+        }
+    }
+
+    public function closeChartModal()
+    {
+        $this->showChartModal = false;
     }
 
     protected function getHeaderActions(): array
     {
-        return [
-            Action::make('help')
-                ->label('Help')
-                ->modalContent(view('help.user-model'))
-                ->modalSubmitAction(false)
-                ->modalCancelActionLabel('Close')
-                ->modalWidth('5xl') // 75% wider than 'lg'
-                ->color('gray'),
-            Action::make('edit')
-                ->label('Edit')
-                ->url(UserModelResource::getUrl('edit', ['record' => UserModel::find($this->selectedUserModelId)]))
-                ->color('primary'),
-        ];
+        return array_merge(
+            [
+                Action::make('help')
+                    ->label('Help')
+                    ->modalContent(view('help.user-model'))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->modalWidth('5xl')
+                    ->color('gray'),
+                Action::make('edit')
+                    ->label('Edit')
+                    ->url(UserModelResource::getUrl('edit', ['record' => UserModel::find($this->selectedUserModelId)]))
+                    ->color('primary'),
+            ],
+            $this->getChartActions()
+        );
     }
 
-    // Override to remove the page title from the page (but keep it in navigation)
     public function getTitle(): string
     {
         return '';
+    }
+
+    protected function getViewData(): array
+    {
+        return [
+            'chartDetailModal' => view('filament.modals.chart-detail', [
+                'date' => $this->selectedDate,
+                'dailyPrice' => $this->selectedDate ? Cache::remember('first_daily_price_by_date_' . $this->selectedDate, now()->endOfDay(), fn() => DailyPrice::where('date', $this->selectedDate)->first()) : null,
+                'dailyScore' => $this->selectedDate ? Cache::remember('first_model_score_by_date_' . $this->selectedDate, now()->endOfDay(), fn() => UserModelDailyScore::where('date', $this->selectedDate)->where('user_model_id', $this->selectedUserModelId)->first()) : null,
+                'userModel' => UserModel::find($this->selectedUserModelId),
+            ]),
+        ];
     }
 }

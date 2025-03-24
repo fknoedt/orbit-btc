@@ -25,11 +25,15 @@ trait UserModelChart
 
         if ($date) {
             $this->selectedDate = $date;
-            $this->mountAction('chartDetailModal');
-            $this->dispatch('open-modal', id: 'chartDetailModal');
+
+            // For resource pages (ViewUserModel, EditUserModel)
+            $actionId = $this->mountAction('chartDetailModal');
+            if ($actionId) {
+                $this->dispatch('open-modal', id: $actionId);
+            }
 
             $dispatchData = [
-                'chartId' => 'chart-daily-score',
+                'chartId' => 'daily-score',
                 'options' => $this->getChartOptions($this->userModelId)
             ];
             $this->dispatch('refresh-chart', $dispatchData);
@@ -38,7 +42,7 @@ trait UserModelChart
 
     private function getChartOptions(int $userModelId = null): array
     {
-        if (! $userModelId) {
+        if (!$userModelId) {
             return [];
         }
         $service = new PriceService();
