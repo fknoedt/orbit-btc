@@ -80,7 +80,7 @@
         const chartIdFromEvent = eventData?.chartId;
         let options = eventData?.options;
 
-        if (chartIdFromEvent === 'chart-daily-score' && document.querySelector(`#${chartId}`) && options?.series && options?.chart) {
+        if (chartIdFromEvent === chartId && options?.series && options?.chart) {
             const extraJsOptions = @json($rawExtraJsOptions);
             const fullDates = extraJsOptions.fullDates || [];
             options.chart = options.chart || {};
