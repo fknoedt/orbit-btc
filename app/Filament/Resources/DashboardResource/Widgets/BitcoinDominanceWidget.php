@@ -26,7 +26,7 @@ class BitcoinDominanceWidget extends BaseWidget
     protected function getStats(): array
     {
         // get BTC change in the last day
-        $service = new Btc3rdPartyService();
+        $service = new Btc3rdPartyService('CoinMarketCap');
         $stats = $service->getCurrentPriceStats();
 
         return [

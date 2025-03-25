@@ -30,6 +30,10 @@ return [
             'url' => env('COINMARKETCAP_URL'),
             'key' => env('COINMARKETCAP_KEY'),
         ],
+        'coingecko' => [
+            'url' => env('COINGECKO_URL'),
+            'key' => env('COINGECKO_KEY'),
+        ],
         'mempool_space' => [
             'url' => env('MEMPOOL_URL'),
             'key' => env('MEMPOOL_KEY'),

@@ -32,7 +32,7 @@ class StatsOverview extends BaseWidget
             $mempoolStat = $mempoolWidget->getStats()[0];
         } catch (\Throwable $e) {
             report($e);
-            $mempoolStat = $widgetService->getErrorStat();
+            $mempoolStat = $widgetService->getErrorStat('Mempool');
         }
 
         try {
@@ -52,7 +52,7 @@ class StatsOverview extends BaseWidget
                 ->iconColor('success');
         } catch (\Throwable $e) {
             report($e);
-            $totalModelsStat = $widgetService->getErrorStat();
+            $totalModelsStat = $widgetService->getErrorStat('Models');
         }
 
         try {
@@ -72,7 +72,7 @@ class StatsOverview extends BaseWidget
                 ->iconColor('success');
         } catch (\Throwable $e) {
             report($e);
-            $topModelStat = $widgetService->getErrorStat();
+            $topModelStat = $widgetService->getErrorStat('Top Model');
         }
 
         return [
