@@ -81,7 +81,9 @@ class UserModelScore extends Page
             return;
         }
 
-        $userModel = UserModel::with(['userModelMetrics', 'userModelMetrics.metric'])
+        $userModel = UserModel::with(['userModelMetrics' => function ($query) {
+            return $query->orderBy('weight', 'desc');
+        }, 'userModelMetrics.metric'])
             ->find($this->selectedUserModelId);
 
         // Clear model data if the model is not found
@@ -154,13 +156,6 @@ class UserModelScore extends Page
     {
         return array_merge(
             [
-                Action::make('help')
-                    ->label('Help')
-                    ->modalContent(view('help.user-model'))
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Close')
-                    ->modalWidth('5xl')
-                    ->color('gray'),
                 Action::make('edit')
                     ->label('Edit')
                     ->url(UserModelResource::getUrl('edit', ['record' => UserModel::find($this->selectedUserModelId)]))
