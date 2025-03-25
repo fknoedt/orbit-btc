@@ -64,12 +64,12 @@
                         </div>
                         <div>
                             <div>
-                                <span class="block text-sm font-medium text-gray-500">Current Score</span>
+                                <span class="block text-sm font-medium text-gray-500">Total Score</span>
                                 <span class="text-3xl font-bold" style="color: {{ $this->modelData['score'] >= 0 ? '#22c55e' : '#ef4444' }}">{{ $this->modelData['score'] }}</span>
                             </div>
                         </div>
                         <div>
-                            <span class="block text-sm font-medium text-gray-500">Threshold</span>
+                            <span class="block text-sm font-medium text-gray-500">Daily Threshold</span>
                             <span class="flex items-center gap-1 text-xl font-semibold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4 threshold-value">
                             <span>🎯</span>
                             <!-- 😬 -->
