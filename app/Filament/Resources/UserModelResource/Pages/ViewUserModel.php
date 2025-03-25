@@ -67,7 +67,6 @@ class ViewUserModel extends ViewRecord
                     ->previousAction(
                         fn (Action $action) => $action->label('<<')
                     )
-
                     ->submitAction(null)
             ])
             ->columns(null);
@@ -75,10 +74,13 @@ class ViewUserModel extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\EditAction::make(),
-            Actions\DeleteAction::make(),
-        ];
+        return array_merge(
+            [
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
+            ],
+            $this->getChartActions()
+        );
     }
 
     protected function afterSave(): void
@@ -89,7 +91,6 @@ class ViewUserModel extends ViewRecord
         $service = app(UserModelService::class);
         $service->updateDailyScores($userModelId);
 
-        // Debug the dispatch data
         $dispatchData = [
             'chartId' => 'chart-daily-score',
             'options' => $this->getChartOptions($userModelId)

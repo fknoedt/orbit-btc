@@ -23,6 +23,8 @@ class UserModelResource extends Resource
 
     protected static ?string $label = 'Model';
 
+    protected static ?int $navigationSort = 2;
+
     public static function table(Table $table): Table
     {
         return $table

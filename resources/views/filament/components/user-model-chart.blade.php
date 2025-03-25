@@ -1,77 +1,159 @@
 <!-- powered by grok 🤖 -->
 <div class="filament-view-field">
-    <!-- Label -->
     <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-        {{ $getLabel() }}
+        {{ $label ?? 'Chart' }}
     </div>
 
-    <!-- Chart -->
-    <div id="chart-{{ $getName() }}" style="width: 100%; height: 350px; min-height: 350px; position: relative; overflow: visible !important;"></div>
+    <div wire:ignore>
+        <div id="chart-{{ $name ?? 'user-model-chart-' . uniqid() }}" style="width: 100%; height: 350px; min-height: 350px; position: relative; overflow: visible !important;"></div>
+    </div>
 
-    <!-- Hint -->
-    @if ($getHint())
+    @if (isset($hint) && $hint)
         <div class="text-sm text-gray-700 dark:text-gray-300 mt-0.5 flex items-center">
             <x-heroicon-o-information-circle class="w-4 h-4 mr-6" />
-            <span>{{ $getHint() }}</span>
+            <span>{{ $hint }}</span>
         </div>
     @endif
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2/dist/apexcharts.min.js"></script>
 <script>
-    let chartInstance = null;
-    let resizeObserver = null;
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const chartId = '#chart-{{ $getName() }}';
-        const options = @json($options);
-
-        initializeChart(chartId, options);
-    });
+    window.chartInstances = window.chartInstances || {};
+    const chartId = 'chart-{{ $name ?? 'user-model-chart-' . uniqid() }}';
 
     function initializeChart(chartId, options) {
-        const chartElement = document.querySelector(chartId);
+        const chartElement = document.querySelector(`#${chartId}`);
         if (chartElement) {
-            if (chartInstance) {
-                chartInstance.destroy();
+            if (window.chartInstances[chartId]) {
+                window.chartInstances[chartId].destroy();
+                delete window.chartInstances[chartId];
             }
 
-            chartInstance = new ApexCharts(chartElement, options);
-            chartInstance.render();
+            const chart = new ApexCharts(chartElement, options);
+            chart.render();
+            window.chartInstances[chartId] = chart;
 
-            // Add resize observer to handle dynamic size changes
-            if (resizeObserver) resizeObserver.disconnect();
-            resizeObserver = new ResizeObserver(() => {
-                if (chartInstance) {
-                    chartInstance.updateOptions({ width: '100%', height: '350px' }, false, true);
+            const resizeObserver = new ResizeObserver(() => {
+                if (window.chartInstances[chartId]) {
+                    window.chartInstances[chartId].updateOptions({ chart: { width: '100%', height: '350px' } }, false, true);
                 }
             });
             resizeObserver.observe(chartElement);
         }
     }
 
-    window.addEventListener('refresh-chart', function (event) {
-        const chartId = '#chart-{{ $getName() }}';
-        const eventData = Array.isArray(event.detail) && event.detail.length > 0 ? event.detail[0] : null;
-        const chartIdFromEvent = eventData?.chartId;
-        const optionsFromEvent = eventData?.options;
+    function setupChart() {
+        const options = @json($options);
+        const extraJsOptions = @json($rawExtraJsOptions);
+        const fullDates = extraJsOptions.fullDates || [];
+        options.chart = options.chart || {};
+        options.chart.events = options.chart.events || {};
+        options.chart.events.dataPointSelection = function(event, chartContext, config) {
+            if (config.seriesIndex !== undefined && config.dataPointIndex !== undefined) {
+                const clickedDate = fullDates[config.dataPointIndex];
+                if (clickedDate) {
+                    document.dispatchEvent(new CustomEvent("open-chart-modal", { detail: { date: clickedDate } }));
+                }
+            }
+        };
 
-        if (chartIdFromEvent === 'chart-daily-score' && document.querySelector(chartId) && optionsFromEvent?.series && optionsFromEvent?.chart) {
-            setTimeout(() => {
-                initializeChart(chartId, optionsFromEvent);
-            }, 200);
-        }
+        initializeChart(chartId, options);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        setupChart();
     });
 
     document.addEventListener('livewire:load', function () {
         Livewire.hook('message.processed', () => {
-            const chartId = '#chart-{{ $getName() }}';
-            const options = @json($options);
-            if (document.querySelector(chartId) && !chartInstance) {
+            const chartElement = document.querySelector(`#${chartId}`);
+            if (chartElement && !window.chartInstances[chartId]) {
                 setTimeout(() => {
-                    initializeChart(chartId, options);
+                    setupChart();
                 }, 200);
             }
         });
+    });
+
+    window.addEventListener('refresh-chart', function (event) {
+        const eventData = Array.isArray(event.detail) && event.detail.length > 0 ? event.detail[0] : event.detail;
+        const chartIdFromEvent = eventData?.chartId;
+        const options = eventData?.options;
+
+        if (chartIdFromEvent === 'chart-daily-score' && options?.series) {
+            const extraJsOptions = @json($rawExtraJsOptions);
+            const fullDates = extraJsOptions.fullDates || [];
+            options.chart = options.chart || {};
+            options.chart.events = options.chart.events || {};
+            options.chart.events.dataPointSelection = function(event, chartContext, config) {
+                if (config.seriesIndex !== undefined && config.dataPointIndex !== undefined) {
+                    const clickedDate = fullDates[config.dataPointIndex];
+                    if (clickedDate) {
+                        document.dispatchEvent(new CustomEvent("open-chart-modal", { detail: { date: clickedDate } }));
+                    }
+                }
+            };
+            const targetChartId = 'chart-daily-score';
+            if (window.chartInstances[targetChartId]) {
+                window.chartInstances[targetChartId].updateOptions(options, true, true);
+            } else {
+                initializeChart(targetChartId, options);
+            }
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const targetNode = document.body;
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                const chartElement = document.querySelector(`#${chartId}`);
+                if (!chartElement && window.chartInstances[chartId]) {
+                    window.chartInstances[chartId].destroy();
+                    delete window.chartInstances[chartId];
+                } else if (chartElement && !window.chartInstances[chartId]) {
+                    setupChart();
+                }
+            });
+        });
+        observer.observe(targetNode, { childList: true, subtree: true });
+    });
+
+    document.addEventListener('livewire:modal-opened', function (event) {
+        if (event.detail.id === 'chartDetailModal') {
+            const chartElement = document.querySelector(`#${chartId}`);
+            if (chartElement && window.chartInstances[chartId]) {
+                setTimeout(() => {
+                    window.chartInstances[chartId].updateOptions({ chart: { width: '100%', height: '350px' } }, false, true);
+                }, 500);
+            } else if (chartElement && !window.chartInstances[chartId]) {
+                setupChart();
+            }
+        }
+    });
+
+    document.addEventListener('livewire:modal-closed', function (event) {
+        if (event.detail.id === 'chartDetailModal') {
+            const chartElement = document.querySelector(`#${chartId}`);
+            if (chartElement && window.chartInstances[chartId]) {
+                setTimeout(() => {
+                    window.chartInstances[chartId].updateOptions({ chart: { width: '100%', height: '350px' } }, false, true);
+                }, 500);
+            } else if (chartElement && !window.chartInstances[chartId]) {
+                setupChart();
+            }
+        }
+    });
+
+    document.addEventListener('open-chart-modal', (event) => {
+        window.Livewire.dispatch('open-chart-modal', { date: event.detail.date });
+    });
+
+    window.addEventListener('beforeunload', () => {
+        for (const chartId in window.chartInstances) {
+            if (window.chartInstances[chartId]) {
+                window.chartInstances[chartId].destroy();
+            }
+        }
+        window.chartInstances = {};
     });
 </script>

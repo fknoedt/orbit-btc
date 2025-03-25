@@ -2,18 +2,47 @@
 
 namespace App\Filament\Charts;
 
+use App\Models\DailyPrice;
 use App\Models\UserModel;
 use App\Models\UserModelDailyScore;
 use App\Services\PriceService;
 use Carbon\Carbon;
+use Filament\Actions\Action;
+use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\On;
 
 trait UserModelChart
 {
     public const int MONTHS_BACK = 3;
+    public ?string $selectedDate = null;
+    protected array $fullDates = [];
+    protected ?int $userModelId = null;
+
+    #[On('open-chart-modal')]
+    public function handleChartModal($date = null)
+    {
+        $date = is_array($date) ? ($date['date'] ?? null) : $date;
+
+        if ($date) {
+            $this->selectedDate = $date;
+
+            // For resource pages (ViewUserModel, EditUserModel)
+            $actionId = $this->mountAction('chartDetailModal');
+            if ($actionId) {
+                $this->dispatch('open-modal', id: $actionId);
+            }
+
+            $dispatchData = [
+                'chartId' => 'daily-score',
+                'options' => $this->getChartOptions($this->userModelId)
+            ];
+            $this->dispatch('refresh-chart', $dispatchData);
+        }
+    }
 
     private function getChartOptions(int $userModelId = null): array
     {
-        if (! $userModelId) {
+        if (!$userModelId) {
             return [];
         }
         $service = new PriceService();
@@ -24,18 +53,36 @@ trait UserModelChart
             ->get()
             ->toArray();
 
+        $this->fullDates = array_keys($dailyPrices);
         $labels = array_map(function ($item) {
             return Carbon::parse($item)->format('d M');
-        }, array_keys($dailyPrices));
-        $prices = array_column($dailyPrices, 'close');
-        $scores = array_column($dailyScores, 'score');
+        }, $this->fullDates);
 
-        // y-axis scale
-        $maxPrice = round(max($prices), -3);
-        $minPrice = $maxPrice / 2;
+        $prices = array_map(function ($price) {
+            return is_numeric($price['close']) ? (float) $price['close'] : 0;
+        }, array_values($dailyPrices));
+
+        $scoresByDate = collect($dailyScores)->keyBy('date')->toArray();
+        $scores = array_map(function ($date) use ($scoresByDate) {
+            return isset($scoresByDate[$date]) && is_numeric($scoresByDate[$date]['score'])
+                ? (float) $scoresByDate[$date]['score']
+                : 0;
+        }, $this->fullDates);
 
         $userModel = UserModel::findOrFail($userModelId);
         $threshold = $userModel->threshold ?? 0;
+        $maxPrice = !empty($prices) ? round(max($prices), -3) : 1000;
+        $minPrice = $maxPrice / 2;
+
+        $firstPrice = $prices[0] ?? 0;
+        $lastPrice = $prices[count($prices) - 1] ?? 0;
+        $areaColor = $firstPrice > $lastPrice ?
+            '#CA2E2E' : // red price
+            (
+            $firstPrice < $lastPrice ?
+                '#32B000' : // green price
+                '#1968E7' // blue price -- didn't change 🤯
+            );
 
         return [
             'series' => [
@@ -51,8 +98,22 @@ trait UserModelChart
                 ]
             ],
             'chart' => [
-                'height' => 300,
-                'type' => 'line'
+                'height' => 350,
+                'width' => '100%',
+                'stacked' => false,
+                'toolbar' => [
+                    'show' => true,
+                    'tools' => [
+                        'zoom' => true,
+                        'zoomin' => true,
+                        'zoomout' => true,
+                        'pan' => true,
+                        'reset' => true,
+                    ],
+                ],
+                'zoom' => [
+                    'enabled' => true,
+                ],
             ],
             'stroke' => [
                 'width' => [0, 2]
@@ -90,7 +151,7 @@ trait UserModelChart
                     'title' => [
                         'text' => 'BTC Price',
                     ],
-                    'min' => $minPrice, // Set minimum BTC price
+                    'min' => $minPrice,
                     'max' => $maxPrice,
                     'decimalsInFloat' => 0,
                     'tickAmount' => 10,
@@ -110,7 +171,7 @@ trait UserModelChart
             ],
             'colors' => [
                 '#897F7F',
-                '#FF9800'
+                $areaColor
             ],
             'fill' => [
                 'type' => ['solid', 'gradient'],
@@ -118,11 +179,11 @@ trait UserModelChart
                     'shade' => 'light',
                     'type' => 'vertical',
                     'shadeIntensity' => 0.5,
-                    'gradientToColors' => ['#FF9800'], // End color (bottom)
+                    'gradientToColors' => [$areaColor],
                     'inverseColors' => true,
-                    'opacityFrom' => 0.7, // Bottom opacity (fades to transparent)
-                    'opacityTo' => 0.2, // Top opacity (solid orange)
-                    'stops' => [0, 100] // Gradient stops from top (0%) to bottom (100%)
+                    'opacityFrom' => 0.3,
+                    'opacityTo' => 0.05,
+                    'stops' => [0, 100]
                 ]
             ],
             'plotOptions' => [
@@ -130,25 +191,76 @@ trait UserModelChart
                     'columnWidth' => '50%',
                     'colors' => [
                         'ranges' => [
-                            [
-                                'from' => 0,
-                                'to' => $threshold-1,
-                                'color' => '#897F7F'
-                            ],
-                            [
-                                'from' => $threshold,
-                                'to' => $threshold,
-                                'color' => '#FF3F2B'
-                            ],
-                            [
-                                'from' => $threshold + 1,
-                                'to' => $scores ? max($scores) : $threshold + 1,
-                                'color' => '#F04444'
-                            ]
-                        ]
-                    ]
-                ]
+                            ['from' => 0, 'to' => $threshold - 1, 'color' => '#897F7F'],
+                            ['from' => $threshold, 'to' => $threshold, 'color' => '#F97315'],
+                            ['from' => $threshold + 1, 'to' => $scores ? max($scores) : $threshold + 1, 'color' => '#F97315'],
+                        ],
+                    ],
+                    'dataLabels' => [
+                        'enabled' => false,
+                    ],
+                ],
             ]
+        ];
+    }
+
+    public function getChartData(): array
+    {
+        if (method_exists($this, 'getRecord') && $this->getRecord() instanceof UserModel) {
+            $userModel = $this->getRecord();
+        } else {
+            $userModel = UserModel::where('user_id', auth()->id())->first();
+        }
+
+        $this->userModelId = $userModel?->id;
+        $options = $this->getChartOptions($userModel?->id);
+
+        return [
+            'options' => $options,
+            'fullDates' => $this->fullDates,
+            'extraJsOptions' => $this->getExtraJsOptions(),
+        ];
+    }
+
+    private function getExtraJsOptions(): array
+    {
+        return [
+            'fullDates' => $this->fullDates,
+        ];
+    }
+
+    protected function getChartActions(): array
+    {
+        return [
+            Action::make('chartDetailModal')
+                ->label(isset($this->record) ?
+                    $this->record->name . ' Daily Signal' :
+                    'Model Daily Signal'
+                )
+                ->modalContent(function () {
+                    $cacheKey = 'first_daily_price_by_date_' . $this->selectedDate;
+                    $dailyPrice = Cache::remember($cacheKey, now()->endOfDay(), function() {
+                        return DailyPrice::where('date', $this->selectedDate)->first();
+                    });
+
+                    $cacheKey = 'first_model_score_by_date_' . $this->selectedDate;
+                    $dailyScore = Cache::remember($cacheKey, now()->endOfDay(), function() {
+                        return UserModelDailyScore::where('date', $this->selectedDate)
+                            ->where('user_model_id', $this->selectedUserModelId ?? $this->record->id)
+                            ->first();
+                    });
+
+                    return view('filament.modals.chart-detail', [
+                        'date' => $this->selectedDate,
+                        'dailyPrice' => $dailyPrice,
+                        'dailyScore' => $dailyScore,
+                        'userModel' => $this->record ?? UserModel::find($this->selectedUserModelId),
+                    ]);
+                })
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Close')
+                ->modalWidth('sm')
+                ->extraAttributes(['class' => 'hidden'])
         ];
     }
 }

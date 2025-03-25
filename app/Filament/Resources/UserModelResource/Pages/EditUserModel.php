@@ -63,13 +63,15 @@ class EditUserModel extends EditRecord
         return $data;
     }
 
-
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-        ];
+        return array_merge(
+            [
+                Actions\ViewAction::make(),
+                Actions\DeleteAction::make(),
+            ],
+            $this->getChartActions()
+        );
     }
 
     public function form(Form $form): Form
@@ -88,7 +90,6 @@ class EditUserModel extends EditRecord
                     ->previousAction(
                         fn (Action $action) => $action->label('<<')
                     )
-
                     ->submitAction(new HtmlString(Blade::render(<<<BLADE
                         <x-filament::button
                             type="submit"
@@ -151,7 +152,7 @@ class EditUserModel extends EditRecord
         $userModelId = $userModel->id;
 
         // Check if threshold or userModelMetrics changed
-        $currentMetrics = array_values($userModel->userModelMetrics->toArray()); // clean it
+        $currentMetrics = array_values($userModel->userModelMetrics->toArray());
 
         $this->scoreUpdated = $this->originalRecord['threshold'] != $userModel->threshold ||
             $this->originalMetrics !== $currentMetrics;
@@ -170,7 +171,6 @@ class EditUserModel extends EditRecord
             $this->dispatch('refresh-chart', $dispatchData);
         }
     }
-
 
     protected function getSavedNotification(): ?\Filament\Notifications\Notification
     {
