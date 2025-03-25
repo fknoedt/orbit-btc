@@ -67,7 +67,7 @@ class UserModelScore extends Page
 
         // Dispatch refresh-chart event to update the chart in the frontend
         $dispatchData = [
-            'chartId' => 'daily-score',
+            'chartId' => 'chart-daily-score', // Match DOM ID
             'options' => $this->chartData['options'] ?? [],
         ];
         $this->dispatch('refresh-chart', $dispatchData);
@@ -119,8 +119,13 @@ class UserModelScore extends Page
             return;
         }
 
-        // Update chart data based on the selected model
-        $this->chartData = $this->getChartData();
+        // Update chart data based on the selected model, overriding default behavior
+        $this->userModelId = $this->selectedUserModelId; // Set for trait methods if needed
+        $options = $this->getChartOptions($this->selectedUserModelId);
+        $this->chartData = [
+            'options' => $options,
+            'extraJsOptions' => $this->getExtraJsOptions(),
+        ];
     }
 
     #[On('open-chart-modal')]
@@ -133,8 +138,8 @@ class UserModelScore extends Page
             $this->showChartModal = true;
 
             $dispatchData = [
-                'chartId' => 'daily-score',
-                'options' => $this->getChartOptions($this->userModelId)
+                'chartId' => 'chart-daily-score', // Match DOM ID
+                'options' => $this->getChartOptions($this->selectedUserModelId)
             ];
             $this->dispatch('refresh-chart', $dispatchData);
         }
@@ -179,6 +184,21 @@ class UserModelScore extends Page
                 'dailyScore' => $this->selectedDate ? Cache::remember('first_model_score_by_date_' . $this->selectedDate, now()->endOfDay(), fn() => UserModelDailyScore::where('date', $this->selectedDate)->where('user_model_id', $this->selectedUserModelId)->first()) : null,
                 'userModel' => UserModel::find($this->selectedUserModelId),
             ]),
+        ];
+    }
+
+    /**
+     * Override getChartData to use selectedUserModelId explicitly
+     */
+    public function getChartData(): array
+    {
+        $userModel = UserModel::find($this->selectedUserModelId);
+        $this->userModelId = $userModel?->id;
+        $options = $this->getChartOptions($userModel?->id);
+
+        return [
+            'options' => $options,
+            'extraJsOptions' => $this->getExtraJsOptions(),
         ];
     }
 }

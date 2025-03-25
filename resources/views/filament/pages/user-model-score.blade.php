@@ -1,4 +1,4 @@
-<div>
+<div class="pt-6">
     <!-- Model selection and actions -->
     <div class="mb-4 flex justify-center items-center gap-4">
         <label for="selectedUserModelId" class="text-lg font-medium text-gray-500">Model</label>

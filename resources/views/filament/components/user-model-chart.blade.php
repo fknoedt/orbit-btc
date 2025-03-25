@@ -76,11 +76,11 @@
     });
 
     window.addEventListener('refresh-chart', function (event) {
-        const eventData = Array.isArray(event.detail) && event.detail.length > 0 ? event.detail[0] : null;
+        const eventData = Array.isArray(event.detail) && event.detail.length > 0 ? event.detail[0] : event.detail;
         const chartIdFromEvent = eventData?.chartId;
-        let options = eventData?.options;
+        const options = eventData?.options;
 
-        if (chartIdFromEvent === chartId && options?.series && options?.chart) {
+        if (chartIdFromEvent === 'chart-daily-score' && options?.series) {
             const extraJsOptions = @json($rawExtraJsOptions);
             const fullDates = extraJsOptions.fullDates || [];
             options.chart = options.chart || {};
@@ -93,9 +93,12 @@
                     }
                 }
             };
-            setTimeout(() => {
-                initializeChart(chartId, options);
-            }, 500);
+            const targetChartId = 'chart-daily-score';
+            if (window.chartInstances[targetChartId]) {
+                window.chartInstances[targetChartId].updateOptions(options, true, true);
+            } else {
+                initializeChart(targetChartId, options);
+            }
         }
     });
 
