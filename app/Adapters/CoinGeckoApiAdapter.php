@@ -81,8 +81,10 @@ class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterf
 
         return [
             'price' => $stats[self::$currency] ?? null,
-            'percent_change_24h' => null, // TODO
-            'volume_change_24h' => $stats['usd_24h_change'] ?? null,
+            'market_cap' => $stats['usd_market_cap'] ?? null,
+            'percent_change_24h' => $stats['usd_24h_change'] ?? null,
+            'volume_24h' => $stats['usd_24h_vol'] ?? null,
+            'volume_change_24h' => null, // TODO
             'market_cap_dominance' => null, // TODO
         ];
     }

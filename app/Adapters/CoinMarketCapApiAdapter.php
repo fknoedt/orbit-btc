@@ -26,6 +26,7 @@ class CoinMarketCapApiAdapter extends BaseClient implements ExternalApiAdapterIn
         parent::__construct();
         $this->version = $apiVersion;
         self::$dataSourceId = config('data.data_source.coinmarketcap_id');
+        self::$currency = strtoupper(self::$currency);
         self::$url = config('btc.apis.coinmarketcap.url') . '/'. $this->version . '/';
         $this->key = config('btc.apis.coinmarketcap.key');
     }
