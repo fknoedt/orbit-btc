@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ class DailyPrice extends Model
 {
     use HasFactory;
 
+    public const int FUTURE_PRICE_MAX_DAYS_AGO = 365;
     public const string START_OF_MAYER_MULTIPLE = '2012-01-01';
 
     protected $guarded = ['id'];
@@ -28,11 +30,16 @@ class DailyPrice extends Model
             ->first();
     }
 
+
     public static function getLastEmptyFuturePriceDay(): ?string
     {
-        // they're always updated together
-        return self::whereNull('price_change_1d')
-            ->where('date', '>=', config('btc.first_cmc_available_date'))
+        return self::where('date', '>=', Carbon::now()->subDays(self::FUTURE_PRICE_MAX_DAYS_AGO))
+            ->where(function ($query) {
+                return $query->where('price_change_1d', 0)
+                    ->orWhere('price_change_3d', 0)
+                    ->orWhere('price_change_5d', 0)
+                    ->orWhere('price_change_10d', 0);
+            })
             ->orderBy('date', 'asc')
             ->pluck('date')
             ->first();

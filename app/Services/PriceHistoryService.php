@@ -245,7 +245,12 @@ class PriceHistoryService
                 continue;
             }
 
-            if (empty($dailyPrice->price_change_1d)) {
+            if (
+                empty($dailyPrice->price_change_1d) ||
+                empty($dailyPrice->price_change_3d) ||
+                empty($dailyPrice->price_change_5d) ||
+                empty($dailyPrice->price_change_10d)
+            ) {
                 foreach ([1, 3, 5, 10] as $numberOfDays) {
                     $dailyPricePlusN = $priceService->getDailyPrice(
                         $currentDay->copy()->addDays($numberOfDays)->format('Y-m-d'),

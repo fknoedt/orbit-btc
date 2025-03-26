@@ -133,6 +133,7 @@ class CoinMarketCapApiAdapter extends BaseClient implements ExternalApiAdapterIn
 
     /**
      * Fear & Greed data
+     * This is a free endpoint 🙌
      * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV3FearandgreedHistorical
      * @throws AdapterException
      * @throws ConnectionException
