@@ -4,63 +4,111 @@ namespace App\Adapters;
 
 use App\Clients\BaseClient;
 use App\Exceptions\AdapterException;
+use App\Exceptions\ExternalApiException;
 use App\Models\DailyPrice;
 use BadMethodCallException;
 use Carbon\Carbon;
 use Codenixsv\CoinGeckoApi\CoinGeckoClient;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 
 /**
  * BTC data starts on 2013-04-27
- * @see https://github.com/codenix-sv/coingecko-api
+ * @see https://docs.coingecko.com/v3.0.1/reference/introduction
  */
 class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterface
 {
-    private CoinGeckoClient $cgClient;
-    public const DATE_FORMAT = 'd-m-Y';
+    public const string DEFAULT_API_VERSION = 'v3';
 
-    protected static int $dataSourceId;
+    public const int MAX_PAST_DAYS = 365;
 
-    public function __construct()
+    private string $key;
+    private string $version;
+
+    public function __construct(string $apiVersion = self::DEFAULT_API_VERSION)
     {
         parent::__construct();
-        $this->cgClient = new \Codenixsv\CoinGeckoApi\CoinGeckoClient();
+        $this->version = $apiVersion;
         self::$dataSourceId = config('data.data_source.coingecko_id');
+        self::$url = config('btc.apis.coingecko.url') . '/api/'. $this->version . '/';
+        $this->key = config('btc.apis.coingecko.key');
+    }
+
+    /**
+     * @throws AdapterException
+     * @throws ExternalApiException
+     * @throws ConnectionException
+     * @throws RequestException
+     */
+    public function request(string $method, string $endpoint, array $args = [], array $headers = []): array
+    {
+        $headers['x-cg-demo-api-key'] = $this->key;
+
+        return parent::request($method, $endpoint, $args, $headers);
     }
 
     /**
      * Get the current BTC price in the system's default currency
-     * @throws \Exception
      */
     public function getCurrentPrice(array $options = []): float
     {
-        // TODO: try/catch, log request upon failure and try to add request ID to Sentry issue
-        $data = $this->cgClient->simple()->getPrice('bitcoin', self::$currency);
-        $price = $data['bitcoin'][self::$currency] ?? null;
+        $response = $this->request('get', 'simple/price', [
+            'ids' => 'bitcoin',
+            'vs_currencies' => self::$currency
+        ]);
+
+        $price = $response['bitcoin'][self::$currency] ?? null;
         if (! $price) {
             throw new AdapterException(
                 'price not found for `' . self::$currency . '` @ ' . $this->getClientName()
             );
         }
 
-        $this->logRequest(__METHOD__, ['currency' => self::$currency], 200, json_encode($data));
-
         return (float) $price;
     }
 
     public function getCurrentPriceStats(array $options = []): array
     {
-        throw new BadMethodCallException(__METHOD__ . ' not implemented');
+        $response = $this->request('get', 'simple/price', [
+            'ids' => 'bitcoin',
+            'vs_currencies' => self::$currency,
+            'include_market_cap' => 'true',
+            'include_24hr_vol' => 'true',
+            'include_24hr_change' => 'true',
+        ]);
+
+        $stats = $response['bitcoin'];
+
+        return [
+            'price' => $stats[self::$currency] ?? null,
+            'percent_change_24h' => null, // TODO
+            'volume_change_24h' => $stats['usd_24h_change'] ?? null,
+            'market_cap_dominance' => null, // TODO
+        ];
     }
 
     public function getCurrentDailyPrice(): DailyPrice
     {
-        throw new BadMethodCallException("TODO: Implement getCurrentDailyPrice() method.");
+        $response = $this->request('get', 'coins/bitcoin/market_chart', [
+            'vs_currency' => self::$currency,
+            'days' => 0,
+            'interval' => 'daily',
+        ]);
+
+        $date =  Carbon::createFromTimestamp($response['prices'][0][0] / 1000)->format(self::$systemDateFormat);
+
+        return new DailyPrice([
+            'date' => $date,
+            'data_source_id' => self::$dataSourceId,
+            'close' => $response['prices'][0][1],
+            'market_cap' => $response['market_caps'][0][1],
+            'total_volume' => $response['total_volumes'][0][1]
+        ]);
     }
 
 
     /**
      * Get price [$date => $price] for the given date interval
-     * @todo break it down in price, market-cap and total-volume?
      * @throws \Exception
      * @throws AdapterException
      */
@@ -72,21 +120,36 @@ class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterf
             $endDate = $endDate->addDay();
         }
 
-        $data = $this->cgClient->coins()->getMarketChartRange(
-            'bitcoin',
-            self::$currency,
-            $startDate->getTimestamp(),
-            $endDate->getTimestamp()
-        );
+        if (Carbon::now()->diffInDays($startDate) > self::MAX_PAST_DAYS) {
+            throw new AdapterException(
+                sprintf(
+                    '%s cannot retrieve dates older than %s: %s given',
+                    __METHOD__,
+                    self::MAX_PAST_DAYS,
+                    $startDate->format('Y-m-d')
+                )
+            );
+        }
 
-        foreach ($data['prices'] as $price) {
-            // $lastPriceOfDay = end($data['prices']);
-            $timestampInSeconds = intval($price[0] / 1000);
-            $date = Carbon::createFromTimestamp($timestampInSeconds)->format(self::$systemDateFormat);
-            if (! $date) {
-                throw new AdapterException(__METHOD__ . ": Could not parse date from timestamp {$price[0]}");
-            }
-            $prices[$date] = $price[1];
+        $response = $this->request('get', 'coins/bitcoin/market_chart/range', [
+            'vs_currency' => self::$currency,
+            'from' => $startDate->timestamp,
+            'to' => $endDate->timestamp,
+        ]);
+
+        $length = count($response['prices']);
+
+        // $i will correspond to the same position/day in all sub-arrays
+        for ($i = 0; $i < $length; $i++) {
+            $dailyPrice = new DailyPrice([
+                'data_source_id' => self::$dataSourceId,
+                'date' => Carbon::createFromTimestamp($response['prices'][$i][0] / 1000)->format(self::$systemDateFormat),
+                'close' => $response['prices'][$i][1],
+                'market_cap' => $response['market_caps'][$i][1],
+                'total_volume' => $response['total_volumes'][$i][1]
+            ]);
+
+            $prices[$dailyPrice->date] = $dailyPrice;
         }
 
         if (empty($prices)) {
@@ -97,7 +160,7 @@ class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterf
                     $startDate->format(self::$systemDateFormat),
                     $endDate->format(self::$systemDateFormat),
                     $this->getClientName(),
-                    json_encode($data)
+                    json_encode($response)
                 )
             );
         }
@@ -106,66 +169,10 @@ class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterf
     }
 
     /**
-     * @throws \Exception
+     * @throws BadMethodCallException
      */
     public function getBtcPriceByDays(array $days): array
     {
-        $btcData = [];
         throw new \BadMethodCallException('Method not implemented: ' . __METHOD__);
-        foreach ($days as $day) {
-            // standard input => adapter format
-            $date = Carbon::createFromFormat(self::$systemDateFormat, $day);
-            $day = $date->format(self::DATE_FORMAT);
-            $marketChart = $this->cgClient
-                ->coins()
-                ->getHistory('bitcoin', $day, ['localization' => false]);
-            dd($marketChart);
-            $marketData = $marketChart['market_data'] ?? null;
-            if ($marketData) {
-                $currentPrice = $marketData['current_price'] ?? null;
-                if ($currentPrice) {
-                    $price = $marketData[self::$currency] ?? null;
-                    if (! $price) {
-                        throw new \RuntimeException(
-                            'price not found for `' . self::$currency . '` @ ' . $this->getClientName()
-                        );
-                    }
-                    $btcData[$startDate->format(self::DATE_FORMAT)]['price'] = $price;
-                }
-                $marketCap = $marketData['market_cap'] ?? null;
-                if ($marketCap) {
-                    $marketCapValue = $marketCap[self::$currency] ?? null;
-                    if (! $marketCapValue) {
-                        throw new \RuntimeException(
-                            "market_cap not found for `" . self::$currency . "` @ " . $this->getClientName()
-                        );
-                    }
-                    $btcData[$startDate->format(self::DATE_FORMAT)]['market_cap'] = $marketCapValue;
-                }
-                $totalVolume = $marketData['total_volume'] ?? null;
-                if ($totalVolume) {
-                    $totalVolumeValue = $totalVolume[self::$currency] ?? null;
-                    if (! $totalVolumeValue) {
-                        throw new \RuntimeException(
-                            "total_volume not found for `" . self::$currency . "` @ " . $this->getClientName()
-                        );
-                    }
-                    $btcData[$startDate->format(self::DATE_FORMAT)]['volume'] = [
-                        'brl' => $totalVolume['brl'],
-                        'eur' => $totalVolume['eur'],
-                        'usd' => $totalVolume['usd'],
-                    ];
-                }
-            }
-            //->getMarketChartRange('bitcoin', 'usd', $startDate, $timestampTo);
-        }
-
-        dd($btcData);
-
-        foreach ($marketChart as $info => $data) {
-            dump($info, count($data));
-        }
-
-        return $btcData;
     }
 }

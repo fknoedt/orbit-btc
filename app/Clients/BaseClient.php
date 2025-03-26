@@ -30,7 +30,7 @@ abstract class BaseClient
 
     public function __construct()
     {
-        self::$currency = strtoupper(config('btc.currency') ?? 'usd');
+        self::$currency = config('btc.currency');
         self::$systemDateFormat = config('btc.date_format');
     }
 

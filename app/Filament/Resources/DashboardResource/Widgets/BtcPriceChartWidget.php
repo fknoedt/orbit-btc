@@ -4,6 +4,7 @@ namespace App\Filament\Resources\DashboardResource\Widgets;
 
 use App\Services\Btc3rdPartyService;
 use App\Services\PriceService;
+use App\Services\WidgetService;
 use Carbon\Carbon;
 use EightyNine\FilamentAdvancedWidget\AdvancedChartWidget;
 use Illuminate\Support\Number;
@@ -46,31 +47,38 @@ class BtcPriceChartWidget extends AdvancedChartWidget
 
     protected function getData(): array
     {
-        $priceService = new PriceService();
-        $endDate = now();
+        try {
+            $priceService = new PriceService();
+            $endDate = now();
 
-        if ($this->filter === '0d') {
-            $startDate = Carbon::parse(config('btc.first_available_date'));
-        } else {
-            $numberOfDays = intval(str_replace('d', '', $this->filter));
-            $startDate = now()->subDays($numberOfDays);
+            if ($this->filter === '0d') {
+                $startDate = Carbon::parse(config('btc.first_available_date'));
+            } else {
+                $numberOfDays = intval(str_replace('d', '', $this->filter));
+                $startDate = now()->subDays($numberOfDays);
+            }
+
+            $prices = $priceService->getClosePriceByDays($startDate, $endDate, true, true);
+
+            $stat = [
+                'datasets' => [
+                    [
+                        'label' => 'BTC Price in USD',
+                        'data' => array_map(fn ($item) => $item['close'], $prices),
+                        'backgroundColor' => '#FA9902FF',
+                        'borderColor' => '#CCCCCC',
+                        'chartColor' => 'success'
+                    ]
+                ],
+                'labels' => array_keys($prices),
+                'fill' => true,
+            ];
+        } catch (\Exception $e) {
+            report($e);
+            $stat = (new WidgetService())->getErrorStat('BTC Price Chart');
         }
 
-        $prices = $priceService->getClosePriceByDays($startDate, $endDate, true, true);
-
-        return [
-            'datasets' => [
-                [
-                    'label' => 'BTC Price in USD',
-                    'data' => array_map(fn ($item) => $item['close'], $prices),
-                    'backgroundColor' => '#FA9902FF',
-                    'borderColor' => '#CCCCCC',
-                    'chartColor' => 'success'
-                ]
-            ],
-            'labels' => array_keys($prices),
-            'fill' => true,
-        ];
+        return $stat;
     }
 
     protected function getType(): string
@@ -80,9 +88,15 @@ class BtcPriceChartWidget extends AdvancedChartWidget
 
     public function getHeading(): string
     {
-        $service = new Btc3rdPartyService();
+        try {
+            $service = new Btc3rdPartyService();
+            $heading = (string) Number::currency($service->getCurrentPrice());
+        } catch (\Exception $e) {
+            report($e);
+            $heading = WidgetService::ERROR_SHORT_MESSAGE;
+        }
 
-        return (string) Number::currency($service->getCurrentPrice());
+        return $heading;
     }
 
     protected function getOptions(): array
