@@ -73,7 +73,7 @@ class BtcPriceChartWidget extends AdvancedChartWidget
                 'labels' => array_keys($prices),
                 'fill' => true,
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             report($e);
             $stat = (new WidgetService())->getErrorStat('BTC Price Chart');
         }
@@ -91,7 +91,7 @@ class BtcPriceChartWidget extends AdvancedChartWidget
         try {
             $service = new Btc3rdPartyService();
             $heading = (string) Number::currency($service->getCurrentPrice());
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             report($e);
             $heading = WidgetService::ERROR_SHORT_MESSAGE;
         }

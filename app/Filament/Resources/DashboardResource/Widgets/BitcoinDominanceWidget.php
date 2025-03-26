@@ -2,11 +2,12 @@
 
 namespace App\Filament\Resources\DashboardResource\Widgets;
 
+use App\Exceptions\ExternalApiException;
 use App\Services\Btc3rdPartyService;
+use App\Services\WidgetService;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget as BaseWidget;
 
-use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat; // filament plugin
-use Filament\Widgets\StatsOverviewWidget\Stat as OldStat; // Filament default widget
+use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
 use Illuminate\Support\Number;
 
 class BitcoinDominanceWidget extends BaseWidget
@@ -25,18 +26,34 @@ class BitcoinDominanceWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        // get BTC change in the last day
-        $service = new Btc3rdPartyService('CoinMarketCap');
-        $stats = $service->getCurrentPriceStats();
+        try {
+            // get BTC change in the last day
+            $service = new Btc3rdPartyService('CoinMarketCap');
+            $stats = $service->getCurrentPriceStats();
 
-        return [
-            Stat::make($this->title, Number::percentage($stats['market_cap_dominance'], 2))
+            if (empty($stats['market_cap_dominance'])) {
+                throw new ExternalApiException(
+                    __METHOD__ .
+                    ': `market_cap_dominance` is empty: ' .
+                    json_encode($stats)
+                );
+            }
+
+            $stat = Stat::make($this->title, Number::percentage($stats['market_cap_dominance'], 2))
                 ->icon('heroicon-o-chart-pie')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->progress($stats['market_cap_dominance'])
                 ->progressBarColor('success')
                 ->iconColor('info')
-                ->descriptionColor('primary')
+                ->descriptionColor('primary');
+
+        } catch (\Throwable $e) {
+            report($e);
+            $stat = (new WidgetService())->getErrorStat($this->title);
+        }
+
+        return [
+            $stat
         ];
     }
 }

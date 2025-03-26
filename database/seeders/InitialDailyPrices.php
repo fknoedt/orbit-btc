@@ -259,7 +259,7 @@ class InitialDailyPrices extends Seeder
         );
         try {
             Artisan::call('btc:populate-price-history');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             report ($e);
             $this->command->warn('Failed to run `btc:populate-price-history`');
         }
