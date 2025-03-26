@@ -49,7 +49,11 @@ class RequestResource extends Resource
                     ->label('Status'),
                 IconColumn::make('cron')
                     ->boolean()
-                    ->label('Console'),
+                    ->trueIcon('heroicon-o-command-line')
+                    ->trueColor('success')
+                    ->falseIcon('heroicon-o-window')
+                    ->falseColor('info')
+                    ->label('Origin'),
                 TextColumn::make('elapsed_time')
                     ->numeric()
                     ->sortable()
