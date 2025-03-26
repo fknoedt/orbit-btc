@@ -14,7 +14,7 @@ use Illuminate\Http\Client\RequestException;
 
 /**
  * BTC data starts on 2013-04-27
- * @see https://github.com/codenix-sv/coingecko-api
+ * @see https://docs.coingecko.com/v3.0.1/reference/introduction
  */
 class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterface
 {
@@ -99,6 +99,7 @@ class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterf
 
         return new DailyPrice([
             'date' => $date,
+            'data_source_id' => self::$dataSourceId,
             'close' => $response['prices'][0][1],
             'market_cap' => $response['market_caps'][0][1],
             'total_volume' => $response['total_volumes'][0][1]
@@ -141,6 +142,7 @@ class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterf
         // $i will correspond to the same position/day in all sub-arrays
         for ($i = 0; $i < $length; $i++) {
             $dailyPrice = new DailyPrice([
+                'data_source_id' => self::$dataSourceId,
                 'date' => Carbon::createFromTimestamp($response['prices'][$i][0] / 1000)->format(self::$systemDateFormat),
                 'close' => $response['prices'][$i][1],
                 'market_cap' => $response['market_caps'][$i][1],
@@ -167,7 +169,7 @@ class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterf
     }
 
     /**
-     * @throws \Exception
+     * @throws BadMethodCallException
      */
     public function getBtcPriceByDays(array $days): array
     {

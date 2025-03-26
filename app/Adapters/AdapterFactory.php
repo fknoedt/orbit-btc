@@ -4,7 +4,7 @@ namespace App\Adapters;
 
 class AdapterFactory
 {
-    public const string DEFAULT_ADAPTER = 'CoinMarketCap';
+    public const string DEFAULT_ADAPTER = 'CoinGecko';
 
     /** singleton */
     private static array $adapters;
