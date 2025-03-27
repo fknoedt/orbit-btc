@@ -250,11 +250,10 @@ trait UserModelWizardSteps
         ];
 
         if ($operation !== 'create') {
-            $chartName = "user-model-chart-{$operation}-{$this->record->id}";
             $schema[] = View::make('filament.components.user-model-chart')
                 ->viewData([
                     'label' => 'Daily Score',
-                    'name' => $chartName,
+                    'name' => 'daily-score',
                     'hint' => $operation === 'edit' ? 'Save your Model to see the updated chart' : '',
                     'options' => $this->getChartOptions($this->record->id),
                     'rawExtraJsOptions' => $this->getExtraJsOptions(),
