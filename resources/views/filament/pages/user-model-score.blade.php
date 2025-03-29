@@ -65,16 +65,16 @@
                         <div>
                             <div>
                                 <span class="block text-sm font-medium text-gray-500">Total Score</span>
-                                <span class="text-3xl font-bold" style="color: {{ $this->modelData['score'] >= 0 ? '#22c55e' : '#ef4444' }}">{{ $this->modelData['score'] }}</span>
+                                <span class="text-3xl font-bold" style="color: {{ $this->modelData['total_score'] >= 0 ? '#22c55e' : '#ef4444' }}">{{ $this->modelData['total_score'] }}</span>
                             </div>
                         </div>
                         <div>
                             <span class="block text-sm font-medium text-gray-500">Daily Threshold</span>
                             <span class="flex items-center gap-1 text-xl font-semibold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4 threshold-value">
-                            <span>🎯</span>
-                            <!-- 😬 -->
-                            <span style="color: #F97315">{{ $this->modelData['threshold'] }}</span>
-                        </span>
+                                <span>🎯</span>
+                                <!-- 😬 -->
+                                <span style="color: #F97315">{{ $this->modelData['threshold'] }}</span>
+                            </span>
                         </div>
                         <div>
                             <span class="block text-sm font-medium text-gray-500">Signal</span>
@@ -91,6 +91,35 @@
                             <span class="block text-sm font-medium text-gray-500">Time Horizon</span>
                             <span class="!text-white">{{ $this->modelData['horizon'] }}</span>
                         </div>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-500"># Simulated Trades (Threshold Hit)</span>
+                            <span class="flex items-center gap-1 text-xl font-semibold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4 threshold-value">
+                            <span>{{ $this->modelData['total_simulated_trades'] }} (${{ $this->modelData['total_stake'] }})</span>
+                        </span>
+                        </div>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-500">Last Trade Signal</span>
+                            <span class="flex items-center gap-1 font-semibold" style="color: {{ $this->modelData['last_score'] > 0 ? '#22c55e' : ($this->modelData['last_score'] == 0 ? '#ffffff' : '#ef4444') }}">
+                                {{ $this->modelData['last_score'] }} <span class="font-light" style="color: white">in {{ \Carbon\Carbon::parse($this->modelData['last_date_calculated'])->format('M d Y') }}</span>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-500">Start of Time Series</span>
+                            <span class="flex items-center gap-1 font-semibold text-white">
+                                {{ \Carbon\Carbon::parse($this->modelData['first_date_calculated'])->format('M d Y') }}
+                            </span>
+                        </div>
+                        {{-- TODO?: add this with labels and elsewhere
+                        <div>
+                            <span class="block text-sm font-medium text-gray-500">Error / Warnings</span>
+                            @if ($this->modelData['error'])
+                                <x-heroicon-o-exclamation-circle class="w-6 h-6" style="color: red" />
+                            @endif
+                            @if ($this->modelData['warning'])
+                                <x-heroicon-o-exclamation-triangle class="w-6 h-6" style="color: orange" />
+                            @endif
+                        </div>
+                        --}}
                         <div style="grid-column: span 3;">
                             <span class="block text-sm font-medium text-gray-500">Metrics</span>
                             <div class="!text-white h-[100px] overflow-y-auto">
