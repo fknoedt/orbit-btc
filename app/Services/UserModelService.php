@@ -20,6 +20,43 @@ class UserModelService
     /** to calculate each day's signal_value, we need to simulate a trade weighted against the threshold */
     public const int TRADE_SIZE_IN_USD = 1000;
 
+    protected int $totalDailyScoresCreated = 0;
+    protected int $totalSimulatedTrades = 0;
+    protected int $totalErrors = 0;
+
+    /** [file:line => ['message' => $message, 'count' => $count]] */
+    protected array $errors = [];
+
+    public function getTotalDailyScoresCreated(): int
+    {
+        return $this->totalDailyScoresCreated;
+    }
+
+    public function getTotalSimulatedTrades(): int
+    {
+        return $this->totalSimulatedTrades;
+    }
+
+    public function getTotalErrors(): int
+    {
+        return $this->totalErrors;
+    }
+
+    public function getErrors(): array
+    {
+        return $this->errors;
+    }
+
+    public function getStats(): array
+    {
+        return [
+            'totalDailyScoresCreated' => $this->totalDailyScoresCreated,
+            'totalSimulatedTrades' => $this->totalSimulatedTrades,
+            'totalErrors' => $this->totalErrors,
+            'errors' => $this->errors,
+        ];
+    }
+
     public function getMaxThreshold(int $userModelId): int
     {
         $max = 0;
@@ -43,7 +80,7 @@ class UserModelService
         Carbon        $since = null,
         MetricService $metricService = null,
         PriceService $priceService = null,
-    ): int
+    ): array
     {
         if (! $metricService) {
             $metricService = new MetricService();
@@ -79,15 +116,15 @@ class UserModelService
         }
 
         // calculate every Metric of every UserMetric and upsert all related tables
-        $totalDailyScoresCreated = 0;
         foreach ($query->get() as $userModel) {
             try {
-                // if one UserModel fail processing, we'll try every other one
-                $totalDailyScoresCreated += DB::transaction(
+                // if one UserModel fail processing, report and save errors to this object and try every other UserModel
+                DB::transaction(
                     function () use ($userModel, $since, $metricService, $priceService) {
                         $now = Carbon::now();
-                        $dailyScoresCreated = 0;
                         $totalSignalValue = 0;
+                        $userModelSimulatedTrades = 0;
+                        $userModelDailyScoresCreated = 0;
                         $warnings = [];
                         // needed to compare oscillation between the current and previous day
                         $previousDailyPrice = null;
@@ -103,9 +140,11 @@ class UserModelService
                                 $userModelMetricsCappedAt : $since->format('Y-m-d');
                         $startDate = Carbon::parse($userModel->data_limited_at);
 
+                        // TODO: use or remove when decision is made (see commented code below)
                         // each Metric should be saved only once, not per day
-                        // $metricsToUpdate = []; // remove when done
+                        // $metricsToUpdate = [];
                         $userModelMetricsWarnings = [];
+                        $userModelDaysCalculated = 0;
 
                         // iterate through every day of the time series and, on each day, go through every metric
                         for ($date = $startDate->copy(); $date->lte($now); $date->addDay()) {
@@ -125,6 +164,10 @@ class UserModelService
                             if (! $previousDailyPrice) {
                                 $previousDailyPrice = $dailyPrice;
                                 continue;
+                            }
+
+                            if ($userModelDaysCalculated === 1) {
+                                $userModel->first_date_calculated = $date->format('Y-m-d');
                             }
 
                             foreach ($userModel->userModelMetrics as $userModelMetric) {
@@ -165,24 +208,37 @@ class UserModelService
 
                             // with (all metrics) daily score set, calculate signal_value
                             // @see https://x.com/i/grok/share/qc9u88jiSlSnW9liwos5Ogc3q
-                            $dailySignalValue = 0;
+                            $conviction = null;
+                            $tradeValue = null;
+                            $dailySignalValue = null;
                             if ($userModelDailyScore >= $userModel->threshold) {
-                                // how strong - above the threshold - the model is today
-                                $tradeStrength = ($userModelDailyScore - $userModel->threshold) / $userModel->threshold;
-                                // amount bought or sold depends on conviction (cap to full value)
-                                $tradeValue = min($tradeStrength, 1) * self::TRADE_SIZE_IN_USD;
+                                // TODO: user_model.conviction_trade bool to make it proportional to how past threshold
+                                if (! empty($userModel->conviction_trade)) {
+                                    // how strong - above the threshold - the model is today
+                                    $tradeStrength =
+                                        ($userModelDailyScore - $userModel->threshold) /
+                                        $userModel->threshold;
+                                    // amount bought or sold depends on conviction (cap to full value)
+                                    $conviction = min($tradeStrength, 1);
+                                } else {
+                                    $conviction = 1;
+                                }
+                                $tradeValue = $conviction * self::TRADE_SIZE_IN_USD;
+
                                 // get the future price change
                                 $futurePriceColumnName = 'price_change_' . $userModel->time_horizon . 'd';
                                 // and normalize it (maybe it should be stored like that in the first place?)
                                 $futureTradeValueChange = ($dailyPrice->{$futurePriceColumnName} / 100);
                                 // total gained or saved this day
-                                // TODO: add `total_profits` + `total_saved` + lost and missed + threshold_hits to model
                                 $futureValueDelta = $tradeValue * $futureTradeValueChange;
                                 // if signal was to sell, invert value (price going up is bad while down is good)
                                 $dailySignalValue = ($userModel->buy_or_sell === 'buy') ?
                                     $futureValueDelta : (-1 * $futureValueDelta);
                                 // sum to the model's grand signal score
                                 $totalSignalValue += $dailySignalValue;
+
+                                $userModelSimulatedTrades++;
+                                $this->totalSimulatedTrades++;
                             }
 
                             $userModel->last_score = $userModelDailyScore;
@@ -195,8 +251,13 @@ class UserModelService
                                 'user_model_id' => $userModel->id,
                                 'score' => $userModelDailyScore,
                                 'signal_value' => $dailySignalValue,
+                                'conviction' => $conviction,
+                                'stake' => $tradeValue,
                             ]);
-                            $dailyScoresCreated++;
+
+                            $userModelDaysCalculated++;
+                            $userModelDailyScoresCreated++;
+                            $this->totalDailyScoresCreated++;
                             $previousDailyPrice = $dailyPrice;
                         }
 
@@ -217,23 +278,31 @@ class UserModelService
 
                         $userModel->total_signal_value = $totalSignalValue;
                         $userModel->scores_last_updated_at = $now->format('Y-m-d H:i:s');
+                        $userModel->total_simulated_trades = $userModelSimulatedTrades;
 
                         $userModel->warning = !empty($warnings);
 
-                        $userModel->error = ($dailyScoresCreated === 0);
+                        $userModel->error = ($userModelDailyScoresCreated === 0);
 
                         $userModel->save();
-
-                        return $dailyScoresCreated;
                     }
                 );
             } catch (\Throwable $e) {
-                // TODO: if $e instanceof UserModelFunctionalException, save UserModel with error info?
-                report($e);
+                $fileLine = $e->getFile() . ':' . $e->getLine();
+                // first occurrence of an error in the same file/line
+                if (! isset($this->errors[$fileLine])) {
+                    report($e);
+                    $this->errors[$fileLine] = [
+                        'message' => $e->getMessage(),
+                        'count' => 0,
+                    ];
+                }
+                $this->errors[$fileLine]['count']++;
+                $this->totalErrors++;
             }
         }
 
-        return $totalDailyScoresCreated;
+        return $this->getStats();
     }
 
     public function getUserStats(int $userId): array

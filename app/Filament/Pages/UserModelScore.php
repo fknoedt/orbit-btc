@@ -7,9 +7,11 @@ use App\Filament\Resources\UserModelResource;
 use App\Models\DailyPrice;
 use App\Models\UserModel;
 use App\Models\UserModelDailyScore;
+use App\Services\UserModelService;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Number;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 
@@ -95,7 +97,8 @@ class UserModelScore extends Page
         // Populate model data for display
         $this->modelData = [
             'description' => $userModel->description,
-            'score' => number_format($userModel->last_score ?? 0, 2),
+            'total_score' => number_format($userModel->total_signal_value ?? 0, 2),
+            'last_score' => number_format($userModel->last_score ?? 0, 2),
             'metrics' => $userModel->userModelMetrics->map(function ($userModelMetric) {
                 return [
                     'id' => $userModelMetric->id,
@@ -110,6 +113,14 @@ class UserModelScore extends Page
             'threshold' => $userModel->threshold ?? 0,
             'signal' => $userModel->buy_or_sell ?? 'N/A',
             'horizon' => $userModel->time_horizon ? ($userModel->time_horizon . ' day' . ($userModel->time_horizon == 1 ? '' : 's')) : 'N/A',
+            'total_simulated_trades' => $userModel->total_simulated_trades ?? 0,
+            'last_signal_value' => $userModel->last_signal_value ?? 0,
+            'first_date_calculated' => $userModel->first_date_calculated ?? '?',
+            'last_date_calculated' => $userModel->last_date_calculated ?? '?',
+            'error' => $userModel->error,
+            'warning' => $userModel->warning,
+            'stake_value' => UserModelService::TRADE_SIZE_IN_USD,
+            'total_stake' => Number::abbreviate(UserModelService::TRADE_SIZE_IN_USD * ($userModel->total_simulated_trades ?? 0)),
         ];
     }
 
@@ -123,7 +134,7 @@ class UserModelScore extends Page
 
         // Update chart data based on the selected model, overriding default behavior
         $this->userModelId = $this->selectedUserModelId; // Set for trait methods if needed
-        $options = $this->getChartOptions($this->selectedUserModelId);
+        $options = $this->getChartOptions($this->selectedUserModelId, 5);
         $this->chartData = [
             'options' => $options,
             'extraJsOptions' => $this->getExtraJsOptions(),
@@ -141,7 +152,7 @@ class UserModelScore extends Page
 
             $dispatchData = [
                 'chartId' => 'chart-daily-score', // Match DOM ID
-                'options' => $this->getChartOptions($this->selectedUserModelId)
+                'options' => $this->getChartOptions($this->selectedUserModelId, 5)
             ];
             $this->dispatch('refresh-chart', $dispatchData);
         }
@@ -189,7 +200,7 @@ class UserModelScore extends Page
     {
         $userModel = UserModel::find($this->selectedUserModelId);
         $this->userModelId = $userModel?->id;
-        $options = $this->getChartOptions($userModel?->id);
+        $options = $this->getChartOptions($userModel?->id, 5);
 
         return [
             'options' => $options,

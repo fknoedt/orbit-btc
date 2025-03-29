@@ -155,7 +155,9 @@ class EditUserModel extends EditRecord
         $currentMetrics = array_values($userModel->userModelMetrics->toArray());
 
         $this->scoreUpdated = $this->originalRecord['threshold'] != $userModel->threshold ||
-            $this->originalMetrics !== $currentMetrics;
+            $this->originalMetrics !== $currentMetrics ||
+            $this->originalRecord['buy_or_sell'] != $userModel->buy_or_sell ||
+            $this->originalRecord['time_horizon'] != $userModel->time_horizon;
 
         // Run service method if either changed
         if ($this->scoreUpdated) {

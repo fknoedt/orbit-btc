@@ -40,13 +40,13 @@ trait UserModelChart
         }
     }
 
-    private function getChartOptions(int $userModelId = null): array
+    private function getChartOptions(int $userModelId = null, int $monthsBack = self::MONTHS_BACK): array
     {
         if (!$userModelId) {
             return [];
         }
         $service = new PriceService();
-        $since = (new Carbon())->subMonths(self::MONTHS_BACK);
+        $since = (new Carbon())->subMonths($monthsBack);
         $dailyPrices = $service->getAllDailyPricesKeyByDate($since, null, false)->toArray();
         $dailyScores = UserModelDailyScore::where('user_model_id', $userModelId)
             ->where('date', '>=', $since->format('Y-m-d'))
@@ -119,7 +119,7 @@ trait UserModelChart
                 'width' => [0, 2]
             ],
             'title' => [
-                'text' => 'BTC Price x Model Score per day since ' . Carbon::now()->subMonths(self::MONTHS_BACK)->format('d M Y'),
+                'text' => 'BTC Price x Model Score per day since ' . Carbon::now()->subMonths($monthsBack)->format('d M Y'),
             ],
             'dataLabels' => [
                 'enabled' => false,
