@@ -22,7 +22,7 @@
             <span class="text-base font-semibold !text-white">
                 @if ($dailyScore->score > $userModel->threshold)
                     {{ $userModel->threshold }}
-                    <x-heroicon-o-check-circle class="inline w-5 h-5 text-blue-500" />
+                    🎯
                     <x-heroicon-o-arrow-right class="inline w-5 h-5" />
                     {{ ucfirst($userModel->buy_or_sell) }}
                     {{ $userModel->buy_or_sell === 'buy' ? '📈' : '📉' }}
@@ -61,7 +61,7 @@
                 Stake:
             </span>
                 <span class="text-base font-semibold !text-white">
-                {{ number_format($dailyScore->stake, 2) }}
+                ${{ number_format($dailyScore->stake, 2) }}
             </span>
             </p>
             <p class="mt-2 text-sm">
@@ -75,7 +75,7 @@
         @else
             <p class="mt-4 text-sm col-span-2 text-center" style="margin-top: 20px; margin-bottom: 20px;">
                 <span class="text-base font-semibold !text-white">
-                    Threshold not hit - no stake
+                    Threshold not hit - no stake in this day
                 </span>
             </p>
         @endif

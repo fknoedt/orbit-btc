@@ -100,13 +100,20 @@
                         <div>
                             <span class="block text-sm font-medium text-gray-500">Last Trade Signal</span>
                             <span class="flex items-center gap-1 font-semibold" style="color: {{ $this->modelData['last_score'] > 0 ? '#22c55e' : ($this->modelData['last_score'] == 0 ? '#ffffff' : '#ef4444') }}">
-                                {{ $this->modelData['last_score'] }} <span class="font-light" style="color: white">in {{ \Carbon\Carbon::parse($this->modelData['last_date_calculated'])->format('M d Y') }}</span>
+                                {{ $this->modelData['last_score'] }}
+                                @if ($this->modelData['last_date_calculated'])
+                                    <span class="font-light" style="color: white">in {{ \Carbon\Carbon::parse($this->modelData['last_date_calculated'])->format('M d Y') }}</span>
+                                @endif
                             </span>
                         </div>
                         <div>
                             <span class="block text-sm font-medium text-gray-500">Start of Time Series</span>
                             <span class="flex items-center gap-1 font-semibold text-white">
+                                @if ($this->modelData['first_date_calculated'])
                                 {{ \Carbon\Carbon::parse($this->modelData['first_date_calculated'])->format('M d Y') }}
+                                @else
+                                N/A
+                                @endif
                             </span>
                         </div>
                         {{-- TODO?: add this with labels and elsewhere
