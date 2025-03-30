@@ -16,6 +16,7 @@
                 <option value="365d">1 Year</option>
                 <option value="1095d">3 Years</option>
                 <option value="1826d">5 Years</option>
+                <option value="3652d">10 Years</option>
                 <option value="0d">All-Time</option>
             </select>
         </div>
