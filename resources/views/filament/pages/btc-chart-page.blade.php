@@ -32,7 +32,7 @@
         <div class="w-full flex items-center gap-3 mt-6">
             <button id="custom-date-button" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 style="background-color: #1f2937;">
-                Search Similar Time Series
+                Search for Similar BTC Price Time Series
             </button>
             <span id="selected-dates" class="text-sm text-gray-500 dark:text-gray-400"></span>
         </div>
