@@ -45,8 +45,9 @@ class BtcChartPage extends Page
             $days = (int)str_replace('d', '', $this->selectedPeriod);
             $startDate = $endDate->copy()->subDays($days);
         }
-        $shortDates = false; // isset($days) && $days < 365;
-        $prices = $priceService->getClosePriceByDays($startDate, $endDate, true, $shortDates);
+
+        // don't use $shortDates or it will break the chart when 1+ year (overlapping)
+        $prices = $priceService->getClosePriceByDays($startDate, $endDate, true);
 
         $firstPrice = reset($prices)['close'];
         $lastPrice = $prices[array_key_last($prices)]['close'];
