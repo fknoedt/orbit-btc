@@ -9,7 +9,7 @@ use Filament\Pages\Page;
 
 class TimeSeriesPage extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-magnifying-glass';
+    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
 
     protected static string $view = 'filament.pages.time-series-page';
 
@@ -19,18 +19,27 @@ class TimeSeriesPage extends Page
     public array $selectedMetric = ['close'];
     public ?string $startDateViewed = null;
     public ?string $endDateViewed = null;
+    public string $dateLabel = '';
 
     public array $chartData = [];
+    public array $additionalCharts = [];
 
     public function mount(): void
     {
-        $this->updateChartData();
+        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetric);
+        $this->chartData = $chartData;
+        $this->startDateViewed = $chartData['startDate'];
+        $this->endDateViewed = $chartData['endDate'];
+        $this->updateDateLabel();
     }
 
     public function updatedSelectedPeriod(): void
     {
-        // Do not reset viewed dates; let the chart handle persistence via window.selectedDates
-        $this->updateChartData();
+        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetric);
+        $this->chartData = $chartData;
+        $this->startDateViewed = $chartData['startDate'];
+        $this->endDateViewed = $chartData['endDate'];
+        $this->updateDateLabel();
         $this->dispatchChartUpdate();
     }
 
@@ -39,8 +48,30 @@ class TimeSeriesPage extends Page
         if (count($this->selectedMetric) > 2) {
             $this->selectedMetric = array_slice($this->selectedMetric, 0, 2);
         }
-        $this->updateChartData();
+        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetric);
+        $this->chartData = $chartData;
+        $this->startDateViewed = $chartData['startDate'];
+        $this->endDateViewed = $chartData['endDate'];
+        $this->updateDateLabel();
         $this->dispatchChartUpdate();
+    }
+
+    public function updateDateRange(string $start, string $end): void
+    {
+        if ($this->startDateViewed !== $start || $this->endDateViewed !== $end) {
+            $this->startDateViewed = $start;
+            $this->endDateViewed = $end;
+            $this->updateDateLabel();
+        }
+    }
+
+    protected function updateDateLabel(): void
+    {
+        if ($this->startDateViewed && $this->endDateViewed) {
+            $this->dateLabel = "{$this->startDateViewed} to {$this->endDateViewed}";
+        } else {
+            $this->dateLabel = '';
+        }
     }
 
     protected function dispatchChartUpdate(): void
@@ -52,16 +83,21 @@ class TimeSeriesPage extends Page
         $this->dispatch('refresh-chart', $dispatchData);
     }
 
-    protected function updateChartData(): void
+    protected function generateChartData(string $period, array $metrics, ?string $startDate = null, ?string $endDate = null): array
     {
         $priceService = new PriceService();
-        $endDate = now();
+        $endDate = $endDate ? Carbon::parse($endDate) : now();
 
-        if ($this->selectedPeriod === '0d') {
-            $startDate = Carbon::parse(config('btc.first_cmc_available_date'));
-        } else {
-            $days = (int)str_replace('d', '', $this->selectedPeriod);
-            $startDate = $endDate->copy()->subDays($days);
+        if ($startDate) {
+            $startDate = Carbon::parse($startDate);
+        }
+        else {
+            if ($period === '0d') {
+                $startDate = Carbon::parse(config('btc.first_cmc_available_date'));
+            } else {
+                $days = (int)str_replace('d', '', $period);
+                $startDate = $endDate->copy()->subDays($days);
+            }
         }
 
         $dailyPrices = $priceService->getDailyPriceByDays($startDate, $endDate, true);
@@ -71,18 +107,18 @@ class TimeSeriesPage extends Page
         $yaxis = [];
         $metricOptions = [
             'market_cap' => ['name' => 'Market Cap (USD)', 'yTitle' => 'Market Cap (USD)', 'color' => '#4CAF50'],
-            'total_volume' => ['name' => 'Total Volume Traded (USD)', 'yTitle' => 'Volume (USD)', 'color' => '#FF9800'],
-            'close' => ['name' => 'BTC Price (USD)', 'yTitle' => 'Price (USD)', 'color' => '#2196F3'],
+            'total_volume' => ['name' => 'Total Volume Traded (USD)', 'yTitle' => 'Volume (USD)', 'color' => '#2196F3'],
+            'close' => ['name' => 'BTC Price (USD)', 'yTitle' => 'Price (USD)', 'color' => '#FF9800'],
             'average_fee' => ['name' => 'Average BTC Fee', 'yTitle' => 'Fee (BTC)', 'color' => '#9C27B0'],
             'exchanges_reserve' => ['name' => 'Exchanges Reserve', 'yTitle' => 'Reserve (BTC)', 'color' => '#FF5722'],
             'fear_and_greed' => ['name' => 'Fear & Greed Index', 'yTitle' => 'Index', 'color' => '#607D8B'],
             'mayer_multiple' => ['name' => 'Mayer Multiple', 'yTitle' => 'Multiple', 'color' => '#E91E63'],
         ];
 
-        foreach ($this->selectedMetric as $index => $metric) {
+        foreach ($metrics as $index => $metric) {
             $firstValue = reset($dailyPrices)[$metric] ?? 0;
             $lastValue = $dailyPrices[array_key_last($dailyPrices)][$metric] ?? 0;
-            if (count($this->selectedMetric) === 1) {
+            if (count($metrics) === 1) {
                 $areaColor = $firstValue > $lastValue ? '#CA2E2E' : ($firstValue < $lastValue ? '#32B000' : '#1968E7');
             } else {
                 $areaColor = $metricOptions[$metric]['color'] ?? '#2196F3';
@@ -107,7 +143,7 @@ class TimeSeriesPage extends Page
 
         $options = [
             'chart' => [
-                'type' => count($this->selectedMetric) === 1 ? 'area' : 'line',
+                'type' => count($metrics) === 1 ? 'area' : 'line',
                 'height' => 300,
                 'width' => '100%',
                 'stacked' => false,
@@ -127,53 +163,25 @@ class TimeSeriesPage extends Page
                     'type' => 'x',
                     'autoScaleYaxis' => false,
                 ],
-                'events' => [
-                    'selection' => 'function(chartContext, { xaxis }) {
-                        if (xaxis.min && xaxis.max) {
-                            const startDate = new Date(xaxis.min).toISOString().split("T")[0];
-                            const endDate = new Date(xaxis.max).toISOString().split("T")[0];
-                            window.selectedDates = { start: startDate, end: endDate };
-                            document.dispatchEvent(new CustomEvent("selectionUpdated", {
-                                detail: { start: startDate, end: endDate }
-                            }));
-                        }
-                    }',
-                    'zoomed' => 'function(chartContext, { xaxis }) {
-                        if (xaxis.min && xaxis.max) {
-                            const startDate = new Date(xaxis.min).toISOString().split("T")[0];
-                            const endDate = new Date(xaxis.max).toISOString().split("T")[0];
-                            window.selectedDates = { start: startDate, end: endDate };
-                            document.dispatchEvent(new CustomEvent("selectionUpdated", {
-                                detail: { start: startDate, end: endDate }
-                            }));
-                        }
-                    }',
-                    'updated' => 'function(chartContext) {
-                        const xaxis = chartContext.w.globals.initialConfig.xaxis;
-                        if (xaxis.min && xaxis.max) {
-                            const minDate = new Date(xaxis.min).toISOString().split("T")[0];
-                            const maxDate = new Date(xaxis.max).toISOString().split("T")[0];
-                            window.selectedDates = { start: minDate, end: maxDate };
-                            document.dispatchEvent(new CustomEvent("selectionUpdated", {
-                                detail: { start: minDate, end: maxDate }
-                            }));
-                        }
-                    }',
-                ],
             ],
             'series' => $series,
             'colors' => $colors,
+            'stroke' => [
+                'curve' => 'straight',
+                'lineCap' => 'butt',
+                'width' => 2,
+            ],
             'xaxis' => [
                 'type' => 'datetime',
                 'labels' => [
                     'format' => 'MMM dd yy',
                 ],
-                'min' => $this->startDateViewed ? Carbon::parse($this->startDateViewed)->timestamp * 1000 : null,
-                'max' => $this->endDateViewed ? Carbon::parse($this->endDateViewed)->timestamp * 1000 : null,
+                'min' => $startDate->timestamp * 1000,
+                'max' => $endDate->timestamp * 1000,
             ],
             'yaxis' => $yaxis,
             'fill' => [
-                'type' => count($this->selectedMetric) === 1 ? ['gradient'] : ['solid'],
+                'type' => count($metrics) === 1 ? ['gradient'] : ['solid'],
                 'gradient' => [
                     'shade' => 'light',
                     'type' => 'vertical',
@@ -203,39 +211,80 @@ class TimeSeriesPage extends Page
             ],
         ];
 
-        $this->chartData = [
+        return [
             'options' => $options,
             'extraJsOptions' => [
                 'fullDates' => array_keys($dailyPrices),
             ],
+            'startDate' => $startDate->toDateString(),
+            'endDate' => $endDate->toDateString(),
         ];
-
-        if (!$this->startDateViewed || !$this->endDateViewed) {
-            $this->startDateViewed = $startDate->toDateString();
-            $this->endDateViewed = $endDate->toDateString();
-        }
     }
 
     public function searchSimilar(): void
     {
         $start = $this->startDateViewed;
         $end = $this->endDateViewed;
-        $limit = config('btc.time_series_pattern_max_days');
 
-        $startDate = Carbon::parse($start);
-        $endDate = Carbon::parse($end);
-        $daysDiff = $startDate->diffInDays($endDate);
-
-        if ($daysDiff > $limit) {
+        if (!$start || !$end) {
             Notification::make()
                 ->title('Error')
-                ->body("Chosen period ($daysDiff days) exceeds the maximum allowed ($limit days)")
+                ->body('Please select a date range on the chart before searching.')
                 ->danger()
                 ->send();
             return;
         }
 
-        // Placeholder for search logic; currently logs the selection
-        \Log::info("Viewed Dates - Start: $start, End: $end, Metrics: " . implode(', ', $this->selectedMetric));
+        $startDate = Carbon::parse($start);
+        $endDate = Carbon::parse($end);
+        $daysDiff = $startDate->diffInDays($endDate);
+
+        $limitMin = config('btc.time_series_pattern_min_days', 7);
+        $limitMax = config('btc.time_series_pattern_max_days', 365);
+
+        if ($daysDiff > $limitMax) {
+            Notification::make()
+                ->title('Error')
+                ->body("Chosen period ({$daysDiff} days) exceeds the maximum allowed ({$limitMax} days)")
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if ($daysDiff < $limitMin) {
+            Notification::make()
+                ->title('Error')
+                ->body("Choose a period of at least {$limitMin} days")
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // Generate additional chart for the immediate previous period
+        $previousEndDate = $startDate->copy()->subDay();
+        $previousStartDate = $previousEndDate->copy()->subDays($daysDiff);
+
+        $additionalChartData = $this->generateChartData(
+            $this->selectedPeriod,
+            $this->selectedMetric,
+            $previousStartDate->toDateString(),
+            $previousEndDate->toDateString()
+        );
+        $this->additionalCharts[] = $additionalChartData['options'];
+
+        // Generate two more charts for earlier periods
+        for ($i = 1; $i <= 2; $i++) {
+            $shiftedEndDate = $startDate->copy()->subDays($i * ($daysDiff + 1));
+            $shiftedStartDate = $shiftedEndDate->copy()->subDays($daysDiff);
+            $chartData = $this->generateChartData(
+                $this->selectedPeriod,
+                $this->selectedMetric,
+                $shiftedStartDate->toDateString(),
+                $shiftedEndDate->toDateString()
+            );
+            $this->additionalCharts[] = $chartData['options'];
+        }
+
+        $this->dispatch('additional-chart-added');
     }
 }

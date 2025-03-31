@@ -62,6 +62,10 @@
                 </select>
             </div>
         </div>
+        <!-- Hidden Button to Trigger Date Range Update -->
+        <div wire:ignore style="display: none;">
+            <button id="update-date-range" wire:click="updateDateRange($event.target.dataset.start, $event.target.dataset.end)"></button>
+        </div>
         <div class="w-full">
             @include('filament.components.time-series-chart', [
                 'label' => '',
@@ -77,11 +81,27 @@
                         style="background-color: #1f2937;">
                     Search for Similar Time Series Pattern
                 </button>
-                <span id="selected-dates" class="text-sm text-gray-500 dark:text-gray-400"></span>
+                <span id="selected-dates" class="text-sm text-gray-500 dark:text-gray-400">{{ $dateLabel }}</span>
                 <span class="text-lg font-medium text-gray-500 flex items-center gap-1">
                     <x-heroicon-o-question-mark-circle class="w-6 h-6" title="Select time ranges and use the button to search for time series similar to the displayed range" />
                 </span>
             </div>
+        </div>
+
+        <div wire:key="additional-charts-{{ count($additionalCharts) }}">
+            @foreach($additionalCharts as $index => $chartOptions)
+                <hr class="my-4">
+                <div class="w-full" wire:key="additional-chart-{{ $index }}">
+                    @include('filament.components.time-series-chart', [
+                        'label' => 'Additional Chart ' . ($index + 1),
+                        'name' => 'additional-chart-' . $index,
+                        'hint' => null,
+                        'options' => $chartOptions,
+                        'rawExtraJsOptions' => [],
+                        'data-options' => $chartOptions, // Add this
+                    ])
+                </div>
+            @endforeach
         </div>
     </div>
 
@@ -105,4 +125,94 @@
             appearance: none !important;
         }
     </style>
+
+    <!-- JavaScript to Handle Chart Updates -->
+    <script>
+        // Store the selected dates globally to persist across renders
+        window.selectedDates = window.selectedDates || { start: null, end: null };
+        let debounceTimeout = null;
+
+        // Debounce function to prevent multiple rapid updates
+        function debounce(func, wait) {
+            return function(...args) {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // Handle selectionUpdated event for zoom/selection
+        const handleSelectionUpdated = debounce(function(event) {
+            const { start, end } = event.detail;
+
+            // Update the global selectedDates
+            window.selectedDates.start = start;
+            window.selectedDates.end = end;
+
+            // Update the UI with selected dates
+            document.getElementById('selected-dates').textContent = `Viewing ${start} to ${end}`;
+
+            // Trigger the hidden button to update the server
+            const updateButton = document.getElementById('update-date-range');
+            updateButton.dataset.start = start;
+            updateButton.dataset.end = end;
+            updateButton.click();
+        }, 300);
+
+        document.addEventListener('selectionUpdated', handleSelectionUpdated);
+
+        // Ensure the label persists after Livewire re-renders
+        document.addEventListener('livewire:load', function() {
+            if (window.selectedDates.start && window.selectedDates.end) {
+                document.getElementById('selected-dates').textContent = `Viewing ${window.selectedDates.start} to ${window.selectedDates.end}`;
+            }
+        });
+
+        // Store additional chart options globally
+        window.additionalChartOptions = window.additionalChartOptions || {};
+
+        // Handle additional-chart-added event
+        document.addEventListener('additional-chart-added', function() {
+            // Wait for Livewire to update the DOM
+            setTimeout(() => {
+                // Find all chart containers that haven't been initialized
+                document.querySelectorAll('[id^=chart-]').forEach(function(chartElement) {
+                    const chartId = chartElement.id;
+                    if (!window.chartInstances[chartId] && chartId !== 'chart-btc-price') {
+                        const options = JSON.parse(chartElement.getAttribute('data-options') || '{}');
+                        if (Object.keys(options).length > 0) {
+                            window.initializeChart(chartId, options);
+                        } else {
+                            console.warn('No options found for chart:', chartId);
+                        }
+                    }
+                });
+            }, 100);
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof Livewire !== 'undefined') {
+                Livewire.hook('message.processed', () => {
+                    const chartElement = document.querySelector(`#${chartId}`);
+                    if (chartElement && !window.chartInstances[chartId]) {
+                        setTimeout(setupChart, 200);
+                    }
+                });
+            } else {
+                console.warn('Livewire not defined, skipping hook');
+            }
+
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    const chartElement = document.querySelector(`#${chartId}`);
+                    if (!chartElement && window.chartInstances[chartId]) {
+                        window.chartInstances[chartId].destroy();
+                        delete window.chartInstances[chartId];
+                    } else if (chartElement && !window.chartInstances[chartId]) {
+                        setupChart();
+                    }
+                });
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+    </script>
 </x-filament-panels::page>
