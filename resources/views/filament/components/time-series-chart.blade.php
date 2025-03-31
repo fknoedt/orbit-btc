@@ -5,7 +5,7 @@
     </div>
 
     <div wire:ignore style="height: 300px; max-height: 300px; overflow: hidden;">
-        <div id="chart-{{ $name ?? 'btc-chart-' . uniqid() }}" style="width: 100%; height: 300px; min-height: 300px; max-height: 300px; position: relative; overflow: visible !important;"></div>
+        <div id="chart-{{ $name ?? 'time-series-' . uniqid() }}" style="width: 100%; height: 300px; min-height: 300px; max-height: 300px; position: relative; overflow: visible !important;"></div>
     </div>
 
     @if (isset($hint) && $hint)
@@ -19,7 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2/dist/apexcharts.min.js"></script>
 <script>
     window.chartInstances = window.chartInstances || {};
-    const chartId = 'chart-{{ $name ?? 'btc-chart-' . uniqid() }}';
+    const chartId = 'chart-{{ $name ?? 'time-series-' . uniqid() }}';
 
     function initializeChart(chartId, options) {
         const chartElement = document.querySelector(`#${chartId}`);
@@ -51,6 +51,42 @@
         options.chart = options.chart || {};
         options.chart.events = options.chart.events || {};
 
+        // Add y-axis formatter with extended human-readable scales
+        options.yaxis = options.yaxis || [];
+        if (Array.isArray(options.yaxis)) {
+            options.yaxis.forEach(axis => {
+                axis.labels = axis.labels || {};
+                axis.labels.formatter = function(value) {
+                    if (value >= 1_000_000_000_000) {
+                        return (value / 1_000_000_000_000).toFixed(1) + 'T';
+                    } else if (value >= 1_000_000_000) {
+                        return (value / 1_000_000_000).toFixed(1) + 'B';
+                    } else if (value >= 1_000_000) {
+                        return (value / 1_000_000).toFixed(1) + 'M';
+                    } else if (value >= 1_000) {
+                        return (value / 1_000).toFixed(1) + 'k';
+                    } else {
+                        return value.toFixed(0);
+                    }
+                };
+            });
+        } else {
+            options.yaxis.labels = options.yaxis.labels || {};
+            options.yaxis.labels.formatter = function(value) {
+                if (value >= 1_000_000_000_000) {
+                    return (value / 1_000_000_000_000).toFixed(1) + 'T';
+                } else if (value >= 1_000_000_000) {
+                    return (value / 1_000_000_000).toFixed(1) + 'B';
+                } else if (value >= 1_000_000) {
+                    return (value / 1_000_000).toFixed(1) + 'M';
+                } else if (value >= 1_000) {
+                    return (value / 1_000).toFixed(1) + 'k';
+                } else {
+                    return value.toFixed(0);
+                }
+            };
+        }
+
         // Keep the existing events from the options
         const originalSelection = options.chart.events.selection;
         const originalZoomed = options.chart.events.zoomed;
@@ -72,7 +108,7 @@
 
         options.chart.events.zoomed = function(chartContext, { xaxis, yaxis }) {
             if (typeof originalZoomed === 'function') {
-                originalZoomed(chartContext, { xaxis, yaxis });
+                originalZoomed(callbackContext, { xaxis, yaxis });
             }
             if (xaxis.min && xaxis.max && !isNaN(xaxis.min) && !isNaN(xaxis.max)) {
                 const startDate = new Date(xaxis.min).toISOString().split("T")[0];
@@ -177,6 +213,42 @@
         if (chartIdFromEvent === chartId && options?.series) {
             const extraJsOptions = @json($rawExtraJsOptions);
             const fullDates = extraJsOptions.fullDates || [];
+
+            // Add y-axis formatter with extended human-readable scales for updates
+            options.yaxis = options.yaxis || [];
+            if (Array.isArray(options.yaxis)) {
+                options.yaxis.forEach(axis => {
+                    axis.labels = axis.labels || {};
+                    axis.labels.formatter = function(value) {
+                        if (value >= 1_000_000_000_000) {
+                            return (value / 1_000_000_000_000).toFixed(1) + 'T';
+                        } else if (value >= 1_000_000_000) {
+                            return (value / 1_000_000_000).toFixed(1) + 'B';
+                        } else if (value >= 1_000_000) {
+                            return (value / 1_000_000).toFixed(1) + 'M';
+                        } else if (value >= 1_000) {
+                            return (value / 1_000).toFixed(1) + 'k';
+                        } else {
+                            return value.toFixed(0);
+                        }
+                    };
+                });
+            } else {
+                options.yaxis.labels = options.yaxis.labels || {};
+                options.yaxis.labels.formatter = function(value) {
+                    if (value >= 1_000_000_000_000) {
+                        return (value / 1_000_000_000_000).toFixed(1) + 'T';
+                    } else if (value >= 1_000_000_000) {
+                        return (value / 1_000_000_000).toFixed(1) + 'B';
+                    } else if (value >= 1_000_000) {
+                        return (value / 1_000_000).toFixed(1) + 'M';
+                    } else if (value >= 1_000) {
+                        return (value / 1_000).toFixed(1) + 'k';
+                    } else {
+                        return value.toFixed(0);
+                    }
+                };
+            }
 
             // Update options with event handlers
             options.chart = options.chart || {};

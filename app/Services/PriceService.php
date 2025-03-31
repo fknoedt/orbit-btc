@@ -31,7 +31,7 @@ class PriceService
      * Return array of DailyPrice arrays indexed by dates (useful for charts)
      *
      */
-    public function getClosePriceByDays(
+    public function getDailyPriceByDays(
         Carbon $startDate,
         Carbon $endDate,
         bool   $reduce = false,

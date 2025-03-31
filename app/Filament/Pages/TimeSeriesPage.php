@@ -6,15 +6,16 @@ use App\Services\PriceService;
 use Carbon\Carbon;
 use Filament\Pages\Page;
 
-class BtcChartPage extends Page
+class TimeSeriesPage extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-magnifying-glass';
 
-    protected static string $view = 'filament.pages.btc-chart-page';
+    protected static string $view = 'filament.pages.time-series-page';
 
     protected static ?string $title = 'Time Series';
 
-    public string $selectedPeriod = '365d'; // Default to 1 month (30 days)
+    public string $selectedPeriod = '365d'; // Default to 1 year
+    public string $selectedMetric = 'close'; // Default to BTC Price
 
     public array $chartData = [];
 
@@ -26,7 +27,16 @@ class BtcChartPage extends Page
     public function updatedSelectedPeriod(): void
     {
         $this->updateChartData();
-        // Dispatch refresh-chart event to update the chart in the frontend
+        $dispatchData = [
+            'chartId' => 'chart-btc-price',
+            'options' => $this->chartData['options'] ?? [],
+        ];
+        $this->dispatch('refresh-chart', $dispatchData);
+    }
+
+    public function updatedSelectedMetric(): void
+    {
+        $this->updateChartData();
         $dispatchData = [
             'chartId' => 'chart-btc-price',
             'options' => $this->chartData['options'] ?? [],
@@ -47,16 +57,17 @@ class BtcChartPage extends Page
         }
 
         // don't use $shortDates or it will break the chart when 1+ year (overlapping)
-        $prices = $priceService->getClosePriceByDays($startDate, $endDate, true);
+        $dailyPrices = $priceService->getDailyPriceByDays($startDate, $endDate, true);
 
-        $firstPrice = reset($prices)['close'];
-        $lastPrice = $prices[array_key_last($prices)]['close'];
-        $areaColor = $firstPrice > $lastPrice ?
-            '#CA2E2E' : // red price
+        $firstValue = reset($dailyPrices)[$this->selectedMetric] ?? 0;
+        $lastValue = $dailyPrices[array_key_last($dailyPrices)][$this->selectedMetric] ?? 0;
+
+        $areaColor = $firstValue > $lastValue ?
+            '#CA2E2E' : // red
             (
-            $firstPrice < $lastPrice ?
-                '#32B000' : // green price
-                '#1968E7' // blue price -- didn't change 🤯
+            $firstValue < $lastValue ?
+                '#32B000' : // green
+                '#1968E7' // blue -- no change 🤯
             );
 
         $options = [
@@ -117,8 +128,22 @@ class BtcChartPage extends Page
             ],
             'series' => [
                 [
-                    'name' => 'BTC Price (USD)',
-                    'data' => array_map(fn($date, $price) => [$date, $price], array_keys($prices), array_map(fn ($item) => $item['close'], $prices)),
+                    'name' => match ($this->selectedMetric) {
+                        'market_cap' => 'Market Cap (USD)',
+                        'total_volume' => 'Total Volume Traded (USD)',
+                        'close' => 'BTC Price (USD)',
+                        'average_fee' => 'Average BTC Fee',
+                        'exchanges_reserve' => 'Exchanges Reserve',
+                        'fear_and_greed' => 'Fear & Greed Index',
+                        'mayer_multiple' => 'Mayer Multiple',
+                        default => 'BTC Price (USD)',
+                    },
+                    'data' => array_map(fn($date, $item) => [
+                        $date,
+                        $item[$this->selectedMetric]],
+                        array_keys($dailyPrices),
+                        $dailyPrices
+                    ),
                 ],
             ],
             'colors' => [
@@ -133,9 +158,18 @@ class BtcChartPage extends Page
             'yaxis' => [
                 [
                     'title' => [
-                        'text' => 'Price (USD)',
+                        'text' => match ($this->selectedMetric) {
+                            'market_cap' => 'Market Cap (USD)',
+                            'total_volume' => 'Volume (USD)',
+                            'close' => 'Price (USD)',
+                            'average_fee' => 'Fee (BTC)',
+                            'exchanges_reserve' => 'Reserve (BTC)',
+                            'fear_and_greed' => 'Index',
+                            'mayer_multiple' => 'Multiple',
+                            default => 'Price (USD)',
+                        },
                     ],
-                    'decimalsInFloat' => 0,
+                    'decimalsInFloat' => $this->selectedMetric === 'mayer_multiple' ? 2 : 0,
                     'tickAmount' => 10,
                 ],
             ],
@@ -145,7 +179,7 @@ class BtcChartPage extends Page
                     'shade' => 'light',
                     'type' => 'vertical',
                     'shadeIntensity' => 0.5,
-                    'gradientToColors' => [$areaColor], // Uses the defined color
+                    'gradientToColors' => [$areaColor],
                     'inverseColors' => true,
                     'opacityFrom' => 0.5,
                     'opacityTo' => 0.0,
@@ -172,11 +206,10 @@ class BtcChartPage extends Page
         $this->chartData = [
             'options' => $options,
             'extraJsOptions' => [
-                'fullDates' => array_keys($prices),
+                'fullDates' => array_keys($dailyPrices),
             ],
         ];
 
-        // Dispatch refresh-chart event after updating chart data
         $dispatchData = [
             'chartId' => 'chart-btc-price',
             'options' => $this->chartData['options'] ?? [],

@@ -58,7 +58,7 @@ class BtcPriceChartWidget extends AdvancedChartWidget
                 $startDate = now()->subDays($numberOfDays);
             }
 
-            $prices = $priceService->getClosePriceByDays($startDate, $endDate, true, true);
+            $prices = $priceService->getDailyPriceByDays($startDate, $endDate, true, true);
 
             $stat = [
                 'datasets' => [
