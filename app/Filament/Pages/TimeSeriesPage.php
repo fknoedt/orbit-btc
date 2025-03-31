@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Services\PriceService;
 use Carbon\Carbon;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 
 class TimeSeriesPage extends Page
@@ -14,8 +15,10 @@ class TimeSeriesPage extends Page
 
     protected static ?string $title = 'Time Series';
 
-    public string $selectedPeriod = '365d'; // Default to 1 year
-    public string $selectedMetric = 'close'; // Default to BTC Price
+    public string $selectedPeriod = '365d';
+    public array $selectedMetric = ['close'];
+    public ?string $startDateViewed = null;
+    public ?string $endDateViewed = null;
 
     public array $chartData = [];
 
@@ -26,17 +29,22 @@ class TimeSeriesPage extends Page
 
     public function updatedSelectedPeriod(): void
     {
+        // Do not reset viewed dates; let the chart handle persistence via window.selectedDates
         $this->updateChartData();
-        $dispatchData = [
-            'chartId' => 'chart-btc-price',
-            'options' => $this->chartData['options'] ?? [],
-        ];
-        $this->dispatch('refresh-chart', $dispatchData);
+        $this->dispatchChartUpdate();
     }
 
     public function updatedSelectedMetric(): void
     {
+        if (count($this->selectedMetric) > 2) {
+            $this->selectedMetric = array_slice($this->selectedMetric, 0, 2);
+        }
         $this->updateChartData();
+        $this->dispatchChartUpdate();
+    }
+
+    protected function dispatchChartUpdate(): void
+    {
         $dispatchData = [
             'chartId' => 'chart-btc-price',
             'options' => $this->chartData['options'] ?? [],
@@ -56,23 +64,50 @@ class TimeSeriesPage extends Page
             $startDate = $endDate->copy()->subDays($days);
         }
 
-        // don't use $shortDates or it will break the chart when 1+ year (overlapping)
         $dailyPrices = $priceService->getDailyPriceByDays($startDate, $endDate, true);
 
-        $firstValue = reset($dailyPrices)[$this->selectedMetric] ?? 0;
-        $lastValue = $dailyPrices[array_key_last($dailyPrices)][$this->selectedMetric] ?? 0;
+        $series = [];
+        $colors = [];
+        $yaxis = [];
+        $metricOptions = [
+            'market_cap' => ['name' => 'Market Cap (USD)', 'yTitle' => 'Market Cap (USD)', 'color' => '#4CAF50'],
+            'total_volume' => ['name' => 'Total Volume Traded (USD)', 'yTitle' => 'Volume (USD)', 'color' => '#FF9800'],
+            'close' => ['name' => 'BTC Price (USD)', 'yTitle' => 'Price (USD)', 'color' => '#2196F3'],
+            'average_fee' => ['name' => 'Average BTC Fee', 'yTitle' => 'Fee (BTC)', 'color' => '#9C27B0'],
+            'exchanges_reserve' => ['name' => 'Exchanges Reserve', 'yTitle' => 'Reserve (BTC)', 'color' => '#FF5722'],
+            'fear_and_greed' => ['name' => 'Fear & Greed Index', 'yTitle' => 'Index', 'color' => '#607D8B'],
+            'mayer_multiple' => ['name' => 'Mayer Multiple', 'yTitle' => 'Multiple', 'color' => '#E91E63'],
+        ];
 
-        $areaColor = $firstValue > $lastValue ?
-            '#CA2E2E' : // red
-            (
-            $firstValue < $lastValue ?
-                '#32B000' : // green
-                '#1968E7' // blue -- no change 🤯
-            );
+        foreach ($this->selectedMetric as $index => $metric) {
+            $firstValue = reset($dailyPrices)[$metric] ?? 0;
+            $lastValue = $dailyPrices[array_key_last($dailyPrices)][$metric] ?? 0;
+            if (count($this->selectedMetric) === 1) {
+                $areaColor = $firstValue > $lastValue ? '#CA2E2E' : ($firstValue < $lastValue ? '#32B000' : '#1968E7');
+            } else {
+                $areaColor = $metricOptions[$metric]['color'] ?? '#2196F3';
+            }
+
+            $series[] = [
+                'name' => $metricOptions[$metric]['name'] ?? 'BTC Price (USD)',
+                'data' => array_map(fn($date, $item) => [$date, $item[$metric]], array_keys($dailyPrices), $dailyPrices),
+            ];
+            $colors[] = $areaColor;
+
+            $yaxis[] = [
+                'seriesName' => $metricOptions[$metric]['name'] ?? 'BTC Price (USD)',
+                'opposite' => $index === 1,
+                'title' => [
+                    'text' => $metricOptions[$metric]['yTitle'] ?? 'Price (USD)',
+                ],
+                'decimalsInFloat' => $metric === 'mayer_multiple' ? 2 : 0,
+                'tickAmount' => 10,
+            ];
+        }
 
         $options = [
             'chart' => [
-                'type' => 'area',
+                'type' => count($this->selectedMetric) === 1 ? 'area' : 'line',
                 'height' => 300,
                 'width' => '100%',
                 'stacked' => false,
@@ -90,10 +125,10 @@ class TimeSeriesPage extends Page
                 'zoom' => [
                     'enabled' => true,
                     'type' => 'x',
-                    'autoScaleYaxis' => true,
+                    'autoScaleYaxis' => false,
                 ],
                 'events' => [
-                    'selection' => 'function(chartContext, { xaxis, yaxis }) {
+                    'selection' => 'function(chartContext, { xaxis }) {
                         if (xaxis.min && xaxis.max) {
                             const startDate = new Date(xaxis.min).toISOString().split("T")[0];
                             const endDate = new Date(xaxis.max).toISOString().split("T")[0];
@@ -103,7 +138,7 @@ class TimeSeriesPage extends Page
                             }));
                         }
                     }',
-                    'zoomed' => 'function(chartContext, { xaxis, yaxis }) {
+                    'zoomed' => 'function(chartContext, { xaxis }) {
                         if (xaxis.min && xaxis.max) {
                             const startDate = new Date(xaxis.min).toISOString().split("T")[0];
                             const endDate = new Date(xaxis.max).toISOString().split("T")[0];
@@ -126,65 +161,30 @@ class TimeSeriesPage extends Page
                     }',
                 ],
             ],
-            'series' => [
-                [
-                    'name' => match ($this->selectedMetric) {
-                        'market_cap' => 'Market Cap (USD)',
-                        'total_volume' => 'Total Volume Traded (USD)',
-                        'close' => 'BTC Price (USD)',
-                        'average_fee' => 'Average BTC Fee',
-                        'exchanges_reserve' => 'Exchanges Reserve',
-                        'fear_and_greed' => 'Fear & Greed Index',
-                        'mayer_multiple' => 'Mayer Multiple',
-                        default => 'BTC Price (USD)',
-                    },
-                    'data' => array_map(fn($date, $item) => [
-                        $date,
-                        $item[$this->selectedMetric]],
-                        array_keys($dailyPrices),
-                        $dailyPrices
-                    ),
-                ],
-            ],
-            'colors' => [
-                $areaColor
-            ],
+            'series' => $series,
+            'colors' => $colors,
             'xaxis' => [
                 'type' => 'datetime',
                 'labels' => [
                     'format' => 'MMM dd yy',
                 ],
+                'min' => $this->startDateViewed ? Carbon::parse($this->startDateViewed)->timestamp * 1000 : null,
+                'max' => $this->endDateViewed ? Carbon::parse($this->endDateViewed)->timestamp * 1000 : null,
             ],
-            'yaxis' => [
-                [
-                    'title' => [
-                        'text' => match ($this->selectedMetric) {
-                            'market_cap' => 'Market Cap (USD)',
-                            'total_volume' => 'Volume (USD)',
-                            'close' => 'Price (USD)',
-                            'average_fee' => 'Fee (BTC)',
-                            'exchanges_reserve' => 'Reserve (BTC)',
-                            'fear_and_greed' => 'Index',
-                            'mayer_multiple' => 'Multiple',
-                            default => 'Price (USD)',
-                        },
-                    ],
-                    'decimalsInFloat' => $this->selectedMetric === 'mayer_multiple' ? 2 : 0,
-                    'tickAmount' => 10,
-                ],
-            ],
+            'yaxis' => $yaxis,
             'fill' => [
-                'type' => ['gradient'],
+                'type' => count($this->selectedMetric) === 1 ? ['gradient'] : ['solid'],
                 'gradient' => [
                     'shade' => 'light',
                     'type' => 'vertical',
                     'shadeIntensity' => 0.5,
-                    'gradientToColors' => [$areaColor],
+                    'gradientToColors' => $colors,
                     'inverseColors' => true,
                     'opacityFrom' => 0.5,
                     'opacityTo' => 0.0,
                     'stops' => [0, 100]
-                ]
+                ],
+                'opacity' => 1,
             ],
             'grid' => [
                 'show' => false,
@@ -210,10 +210,32 @@ class TimeSeriesPage extends Page
             ],
         ];
 
-        $dispatchData = [
-            'chartId' => 'chart-btc-price',
-            'options' => $this->chartData['options'] ?? [],
-        ];
-        $this->dispatch('refresh-chart', $dispatchData);
+        if (!$this->startDateViewed || !$this->endDateViewed) {
+            $this->startDateViewed = $startDate->toDateString();
+            $this->endDateViewed = $endDate->toDateString();
+        }
+    }
+
+    public function searchSimilar(): void
+    {
+        $start = $this->startDateViewed;
+        $end = $this->endDateViewed;
+        $limit = config('btc.time_series_pattern_max_days');
+
+        $startDate = Carbon::parse($start);
+        $endDate = Carbon::parse($end);
+        $daysDiff = $startDate->diffInDays($endDate);
+
+        if ($daysDiff > $limit) {
+            Notification::make()
+                ->title('Error')
+                ->body("Chosen period ($daysDiff days) exceeds the maximum allowed ($limit days)")
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // Placeholder for search logic; currently logs the selection
+        \Log::info("Viewed Dates - Start: $start, End: $end, Metrics: " . implode(', ', $this->selectedMetric));
     }
 }

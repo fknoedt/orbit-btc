@@ -20,6 +20,7 @@ return [
     ),
     /** last day for initial - seeder - data */
     'initial_data_last_day' => env('INITIAL_DATA_LAST_DAY', '2022-07-10'),
+    'time_series_pattern_max_days' => env('TIME_SERIES_PATTERN_MAX_DAYS', 90),
 
     'currency' => env('DEFAULT_CURRENCY', 'usd'),
 
