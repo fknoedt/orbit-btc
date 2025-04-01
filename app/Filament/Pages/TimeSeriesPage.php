@@ -80,12 +80,12 @@ class TimeSeriesPage extends Page
         }
     }
 
-    protected function dispatchChartUpdate(): void
+    protected function dispatchChartUpdate(array $extra = []): void
     {
-        $dispatchData = [
+        $dispatchData = array_merge([
             'chartId' => 'chart-btc-price',
             'options' => $this->chartData['options'] ?? [],
-        ];
+        ], $extra);
         $this->dispatch('refresh-chart', $dispatchData);
     }
 
@@ -301,7 +301,31 @@ class TimeSeriesPage extends Page
 
         // Clear existing additional charts before new search
         $this->additionalCharts = [];
-        $this->dispatch('clear-additional-charts');
+
+        // Add annotation to the main chart for the viewed period
+        $this->chartData['options']['annotations'] = [
+            'xaxis' => [
+                [
+                    'x' => (int) ($startDate->timestamp * 1000),
+                    'x2' => (int) ($endDate->timestamp * 1000),
+                    'fillColor' => '#CCCCCC',
+                    'opacity' => 0.4,
+                    'label' => [
+                        //'borderColor' => '#B3F7CA',
+                        'style' => [
+                            'fontSize' => '13px',
+                            'color' => '#000000',
+                            'background' => '#CCCCCC',
+                        ],
+                        'offsetY' => -10,
+                        'text' => 'Searched Period',
+                    ],
+                ],
+            ],
+        ];
+
+        // Trigger main chart update
+        $this->dispatchChartUpdate(['zoomToAnnotation' => true]);
 
         // find the top pattern matching time series
         $service = new DailyPriceService();

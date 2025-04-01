@@ -20,6 +20,8 @@
 <script>
     window.chartInstances = window.chartInstances || {};
     const chartId = 'chart-{{ $name ?? 'time-series-' . uniqid() }}';
+    // Store original bounds globally
+    window.chartOriginalBounds = window.chartOriginalBounds || {};
 
     // Format dates as "MMM dd yyyy"
     function formatDate(dateStr) {
@@ -36,6 +38,24 @@
                 window.chartInstances[chartId].destroy();
                 delete window.chartInstances[chartId];
             }
+
+            // Store original bounds before any modifications
+            window.chartOriginalBounds[chartId] = {
+                min: options.xaxis.min,
+                max: options.xaxis.max
+            };
+
+            // Ensure zoom reset uses original bounds
+            options.chart = options.chart || {};
+            options.chart.events = options.chart.events || {};
+            options.chart.events.beforeResetZoom = function(chartContext, opts) {
+                return {
+                    xaxis: {
+                        min: window.chartOriginalBounds[chartId].min,
+                        max: window.chartOriginalBounds[chartId].max
+                    }
+                };
+            };
 
             // Set initial selected dates without dispatching event
             const fullDates = options.extraJsOptions?.fullDates || [];
@@ -183,6 +203,7 @@
         const eventData = Array.isArray(event.detail) && event.detail.length > 0 ? event.detail[0] : event.detail;
         const chartIdFromEvent = eventData?.chartId;
         const options = eventData?.options;
+        const zoomToAnnotation = eventData?.zoomToAnnotation || false;
 
         if (chartIdFromEvent === chartId && options?.series) {
             const chartElement = document.querySelector(`#${chartId}`);
@@ -191,8 +212,27 @@
                 return;
             }
 
-            const extraJsOptions = @json($rawExtraJsOptions);
-            options.extraJsOptions = extraJsOptions;
+            options.extraJsOptions = @json($rawExtraJsOptions);
+
+            // Preserve original bounds if not set
+            if (!window.chartOriginalBounds[chartId]) {
+                window.chartOriginalBounds[chartId] = {
+                    min: options.xaxis.min,
+                    max: options.xaxis.max
+                };
+            }
+
+            // Ensure reset uses original bounds
+            options.chart = options.chart || {};
+            options.chart.events = options.chart.events || {};
+            options.chart.events.beforeResetZoom = function(chartContext, opts) {
+                return {
+                    xaxis: {
+                        min: window.chartOriginalBounds[chartId].min,
+                        max: window.chartOriginalBounds[chartId].max
+                    }
+                };
+            };
 
             // Y-axis formatting
             options.yaxis = options.yaxis || [];
@@ -218,10 +258,7 @@
                 };
             }
 
-            // Ensure chart events are defined
-            options.chart = options.chart || {};
-            options.chart.events = options.chart.events || {};
-
+            // Preserve event handlers
             const originalSelection = options.chart.events.selection;
             const originalZoomed = options.chart.events.zoomed;
             const originalUpdated = options.chart.events.updated;
@@ -232,7 +269,7 @@
                     const startDate = new Date(xaxis.min).toISOString().split("T")[0];
                     const endDate = new Date(xaxis.max).toISOString().split("T")[0];
                     if (window.lastSelectedDates && window.lastSelectedDates.start === startDate && window.lastSelectedDates.end === endDate) {
-                        return; // Prevent duplicate events
+                        return;
                     }
                     window.lastSelectedDates = { start: startDate, end: endDate };
                     window.selectedDates = { start: startDate, end: endDate };
@@ -246,7 +283,7 @@
                     const startDate = new Date(xaxis.min).toISOString().split("T")[0];
                     const endDate = new Date(xaxis.max).toISOString().split("T")[0];
                     if (window.lastSelectedDates && window.lastSelectedDates.start === startDate && window.lastSelectedDates.end === endDate) {
-                        return; // Prevent duplicate events
+                        return;
                     }
                     window.lastSelectedDates = { start: startDate, end: endDate };
                     window.selectedDates = { start: startDate, end: endDate };
@@ -261,7 +298,7 @@
                     const minDate = new Date(xaxis.min).toISOString().split("T")[0];
                     const maxDate = new Date(xaxis.max).toISOString().split("T")[0];
                     if (window.lastSelectedDates && window.lastSelectedDates.start === minDate && window.lastSelectedDates.end === maxDate) {
-                        return; // Prevent duplicate events
+                        return;
                     }
                     window.lastSelectedDates = { start: minDate, end: maxDate };
                     window.selectedDates = { start: minDate, end: maxDate };
@@ -269,14 +306,23 @@
                 }
             };
 
-            // Destroy and re-render the chart to ensure a full refresh
+            // Destroy and re-render
             if (window.chartInstances[chartId]) {
                 window.chartInstances[chartId].destroy();
                 delete window.chartInstances[chartId];
             }
-            // Delay the render to ensure the DOM is ready
             setTimeout(() => {
                 window.initializeChart(chartId, options);
+                // Zoom to annotation if requested
+                if (zoomToAnnotation && options.annotations?.xaxis?.[0]) {
+                    const annotation = options.annotations.xaxis[0];
+                    const startMs = annotation.x;
+                    const endMs = annotation.x2;
+                    const bufferMs = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+                    const newMin = Math.max(startMs - bufferMs, window.chartOriginalBounds[chartId].min);
+                    const newMax = Math.min(endMs + bufferMs, window.chartOriginalBounds[chartId].max);
+                    window.chartInstances[chartId].zoomX(newMin, newMax);
+                }
             }, 100);
         }
     });
