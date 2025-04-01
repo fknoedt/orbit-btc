@@ -9,7 +9,9 @@ return [
 
     /** btc historical data */
     'first_available_date' => '2009-10-05',
+    'initial_pattern_search_date' => '2011-01-01',
     'first_cmc_available_date' => '2010-07-14',
+
     'initial_missing_prices_datetime' => env(
         'INITIAL_MISSING_PRICES_DATETIME',
         '2010-03-03 00:00:00'
@@ -20,6 +22,8 @@ return [
     ),
     /** last day for initial - seeder - data */
     'initial_data_last_day' => env('INITIAL_DATA_LAST_DAY', '2022-07-10'),
+    'time_series_pattern_min_days' => env('TIME_SERIES_PATTERN_MIN_DAYS', 7),
+    'time_series_pattern_max_days' => env('TIME_SERIES_PATTERN_MAX_DAYS', 90),
 
     'currency' => env('DEFAULT_CURRENCY', 'usd'),
 

@@ -229,7 +229,7 @@ class PriceHistoryService
         $daysUpdated = 0;
         $today = Carbon::now();
         $startDay = Carbon::parse($since);
-        $priceService = new PriceService();
+        $priceService = new DailyPriceService();
         $priceService->getAllDailyPricesKeyByDate($startDay, $today, true);
 
         $currentDay = $startDay->copy();

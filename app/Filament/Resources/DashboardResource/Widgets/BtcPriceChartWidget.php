@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\DashboardResource\Widgets;
 
 use App\Services\Btc3rdPartyService;
-use App\Services\PriceService;
+use App\Services\DailyPriceService;
 use App\Services\WidgetService;
 use Carbon\Carbon;
 use EightyNine\FilamentAdvancedWidget\AdvancedChartWidget;
@@ -48,7 +48,7 @@ class BtcPriceChartWidget extends AdvancedChartWidget
     protected function getData(): array
     {
         try {
-            $priceService = new PriceService();
+            $priceService = new DailyPriceService();
             $endDate = now();
 
             if ($this->filter === '0d') {
@@ -58,7 +58,7 @@ class BtcPriceChartWidget extends AdvancedChartWidget
                 $startDate = now()->subDays($numberOfDays);
             }
 
-            $prices = $priceService->getClosePriceByDays($startDate, $endDate, true, true);
+            $prices = $priceService->getDailyPriceByDays($startDate, $endDate, true, true);
 
             $stat = [
                 'datasets' => [

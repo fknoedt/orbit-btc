@@ -5,7 +5,7 @@ namespace App\Filament\Charts;
 use App\Models\DailyPrice;
 use App\Models\UserModel;
 use App\Models\UserModelDailyScore;
-use App\Services\PriceService;
+use App\Services\DailyPriceService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\Cache;
@@ -45,7 +45,7 @@ trait UserModelChart
         if (!$userModelId) {
             return [];
         }
-        $service = new PriceService();
+        $service = new DailyPriceService();
         $since = (new Carbon())->subMonths($monthsBack);
         $dailyPrices = $service->getAllDailyPricesKeyByDate($since, null, false)->toArray();
         $dailyScores = UserModelDailyScore::where('user_model_id', $userModelId)

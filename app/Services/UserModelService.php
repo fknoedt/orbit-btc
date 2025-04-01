@@ -75,11 +75,11 @@ class UserModelService
     }
 
     public function updateDailyScores(
-        int           $userModelId = null,
-        int           $userId = null,
-        Carbon        $since = null,
-        MetricService $metricService = null,
-        PriceService $priceService = null,
+        int               $userModelId = null,
+        int               $userId = null,
+        Carbon            $since = null,
+        MetricService     $metricService = null,
+        DailyPriceService $priceService = null,
     ): array
     {
         if (! $metricService) {
@@ -87,7 +87,7 @@ class UserModelService
         }
 
         if (! $priceService) {
-            $priceService = new PriceService();
+            $priceService = new DailyPriceService();
         }
 
         if (! $since) {
