@@ -2,13 +2,19 @@
 
 namespace App\Filament\Pages;
 
-use App\Services\PriceService;
+use App\Services\DailyPriceService;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 
 class TimeSeriesPage extends Page
 {
+    /** number of charts that will load when searching for pattern matching time series */
+    protected const int MAX_MATCHING_TIME_SERIES = 5;
+
+    /** how many extra-days (not highlighted) on each side of a similar pattern chart */
+    protected const int MATCHED_TIME_SERIES_MARGIN = 30;
+
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
 
     protected static string $view = 'filament.pages.time-series-page';
@@ -16,7 +22,7 @@ class TimeSeriesPage extends Page
     protected static ?string $title = 'Time Series';
 
     public string $selectedPeriod = '365d';
-    public array $selectedMetric = ['close'];
+    public array $selectedMetrics = ['close'];
     public ?string $startDateViewed = null;
     public ?string $endDateViewed = null;
     public string $dateLabel = '';
@@ -26,7 +32,7 @@ class TimeSeriesPage extends Page
 
     public function mount(): void
     {
-        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetric);
+        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetrics);
         $this->chartData = $chartData;
         $this->startDateViewed = $chartData['startDate'];
         $this->endDateViewed = $chartData['endDate'];
@@ -35,7 +41,7 @@ class TimeSeriesPage extends Page
 
     public function updatedSelectedPeriod(): void
     {
-        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetric);
+        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetrics);
         $this->chartData = $chartData;
         $this->startDateViewed = $chartData['startDate'];
         $this->endDateViewed = $chartData['endDate'];
@@ -45,10 +51,10 @@ class TimeSeriesPage extends Page
 
     public function updatedSelectedMetric(): void
     {
-        if (count($this->selectedMetric) > 2) {
-            $this->selectedMetric = array_slice($this->selectedMetric, 0, 2);
+        if (count($this->selectedMetrics) > 2) {
+            $this->selectedMetrics = array_slice($this->selectedMetrics, 0, 2);
         }
-        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetric);
+        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetrics);
         $this->chartData = $chartData;
         $this->startDateViewed = $chartData['startDate'];
         $this->endDateViewed = $chartData['endDate'];
@@ -83,9 +89,15 @@ class TimeSeriesPage extends Page
         $this->dispatch('refresh-chart', $dispatchData);
     }
 
-    protected function generateChartData(string $period, array $metrics, ?string $startDate = null, ?string $endDate = null): array
-    {
-        $priceService = new PriceService();
+    protected function generateChartData(
+        string  $period,
+        array   $metrics,
+        ?string $startDate = null,
+        ?string $endDate = null,
+        ?string $startHighlight = null,
+        ?string $endHighlight = null,
+    ): array {
+        $priceService = new DailyPriceService();
         $endDate = $endDate ? Carbon::parse($endDate) : now();
 
         if ($startDate) {
@@ -185,11 +197,11 @@ class TimeSeriesPage extends Page
                 'gradient' => [
                     'shade' => 'light',
                     'type' => 'vertical',
-                    'shadeIntensity' => 0.5,
+                    'shadeIntensity' => 0.6,
                     'gradientToColors' => $colors,
                     'inverseColors' => true,
-                    'opacityFrom' => 0.5,
-                    'opacityTo' => 0.0,
+                    'opacityFrom' => 0.6,
+                    'opacityTo' => 0.1,
                     'stops' => [0, 100]
                 ],
                 'opacity' => 1,
@@ -210,6 +222,33 @@ class TimeSeriesPage extends Page
                 'theme' => 'dark',
             ],
         ];
+
+        if ($startHighlight && $endHighlight) {
+            // Apex Chart expects timestamp in milliseconds
+            // has to be cast as int or it will be parsed in the javascript
+            $start = (int) (Carbon::parse($startHighlight)->timestamp * 1000);
+            $end = (int) (Carbon::parse($endHighlight)->timestamp * 1000);
+            $options['annotations'] = [
+                'xaxis' => [
+                    [
+                        'x' => $start,
+                        'x2' => $end, // Convert to milliseconds
+                        'fillColor' => '#CCCCCC',
+                        'opacity' => 0.4,
+                        'label' => [
+                            //'borderColor' => '#B3F7CA',
+                            'style' => [
+                                'fontSize' => '13px',
+                                'color' => '#000000',
+                                'background' => '#CCCCCC',
+                            ],
+                            'offsetY' => -10,
+                            'text' => 'Pattern Matched',
+                        ],
+                    ],
+                ],
+            ];
+        }
 
         return [
             'options' => $options,
@@ -260,29 +299,45 @@ class TimeSeriesPage extends Page
             return;
         }
 
-        // Generate additional chart for the immediate previous period
-        $previousEndDate = $startDate->copy()->subDay();
-        $previousStartDate = $previousEndDate->copy()->subDays($daysDiff);
+        // Clear existing additional charts before new search
+        $this->additionalCharts = [];
+        $this->dispatch('clear-additional-charts');
 
-        $additionalChartData = $this->generateChartData(
-            $this->selectedPeriod,
-            $this->selectedMetric,
-            $previousStartDate->toDateString(),
-            $previousEndDate->toDateString()
+        // find the top pattern matching time series
+        $service = new DailyPriceService();
+
+        $metric = $this->selectedMetrics[0];
+        if (count($this->selectedMetrics) > 1) {
+            Notification::make()
+                ->title('')
+                ->body("Only one metric was searched for: {$metric}")
+                ->warning()
+                ->send();
+        }
+
+        $similarTimeSeries = $service->getPatterMatchingTimeSeries(
+            $metric,
+            $startDate,
+            $endDate,
+            self::MAX_MATCHING_TIME_SERIES
         );
-        $this->additionalCharts[] = $additionalChartData['options'];
+        $diffInDays = $startDate->diffInDays($endDate);
 
-        // Generate two more charts for earlier periods
-        for ($i = 1; $i <= 2; $i++) {
-            $shiftedEndDate = $startDate->copy()->subDays($i * ($daysDiff + 1));
-            $shiftedStartDate = $shiftedEndDate->copy()->subDays($daysDiff);
-            $chartData = $this->generateChartData(
+        foreach ($similarTimeSeries as $timeSeries) {
+            $seriesStart = Carbon::parse($timeSeries['start_date']);
+            $seriesEnd = $seriesStart->copy()->addDays($diffInDays);
+            $additionalChartData = $this->generateChartData(
                 $this->selectedPeriod,
-                $this->selectedMetric,
-                $shiftedStartDate->toDateString(),
-                $shiftedEndDate->toDateString()
+                $this->selectedMetrics,
+                $seriesStart->copy()->subDays(self::MATCHED_TIME_SERIES_MARGIN),
+                $seriesEnd->copy()->addDays(self::MATCHED_TIME_SERIES_MARGIN),
+                $timeSeries['start_date'],
+                $seriesEnd->format('Y-m-d'),
             );
-            $this->additionalCharts[] = $chartData['options'];
+            $additionalChartData['distance'] = $timeSeries['distance'];
+            $additionalChartData['startDate'] = $seriesStart;
+            $additionalChartData['endDate'] = $seriesEnd;
+            $this->additionalCharts[] = $additionalChartData;
         }
 
         $this->dispatch('additional-chart-added');

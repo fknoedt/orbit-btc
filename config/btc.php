@@ -9,7 +9,9 @@ return [
 
     /** btc historical data */
     'first_available_date' => '2009-10-05',
+    'initial_pattern_search_date' => '2011-01-01',
     'first_cmc_available_date' => '2010-07-14',
+
     'initial_missing_prices_datetime' => env(
         'INITIAL_MISSING_PRICES_DATETIME',
         '2010-03-03 00:00:00'

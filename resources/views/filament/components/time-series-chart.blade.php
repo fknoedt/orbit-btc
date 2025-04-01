@@ -10,7 +10,7 @@
 
     @if (isset($hint) && $hint)
         <div class="text-sm text-gray-700 dark:text-gray-300 mt-0.5 flex items-center">
-            <x-heroicon-o-information-circle class="w-4 h-4 mr-6" />
+            <x-heroicon-o-information-circle class="w-4 h-4 mr-6" style="margin-right: 6px;" />
             <span>{{ $hint }}</span>
         </div>
     @endif

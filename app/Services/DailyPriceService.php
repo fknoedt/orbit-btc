@@ -2,19 +2,19 @@
 
 namespace App\Services;
 
+use App\Exceptions\TimeSeriesException;
 use App\Models\DailyPrice;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use Phpml\Exception\InvalidArgumentException;
+use Phpml\Math\Distance\Euclidean;
 
-class PriceService
+class DailyPriceService
 {
-    /** If start to end is longer than this number of days AND $reduce is true, remove days */
-    protected const int DATE_REDUCTION_THRESHOLD = 31;
-
-    /**  */
-    protected const int NUMBER_OF_DAYS_IN_REDUCTION = 100;
+    /** Maximum number of days plotted when $reduce is true */
+    protected const int NUMBER_OF_DAYS_IN_REDUCTION = 1000;
 
     protected static ?string $pollingInterval = null;
 
@@ -26,10 +26,9 @@ class PriceService
         $this->dailyPricesByDate = $dailyPricesByDate ?? new Collection();
     }
 
-
     /**
      * Return array of DailyPrice arrays indexed by dates (useful for charts)
-     *
+     * @param bool $reduce -- if true and number of days exceeds limit, ratio the days to match it
      */
     public function getDailyPriceByDays(
         Carbon $startDate,
@@ -38,7 +37,7 @@ class PriceService
         bool   $shortDates = false
     ): array
     {
-        if ($reduce && $startDate->diffInDays($endDate) > self::DATE_REDUCTION_THRESHOLD) {
+        if ($reduce && $startDate->diffInDays($endDate) > self::NUMBER_OF_DAYS_IN_REDUCTION) {
             $days = [];
             $period = CarbonPeriod::create($startDate, $endDate);
             $totalDays = $period->count();
@@ -119,6 +118,9 @@ class PriceService
         return $data;
     }
 
+    /**
+     * Leverage $this->dailyPricesByDate, which is populated on $this->getAllDailyPricesByDate(), to fetch DailyPrices
+     */
     public function getDailyPrice(string $date, bool $findOrFail = false, int $fallback = 0): ?DailyPrice
     {
         // first time called
@@ -154,5 +156,115 @@ class PriceService
 
         // Return null if no price found and findOrFail is false
         return null;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getPatterMatchingTimeSeries(string $metric, Carbon $startDate, Carbon $endDate, int $limit = 3): array
+    {
+        if (! $initialDailyPriceDate = config('btc.initial_pattern_search_date')) {
+            throw new \RuntimeException('config btc.initial_pattern_search_date not set');
+        }
+
+        $initialDate = Carbon::parse($initialDailyPriceDate);
+        // add 1 extra day for first day daily_change
+        $prices = $this->getAllDailyPricesKeyByDate($initialDate, Carbon::now(), false);
+
+        $input = [];
+        $timeSeries = [];
+        $lastValue = null;
+
+        // TODO #86: when this change is pre-calculated, remove it here
+        // @see https://trello.com/c/Q7SixbjK
+        // parse prices to calculate daily_change while populating $inputDailyPrices
+        foreach ($prices as $dailyPrice) {
+            if (is_null($lastValue)) {
+                $lastValue = $dailyPrice->$metric;
+                continue;
+            }
+            $dailyChange = ($lastValue - $dailyPrice->$metric) / $dailyPrice->$metric;
+            $timeSeries[$dailyPrice->date] = $dailyChange;
+
+            // get a ride and fetch the input values =P
+            if (
+                $dailyPrice->date >= $startDate->format('Y-m-d') &&
+                $dailyPrice->date <= $endDate->format('Y-m-d')
+            ) {
+                $input[] = $dailyChange;
+            }
+
+            $lastValue = $dailyPrice->$metric;
+        }
+
+        $euclidean = new Euclidean();
+
+        $windowSize = count($input);
+        $matches = [];
+
+        $lastDistance = null;
+        $lastIndex = null;
+        $quarantineUntil = null;
+        for ($i = 0; $i <= count($timeSeries) - $windowSize; $i++) {
+            $window = array_slice($timeSeries, $i, $windowSize);
+            $distance = $euclidean->distance($input, array_values($window));
+            $seriesStartDate = Carbon::parse(array_key_first($window));
+            // avoid hits too close to each other if they're smaller than the last one
+            if ($quarantineUntil && $quarantineUntil > $seriesStartDate) {
+                if ($distance > $lastDistance) {
+                    continue;
+                }
+                // during quarantine but distance is better: remove the item that started quarantine and start it again
+                unset($matches[$lastIndex]);
+            }
+
+            // make sure distances won't overlap
+            $index = (string) $distance;
+            while (isset($matches[$index])) {
+                $index = $index . (!str_contains($index, '.') ? '.01' : '01');
+            }
+
+            // if there's more than one 1 (searched period) distance 0 series, we'll need to check searched period here
+            $matches[$index] = ['start_date' => $seriesStartDate->format('Y-m-d'), 'distance' => $distance];
+
+            $lastDistance = $distance;
+            $lastIndex = $index;
+            $quarantineUntil = $seriesStartDate->addDays($windowSize * 2);
+        }
+
+        // closest matches first
+        ksort($matches);
+
+        // expected: the same time window will have distance 0: remove it
+        if (! isset($matches['0'])) {
+            $debugInfo = [
+                'metric' => $metric,
+                'startDate' => $startDate->format('Y-m-d'),
+                'endDate' => $endDate->format('Y-m-d'),
+                'countMatches' => count($matches),
+            ];
+            report(
+                new TimeSeriesException(
+                    'No distance 0 when pattern matching: ' . json_encode($debugInfo)
+                )
+            );
+        } else {
+            // two 0 distance series?!?
+            if (isset($matches['0.01'])) {
+                $debugInfo = [
+                    'metric' => $metric,
+                    'startDate' => $startDate->format('Y-m-d'),
+                    'endDate' => $endDate->format('Y-m-d'),
+                    'countMatches' => count($matches),
+                    'trashedMatch' => $matches['0'],
+                ];
+                report(
+                    new TimeSeriesException('Two 0 distance series?!: ' . json_encode($debugInfo))
+                );
+            }
+            unset($matches['0']);
+        }
+
+        return array_slice($matches, 0, $limit);
     }
 }

@@ -1,3 +1,4 @@
+@php use Carbon\Carbon; @endphp
 <x-filament-panels::page>
     <div class="p-6">
         <div class="mb-4 flex justify-between items-center gap-6">
@@ -5,9 +6,9 @@
                 <details class="relative">
                     <summary class="text-lg font-medium text-gray-500 cursor-pointer flex items-center gap-1">
                         <span>
-                            {{ count($selectedMetric) === 1 ? 'Metric: ' : 'Metrics: ' }}
+                            {{ count($selectedMetrics) === 1 ? 'Metric: ' : 'Metrics: ' }}
                             <span class="text-white">
-                                {{ collect($selectedMetric)->map(fn($metric) => match($metric) {
+                                {{ collect($selectedMetrics)->map(fn($metric) => match($metric) {
                                     'market_cap' => 'Market Cap',
                                     'total_volume' => 'Total Volume',
                                     'close' => 'BTC Price',
@@ -16,13 +17,13 @@
                                     'fear_and_greed' => 'Fear & Greed',
                                     'mayer_multiple' => 'Mayer Multiple',
                                     default => 'BTC Price'
-                                })->implode(count($selectedMetric) === 1 ? '' : ' x ') }}
+                                })->implode(count($selectedMetrics) === 1 ? '' : ' x ') }}
                             </span>
                         </span>
                     </summary>
                     <select
-                        id="selectedMetric"
-                        wire:model.live="selectedMetric"
+                        id="selectedMetrics"
+                        wire:model.live="selectedMetrics"
                         multiple
                         size="7"
                         class="absolute top-full mt-1 block bg-white text-gray-900 border-gray-300 rounded-lg p-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 opacity-90 z-10 appearance-none"
@@ -73,6 +74,7 @@
                 'hint' => null,
                 'options' => $chartData['options'] ?? [],
                 'rawExtraJsOptions' => $chartData['extraJsOptions'] ?? [],
+                'hint' => 'Zoom in/out and click below to pattern match time series similar to the displayed range'
             ])
         </div>
         <div class="w-full flex flex-col gap-3 mt-6">
@@ -82,23 +84,26 @@
                     Search for Similar Time Series Pattern
                 </button>
                 <span id="selected-dates" class="text-sm text-gray-500 dark:text-gray-400">{{ $dateLabel }}</span>
-                <span class="text-lg font-medium text-gray-500 flex items-center gap-1">
-                    <x-heroicon-o-question-mark-circle class="w-6 h-6" title="Select time ranges and use the button to search for time series similar to the displayed range" />
-                </span>
             </div>
         </div>
 
-        <div wire:key="additional-charts-{{ count($additionalCharts) }}">
-            @foreach($additionalCharts as $index => $chartOptions)
+        <div wire:key="additional-charts-{{ md5(json_encode($additionalCharts)) }}">
+            @foreach($additionalCharts as $index => $chart)
                 <hr class="my-4">
                 <div class="w-full" wire:key="additional-chart-{{ $index }}">
                     @include('filament.components.time-series-chart', [
-                        'label' => 'Additional Chart ' . ($index + 1),
+                        'label' => sprintf(
+                            'From %s to %s (%s days)',
+                            $chart['startDate']->format('M d Y'),
+                            $chart['endDate']->format('M d Y'),
+                            $chart['startDate']->diffInDays($chart['endDate']),
+                        ),
                         'name' => 'additional-chart-' . $index,
-                        'hint' => null,
-                        'options' => $chartOptions,
+                        'hint' => "Euclidean Distance: {$chart['distance']}",
+                        'options' => $chart['options'],
                         'rawExtraJsOptions' => [],
-                        'data-options' => $chartOptions, // Add this
+                        'data-options' => $chart['options'],
+                        'distance' => $chart['distance'] ?? null,
                     ])
                 </div>
             @endforeach
@@ -118,7 +123,7 @@
         details[open] summary::after {
             transform: rotate(180deg);
         }
-        #selectedMetric {
+        #selectedMetrics {
             background-image: none !important;
             -webkit-appearance: none !important;
             -moz-appearance: none !important;
@@ -149,7 +154,7 @@
             window.selectedDates.end = end;
 
             // Update the UI with selected dates
-            document.getElementById('selected-dates').textContent = `Viewing ${start} to ${end}`;
+            document.getElementById('selected-dates').textContent = `${start} to ${end}`;
 
             // Trigger the hidden button to update the server
             const updateButton = document.getElementById('update-date-range');
@@ -163,7 +168,7 @@
         // Ensure the label persists after Livewire re-renders
         document.addEventListener('livewire:load', function() {
             if (window.selectedDates.start && window.selectedDates.end) {
-                document.getElementById('selected-dates').textContent = `Viewing ${window.selectedDates.start} to ${window.selectedDates.end}`;
+                document.getElementById('selected-dates').textContent = `${window.selectedDates.start} to ${window.selectedDates.end}`;
             }
         });
 
