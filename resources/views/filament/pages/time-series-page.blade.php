@@ -174,14 +174,20 @@
         // Store additional chart options globally
         window.additionalChartOptions = window.additionalChartOptions || {};
 
-        // Handle additional-chart-added event
         document.addEventListener('additional-chart-added', function() {
-            // Wait for Livewire to update the DOM
             setTimeout(() => {
-                // Find all chart containers that haven't been initialized
-                document.querySelectorAll('[id^=chart-]').forEach(function(chartElement) {
+                // Destroy existing additional chart instances to prevent stale references
+                document.querySelectorAll('[id^=chart-additional-chart-]').forEach(function(chartElement) {
                     const chartId = chartElement.id;
-                    if (!window.chartInstances[chartId] && chartId !== 'chart-btc-price') {
+                    if (window.chartInstances[chartId]) {
+                        window.chartInstances[chartId].destroy();
+                        delete window.chartInstances[chartId];
+                    }
+                });
+                // Initialize all additional charts
+                document.querySelectorAll('[id^=chart-additional-chart-]').forEach(function(chartElement) {
+                    const chartId = chartElement.id;
+                    if (!window.chartInstances[chartId]) {
                         const options = JSON.parse(chartElement.getAttribute('data-options') || '{}');
                         if (Object.keys(options).length > 0) {
                             window.initializeChart(chartId, options);
@@ -190,7 +196,7 @@
                         }
                     }
                 });
-            }, 100);
+            }, 200); // Increased delay to ensure DOM is ready
         });
 
         document.addEventListener('DOMContentLoaded', function () {

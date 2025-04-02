@@ -336,7 +336,7 @@ class TimeSeriesPage extends Page
         if (count($this->selectedMetrics) > 1) {
             Notification::make()
                 ->title('')
-                ->body("Only one metric was searched for: {$metric}")
+                ->body("Only {$metric} was searched by pattern matching")
                 ->warning()
                 ->send();
         }
