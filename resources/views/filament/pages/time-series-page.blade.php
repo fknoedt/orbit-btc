@@ -102,7 +102,6 @@
                         'hint' => "Euclidean Distance: {$chart['distance']}",
                         'options' => $chart['options'],
                         'rawExtraJsOptions' => [],
-                        'data-options' => $chart['options'],
                         'distance' => $chart['distance'] ?? null,
                     ])
                 </div>
@@ -218,6 +217,14 @@
                 });
             });
             observer.observe(document.body, { childList: true, subtree: true });
+        });
+
+        document.addEventListener('livewire:init', function() {
+            Livewire.on('confirm-clear-charts', (data) => {
+                if (window.confirm('This will remove the Similar Time Series Charts, do you want to continue?')) {
+                    Livewire.dispatch(data.method);
+                }
+            });
         });
     </script>
 </x-filament-panels::page>

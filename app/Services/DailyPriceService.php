@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\TimeSeriesException;
 use App\Models\DailyPrice;
+use App\Models\Metric;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Collection;
@@ -163,8 +164,15 @@ class DailyPriceService
      */
     public function getPatterMatchingTimeSeries(string $metric, Carbon $startDate, Carbon $endDate, int $limit = 3): array
     {
-        if (! $initialDailyPriceDate = config('btc.initial_pattern_search_date')) {
-            throw new \RuntimeException('config btc.initial_pattern_search_date not set');
+        if ($metric === 'close') {
+            if (! $initialDailyPriceDate = config('btc.initial_pattern_search_date')) {
+                throw new \RuntimeException('config btc.initial_pattern_search_date not set');
+            }
+        } else {
+            $metricModel = Metric::where('column_name', $metric)->firstOrFail();
+            if (! ($initialDailyPriceDate = $metricModel->data_limited_at)) {
+                throw new \RuntimeException("Metric {$metric} with no `data_limited_at`");
+            }
         }
 
         $initialDate = Carbon::parse($initialDailyPriceDate);
@@ -182,6 +190,16 @@ class DailyPriceService
             if (is_null($lastValue)) {
                 $lastValue = $dailyPrice->$metric;
                 continue;
+            }
+            // missing day: repeat last one
+            if (!$dailyPrice->$metric) {
+                if ($lastValue) {
+                    $dailyPrice->$metric = $lastValue;
+                } else {
+                    throw new \RuntimeException(
+                        "DailyPrice {$dailyPrice->date} with empty {$metric}. Would try to divide by 0."
+                    );
+                }
             }
             $dailyChange = ($lastValue - $dailyPrice->$metric) / $dailyPrice->$metric;
             $timeSeries[$dailyPrice->date] = $dailyChange;
