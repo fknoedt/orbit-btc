@@ -12,6 +12,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserModelResource extends Resource
 {
@@ -112,5 +113,12 @@ class UserModelResource extends Resource
             'view' => Pages\ViewUserModel::route('/{record}'),
             'edit' => Pages\EditUserModel::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        return $query->where('user_id', auth()->id())->orderByDesc('total_signal_value');
     }
 }

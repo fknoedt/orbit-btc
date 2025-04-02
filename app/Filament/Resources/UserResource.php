@@ -37,7 +37,9 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
-                Select::make('role_id')->relationship('role', 'name'),
+                Select::make('role_id')
+                    ->relationship('role', 'name')
+                    ->required(),
                 DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->label('Change Password')
