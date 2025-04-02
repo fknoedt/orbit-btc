@@ -150,7 +150,7 @@ trait UserModelWizardSteps
                         ->schema([
                             Select::make('metric_id')
                                 ->label('Metric')
-                                ->hint('daily change %')
+                                ->hint('daily value change %')
                                 ->options(
                                     $metrics->mapWithKeys(function (Metric $metric) {
                                         return [$metric->id => sprintf('%s (%s)', $metric->name, $metric->dataSource->name)];
@@ -165,7 +165,7 @@ trait UserModelWizardSteps
                                 ->minValue(0)
                                 ->numeric()
                                 ->default('1')
-                                ->hint("multiply change %")
+                                ->hint("multiply change % by")
                                 ->required()
                                 ->live()
                                 ->afterStateUpdated(function ($state, $set, $get, $component) {
@@ -255,7 +255,7 @@ trait UserModelWizardSteps
                     'label' => 'Daily Score',
                     'name' => 'daily-score',
                     'hint' => $operation === 'edit' ? 'Save your Model to see the updated chart' : '',
-                    'options' => $this->getChartOptions($this->record->id),
+                    'options' => isset($this->record->id) ? $this->getChartOptions($this->record->id) : [],
                     'rawExtraJsOptions' => $this->getExtraJsOptions(),
                 ])
                 ->extraAttributes(['style' => 'min-width: 100%; min-height: 400px;']);
