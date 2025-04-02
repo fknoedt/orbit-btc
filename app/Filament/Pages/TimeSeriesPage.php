@@ -41,19 +41,21 @@ class TimeSeriesPage extends Page
 
     public function updatedSelectedPeriod(): void
     {
-        $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetrics);
-        $this->chartData = $chartData;
-        $this->startDateViewed = $chartData['startDate'];
-        $this->endDateViewed = $chartData['endDate'];
-        $this->updateDateLabel();
-        $this->dispatchChartUpdate();
+        $this->additionalCharts = [];
+        $this->updateChartData();
     }
 
-    public function updatedSelectedMetric(): void
+    public function updatedSelectedMetrics(): void
     {
         if (count($this->selectedMetrics) > 2) {
             $this->selectedMetrics = array_slice($this->selectedMetrics, 0, 2);
         }
+        $this->additionalCharts = [];
+        $this->updateChartData();
+    }
+
+    protected function updateChartData(): void
+    {
         $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetrics);
         $this->chartData = $chartData;
         $this->startDateViewed = $chartData['startDate'];
