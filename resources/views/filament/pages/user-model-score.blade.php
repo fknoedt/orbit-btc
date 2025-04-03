@@ -190,4 +190,13 @@
     document.addEventListener('open-chart-modal', (event) => {
         window.Livewire.dispatch('open-chart-modal', { date: event.detail.date });
     });
+
+    // Listen for the update-url event to change the browser URL
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('update-url', (event) => {
+            const newId = event[0].id;
+            const newUrl = `/admin/user-model-score/${newId}`;
+            window.history.pushState({}, document.title, newUrl);
+        });
+    });
 </script>

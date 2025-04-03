@@ -7,6 +7,7 @@ use App\Filament\Resources\UserModelResource;
 use App\Filament\Resources\UserModelResource\Traits\UserModelWizardSteps;
 use App\Services\UserModelService;
 use Filament\Actions;
+use Filament\Actions\Action as FilamentAction; // Alias to avoid conflict
 use Filament\Actions\Concerns\HasWizard;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Wizard;
@@ -76,6 +77,11 @@ class ViewUserModel extends ViewRecord
     {
         return array_merge(
             [
+                FilamentAction::make('view_score') // Add the custom action
+                ->label('Performance')
+                    ->button()
+                    ->color('success')
+                    ->url(fn ($record) => "/admin/user-model-score/{$record->id}"),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
             ],
