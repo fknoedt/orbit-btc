@@ -37,10 +37,16 @@ class UserModelScore extends Page
 
     public bool $showChartModal = false;
 
-    public function mount(): void
+    public function mount(?int $id = null): void
     {
-        // Set the initial selected model ID
-        $this->selectedUserModelId = array_keys($this->userModels)[0] ?? null;
+        // If an ID is provided via the route, use it; otherwise, fall back to the first available model
+        $this->selectedUserModelId = $id ?? (array_keys($this->userModels)[0] ?? null);
+
+        // Ensure the selected ID belongs to the authenticated user (security check)
+        if ($this->selectedUserModelId && !array_key_exists($this->selectedUserModelId, $this->userModels)) {
+            $this->selectedUserModelId = array_keys($this->userModels)[0] ?? null;
+        }
+
         $this->updateModelData();
         $this->updateChartData();
     }
@@ -73,6 +79,9 @@ class UserModelScore extends Page
             'options' => $this->chartData['options'] ?? [],
         ];
         $this->dispatch('refresh-chart', $dispatchData);
+
+        // Update the URL to reflect the new selectedUserModelId
+        $this->dispatch('update-url', ['id' => $this->selectedUserModelId]);
     }
 
     protected function updateModelData(): void
