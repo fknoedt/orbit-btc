@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\DataSource;
+use App\Models\RpcCommand;
 use App\Models\User;
 
 class RpcCommandPolicy
@@ -18,7 +18,7 @@ class RpcCommandPolicy
     /**
      * Determine if the user can view the data source.
      */
-    public function view(User $user, DataSource $dataSource): bool
+    public function view(User $user, RpcCommand $rpcCommand): bool
     {
         return $user->role_id > 1;
     }
@@ -34,7 +34,7 @@ class RpcCommandPolicy
     /**
      * Determine if the user can update the data source.
      */
-    public function update(User $user, DataSource $dataSource): bool
+    public function update(User $user, RpcCommand $rpcCommand): bool
     {
         return $user->role_id > 1;
     }
@@ -42,7 +42,7 @@ class RpcCommandPolicy
     /**
      * Determine if the user can delete the data source.
      */
-    public function delete(User $user, DataSource $dataSource): bool
+    public function delete(User $user, RpcCommand $rpcCommand): bool
     {
         return $user->role_id > 1;
     }
@@ -50,7 +50,7 @@ class RpcCommandPolicy
     /**
      * Determine if the user can restore the data source.
      */
-    public function restore(User $user, DataSource $dataSource): bool
+    public function restore(User $user, RpcCommand $rpcCommand): bool
     {
         return $user->role_id > 1;
     }
@@ -58,7 +58,7 @@ class RpcCommandPolicy
     /**
      * Determine if the user can permanently delete the data source.
      */
-    public function forceDelete(User $user, DataSource $dataSource): bool
+    public function forceDelete(User $user, RpcCommand $rpcCommand): bool
     {
         return $user->role_id > 1;
     }
