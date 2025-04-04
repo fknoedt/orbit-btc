@@ -34,21 +34,7 @@ class UserModelMetric extends Model
             );
         }
 
-        /**
-         *  $metricDailyScore = weight x oscillation (if threshold is set and was not hit, then 0)
-         *            $metricCurrentScore[$userModelMetric->id] = $metricDailyScore; (overwritten to be saved in the end with the last day)
-         *            $userModelDailyScore += $metricDailyScore
-         *   - operator && oscillation_threshold are now optional
-         *       - when null (default): weight applied to modular variation of the day
-         *       - when set: if oscillation was below threshold, no score for the metric/day
-         */
-
         $oscillation = $currentValue / $previousValue;
-
-        // when threshold is set, we just ignore any score for the day
-        if (! empty($this->oscillation_threshold) && $oscillation < $this->oscillation_threshold) {
-            return null;
-        }
 
         return (1 - $oscillation) * 100;
     }

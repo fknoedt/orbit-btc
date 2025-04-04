@@ -170,6 +170,14 @@ class UserModelService
                                 $userModel->first_date_calculated = $date->format('Y-m-d');
                             }
 
+                            /**
+                             *  $metricDailyScore = weight x oscillation (if threshold is set and was not hit, then 0)
+                             *            $metricCurrentScore[$userModelMetric->id] = $metricDailyScore; (overwritten to be saved in the end with the last day)
+                             *            $userModelDailyScore += $metricDailyScore
+                             *   - operator && oscillation_threshold are now optional
+                             *       - when null (default): weight applied to modular variation of the day
+                             *       - when set: if oscillation was below threshold, no score for the metric/day
+                             */
                             foreach ($userModel->userModelMetrics as $userModelMetric) {
                                 // retrieve from singleton to avoid queries
                                 $metric = $metricService->getMetric($userModelMetric->metric_id, true);
@@ -199,8 +207,23 @@ class UserModelService
                                     $metric->column_name
                                 );
 
+                                // ignore variations against what is expected
+                                if (
+                                    $userModelMetric->operator === '+' && $dailyOscillation < 0 ||
+                                    $userModelMetric->operator === '-' && $dailyOscillation > 0
+                                ) {
+                                        continue;
+                                }
+
+                                $dailyOscillation = abs($dailyOscillation);
+
+                                // ignore if variation is below threshold
+                                if (isset($userModelMetric->threshold) && $userModelMetric->threshold > $dailyOscillation) {
+                                    continue;
+                                }
+
                                 // apply weight and use absolute value to sum up to the score
-                                $userModelMetricLastScore = abs($dailyOscillation) * $userModelMetric->weight;
+                                $userModelMetricLastScore = $dailyOscillation * $userModelMetric->weight;
 
                                 // add points to User Model grand score for the day
                                 $userModelDailyScore += $userModelMetricLastScore;
