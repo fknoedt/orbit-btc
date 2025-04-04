@@ -8,7 +8,6 @@ use App\Models\Metric;
 use App\Services\UserModelService;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -149,7 +148,7 @@ trait UserModelWizardSteps
                         ->schema([
                             Select::make('metric_id')
                                 ->label('Metric')
-                                ->hint('daily value change %')
+                                ->hint('daily value % change')
                                 ->options(
                                     $metrics->mapWithKeys(function (Metric $metric) {
                                         return [$metric->id => sprintf('%s (%s)', $metric->name, $metric->dataSource->name)];
@@ -158,10 +157,10 @@ trait UserModelWizardSteps
                                 ->columns(1)
                                 ->required(),
                             ViewField::make('operator')
-                                ->label('Direction')
+                                ->label('Up, Down or Both')
                                 ->view('forms.components.custom-operator-icons')
                                 ->viewData([
-                                    'operators' => \App\Enum\Operators::cases(),
+                                    'operators' => Operators::cases(),
                                 ])
                                 ->required()
                                 ->columns(1)

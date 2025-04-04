@@ -132,15 +132,6 @@ class EditUserModel extends EditRecord
                     $item['oscillation_threshold'] = null;
                 }
                 $updatedMetrics[$key] = $item;
-
-                // Sync the changes to the database
-                if (isset($item['id'])) {
-                    $this->getRecord()->userModelMetrics()->where('id', $item['id'])->update([
-                        'oscillation_threshold_enabled' => $item['oscillation_threshold_enabled'],
-                        'operator' => $item['operator'],
-                        'oscillation_threshold' => $item['oscillation_threshold'],
-                    ]);
-                }
             }
 
             $formData['userModelMetrics'] = $updatedMetrics;
