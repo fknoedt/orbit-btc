@@ -124,7 +124,6 @@ trait UserModelWizardSteps
                         $set($enabledPath, $newState);
 
                         if (!$newState) {
-                            $set("{$statePath}.operator", null);
                             $set("{$statePath}.oscillation_threshold", null);
                         }
 
@@ -158,6 +157,16 @@ trait UserModelWizardSteps
                                 )
                                 ->columns(1)
                                 ->required(),
+                            ViewField::make('operator')
+                                ->label('Direction')
+                                ->view('forms.components.custom-operator-icons')
+                                ->viewData([
+                                    'operators' => \App\Enum\Operators::cases(),
+                                ])
+                                ->required()
+                                ->columns(1)
+                                ->live() // Ensure real-time updates
+                                ->dehydrated(true), // Ensure the value is saved
                             TextInput::make('weight')
                                 ->label('Weight')
                                 ->columns(1)
@@ -176,32 +185,23 @@ trait UserModelWizardSteps
                                         $set('weight', 0);
                                     }
                                 }),
-                            Placeholder::make('')
-                                ->visible(fn ($get) => !$get('oscillation_threshold_enabled') ?? false)
-                                ->columns(1),
-                            ViewField::make('no_threshold_message')
-                                ->view('forms.components.no-threshold-message')
-                                ->columns(1)
-                                ->visible(function ($get) use ($operation) {
-                                    return ($operation ?? 'edit') !== 'view' && !($get('oscillation_threshold_enabled') ?? false);
-                                }),
-                            Select::make('operator')
-                                ->label('Threshold Operator')
-                                ->columns(1)
-                                ->options(Operators::class)
-                                ->visible(fn ($get) => $get('oscillation_threshold_enabled') ?? false)
-                                ->required(fn ($get) => $get('oscillation_threshold_enabled') ?? false),
                             TextInput::make('oscillation_threshold')
                                 ->mask(
                                     RawJs::make("parseFloat(\$input) > 100 ? '100' : (\$input[2] === '.' ? '99.99' : (\$input[1] === '.' ? '9.99' : '999'))")
                                 )
                                 ->numeric()
                                 ->placeholder('%')
-                                ->label('Change')
-                                ->hint('if % not met score is 0')
+                                ->label('Threshold')
+                                ->hint('score is 0 if not met')
                                 ->columns(1)
                                 ->visible(fn ($get) => $get('oscillation_threshold_enabled') ?? false)
                                 ->required(fn ($get) => $get('oscillation_threshold_enabled') ?? false),
+                            ViewField::make('no_threshold_message')
+                                ->view('forms.components.no-threshold-message')
+                                ->columns(1)
+                                ->visible(function ($get) use ($operation) {
+                                    return ($operation ?? 'edit') !== 'view' && !($get('oscillation_threshold_enabled') ?? false);
+                                }),
                             Hidden::make('oscillation_threshold_enabled')
                                 ->default(false)
                                 ->live()

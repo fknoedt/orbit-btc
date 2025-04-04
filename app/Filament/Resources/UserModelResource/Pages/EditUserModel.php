@@ -36,14 +36,13 @@ class EditUserModel extends EditRecord
         $metrics = $record->userModelMetrics()->get();
 
         if ($metrics->isNotEmpty()) {
-            // Update oscillation_threshold_enabled in the database based on oscillation_threshold
+            // Update oscillation_threshold_enabled in the database
             foreach ($metrics as $metric) {
                 $shouldEnable = !empty($metric->oscillation_threshold);
                 if ($metric->oscillation_threshold_enabled !== $shouldEnable) {
-                    // clean-up
-                    if (! $shouldEnable) {
+                    // Clean up
+                    if (!$shouldEnable) {
                         $metric->oscillation_threshold = null;
-                        $metric->operator = null;
                     }
                     $metric->oscillation_threshold_enabled = $shouldEnable;
                     $metric->save();
@@ -61,6 +60,7 @@ class EditUserModel extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['threshold'] = $this->threshold;
+
         return $data;
     }
 
@@ -129,7 +129,6 @@ class EditUserModel extends EditRecord
             $updatedMetrics = [];
             foreach ($formData['userModelMetrics'] as $key => $item) {
                 if (!($item['oscillation_threshold_enabled'] ?? false)) {
-                    $item['operator'] = null;
                     $item['oscillation_threshold'] = null;
                 }
                 $updatedMetrics[$key] = $item;

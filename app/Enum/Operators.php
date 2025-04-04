@@ -15,18 +15,18 @@ enum Operators: string implements HasIcon, HasLabel, HasColor
     public function getIcon(): ?string
     {
         return match ($this) {
-            self::PLUS => 'heroicon-o-plus',
-            self::MINUS => 'heroicon-o-minus',
-            self::PLUS_MINUS => 'heroicon-o-arrows-up-down',
+            self::PLUS => 'arrow-up',
+            self::MINUS => 'arrow-down',
+            self::PLUS_MINUS => 'arrows-up-down',
         };
     }
 
     public function getColor(): string | array | null
     {
         return match ($this) {
-            self::PLUS => 'green',
-            self::MINUS => 'red',
-            self::PLUS_MINUS => 'orange',
+            self::PLUS => '#A7F3D0', // Light green (pistachio)
+            self::MINUS => '#FCA5A5', // Light red
+            self::PLUS_MINUS => '#FDE68A', // Light yellow
         };
     }
 
