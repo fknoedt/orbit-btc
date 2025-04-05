@@ -35,7 +35,7 @@
 
                 <!-- Modal -->
                 <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="background-color: rgba(0, 0, 0, 0.5);" @click="open = false">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-4xl p-6 relative" style="max-height: 84vh; overflow-y: auto;" @click.stop="">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-4xl p-6 relative" style="max-height: 70vh; overflow-y: auto;" @click.stop="">
                         <!-- Close Button -->
                         <button
                             @click="open = false"
@@ -56,108 +56,114 @@
             <div class="isolate">
                 <!-- Model details -->
                 <div class="!p-4 !rounded-lg" style="background-color: #161617; padding: 1rem; border-radius: 0.5rem;">
-                    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem 1.5rem; margin-bottom: 20px;">
-                        <div style="grid-column: span 2;">
-                            <span class="block text-sm font-medium text-gray-500">Description</span>
-                            <span class="text-base font-semibold !text-white">{{ $this->modelData['description'] }}</span>
+                    @if ($this->modelData['paused'])
+                        <div class="text-center text-gray-400 text-lg py-8">
+                            Model Paused. Edit to unpause.
                         </div>
-                        <div>
+                    @else
+                        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem 1.5rem; margin-bottom: 20px;">
+                            <div style="grid-column: span 2;">
+                                <span class="block text-sm font-medium text-gray-500">Description</span>
+                                <span class="text-base font-semibold !text-white">{{ $this->modelData['description'] }}</span>
+                            </div>
                             <div>
-                                <span class="block text-sm font-medium text-gray-500">Total Score</span>
-                                <span class="text-3xl font-bold" style="color: {{ $this->modelData['total_score'] >= 0 ? '#22c55e' : '#ef4444' }}">{{ $this->modelData['total_score'] }}</span>
+                                <div>
+                                    <span class="block text-sm font-medium text-gray-500">Total Score</span>
+                                    <span class="text-3xl font-bold" style="color: {{ $this->modelData['total_score'] >= 0 ? '#22c55e' : '#ef4444' }}">{{ $this->modelData['total_score'] }}</span>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <span class="block text-sm font-medium text-gray-500">Daily Threshold</span>
-                            <span class="flex items-center gap-1 text-xl font-semibold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4 threshold-value">
-                                <span>🎯</span>
-                                <!-- 😬 -->
-                                <span style="color: #F97315">{{ $this->modelData['threshold'] }}</span>
+                            <div>
+                                <span class="block text-sm font-medium text-gray-500">Daily Threshold</span>
+                                <span class="flex items-center gap-1 text-xl font-semibold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4 threshold-value">
+                                    <span>🎯</span>
+                                    <!-- 😬 -->
+                                    <span style="color: #F97315">{{ $this->modelData['threshold'] }}</span>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="block text-sm font-medium text-gray-500">Signal</span>
+                                <span class="flex items-center gap-1 {{ $this->modelData['signal'] === 'buy' ? 'text-blue-500' : 'text-yellow-700' }} font-semibold">
+                                @if ($this->modelData['signal'] === 'buy')
+                                        <span>📈</span>
+                                    @elseif ($this->modelData['signal'] === 'sell')
+                                        <span>📉</span>
+                                    @endif
+                                <span>{{ ucwords($this->modelData['signal']) }}</span>
                             </span>
-                        </div>
-                        <div>
-                            <span class="block text-sm font-medium text-gray-500">Signal</span>
-                            <span class="flex items-center gap-1 {{ $this->modelData['signal'] === 'buy' ? 'text-blue-500' : 'text-yellow-700' }} font-semibold">
-                            @if ($this->modelData['signal'] === 'buy')
-                                    <span>📈</span>
-                                @elseif ($this->modelData['signal'] === 'sell')
-                                    <span>📉</span>
-                                @endif
-                            <span>{{ ucwords($this->modelData['signal']) }}</span>
-                        </span>
-                        </div>
-                        <div>
-                            <span class="block text-sm font-medium text-gray-500">Time Horizon</span>
-                            <span class="!text-white">{{ $this->modelData['horizon'] }}</span>
-                        </div>
-                        <div>
-                            <span class="block text-sm font-medium text-gray-500"># Simulated Trades (Threshold Hit)</span>
-                            <span class="flex items-center gap-1 text-xl font-semibold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4 threshold-value">
-                            <span>{{ $this->modelData['total_simulated_trades'] }} (${{ $this->modelData['total_stake'] }})</span>
-                        </span>
-                        </div>
-                        <div>
-                            <span class="block text-sm font-medium text-gray-500">Last Trade Signal</span>
+                            </div>
+                            <div>
+                                <span class="block text-sm font-medium text-gray-500">Time Horizon</span>
+                                <span class="!text-white">{{ $this->modelData['horizon'] }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-sm font-medium text-gray-500"># Simulated Trades (Threshold Hit)</span>
+                                <span class="flex items-center gap-1 text-xl font-semibold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4 threshold-value">
+                                <span>{{ $this->modelData['total_simulated_trades'] }} (${{ $this->modelData['total_stake'] }})</span>
+                            </span>
+                            </div>
+                            <div>
+                                <span class="block text-sm font-medium text-gray-500">Last Trade Signal</span>
                             <span class="flex items-center gap-1 font-semibold" style="color: {{ $this->modelData['last_score'] > 0 ? '#22c55e' : ($this->modelData['last_score'] == 0 ? 'inherit' : '#ef4444') }}">
-                                {{ $this->modelData['last_score'] }}
-                                @if ($this->modelData['last_date_calculated'])
-                                    <span class="font-light" style="color: white">in {{ \Carbon\Carbon::parse($this->modelData['last_date_calculated'])->format('M d Y') }}</span>
+                                    {{ $this->modelData['last_score'] }}
+                                    @if ($this->modelData['last_date_calculated'])
+                                        <span class="font-light" style="color: white">in {{ \Carbon\Carbon::parse($this->modelData['last_date_calculated'])->format('M d Y') }}</span>
+                                    @endif
+                                </span>
+                            </div>
+                            <div>
+                                <span class="block text-sm font-medium text-gray-500">Start of Time Series</span>
+                                <span class="flex items-center gap-1 font-semibold text-white">
+                                    @if ($this->modelData['first_date_calculated'])
+                                        {{ \Carbon\Carbon::parse($this->modelData['first_date_calculated'])->format('M d Y') }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </span>
+                            </div>
+                            {{-- TODO?: add this with labels and elsewhere
+                            <div>
+                                <span class="block text-sm font-medium text-gray-500">Error / Warnings</span>
+                                @if ($this->modelData['error'])
+                                    <x-heroicon-o-exclamation-circle class="w-6 h-6" style="color: red" />
                                 @endif
-                            </span>
-                        </div>
-                        <div>
-                            <span class="block text-sm font-medium text-gray-500">Start of Time Series</span>
-                            <span class="!text-white">
-                                @if ($this->modelData['first_date_calculated'])
-                                {{ \Carbon\Carbon::parse($this->modelData['first_date_calculated'])->format('M d Y') }}
-                                @else
-                                N/A
-                                @endif
-                            </span>
-                        </div>
-                        {{-- TODO?: add this with labels and elsewhere
-                        <div>
-                            <span class="block text-sm font-medium text-gray-500">Error / Warnings</span>
-                            @if ($this->modelData['error'])
-                                <x-heroicon-o-exclamation-circle class="w-6 h-6" style="color: red" />
-                            @endif
-                            @if ($this->modelData['warning'])
-                                <x-heroicon-o-exclamation-triangle class="w-6 h-6" style="color: orange" />
-                            @endif
-                        </div>
-                        --}}
-                        <div style="grid-column: span 3;">
-                            <span class="block text-sm font-medium text-gray-500">Metrics</span>
-                            <div class="!text-white h-[100px] overflow-y-auto">
-                                @if (!empty($this->modelData['metrics']))
-                                    @foreach ($this->modelData['metrics'] as $metric)
-                                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0.25rem 0;">
-                                            <span class="!text-white">📐 {{ $metric['metric_name'] }}</span>
-                                            <span class="!text-white">⚖️ {{ $metric['weight'] }}</span>
-                                            @if ($metric['oscillation_threshold_enabled'] ?? false)
-                                                <span class="!text-white">⚠️  ignored until <strong>{{ $metric['operator'] }} {{ $metric['oscillation_threshold'] }}%</strong></span>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                @else
-                                    <span class="!text-white">None</span>
+                                @if ($this->modelData['warning'])
+                                    <x-heroicon-o-exclamation-triangle class="w-6 h-6" style="color: orange" />
                                 @endif
                             </div>
+                            --}}
+                            <div style="grid-column: span 3;">
+                                <span class="block text-sm font-medium text-gray-500">Metrics</span>
+                                <div class="!text-white h-[100px] overflow-y-auto">
+                                    @if (!empty($this->modelData['metrics']))
+                                        @foreach ($this->modelData['metrics'] as $metric)
+                                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0.25rem 0;">
+                                                <span class="!text-white">📐 {{ $metric['metric_name'] }}</span>
+                                                <span class="!text-white">⚖️ {{ $metric['weight'] }}</span>
+                                                @if ($metric['oscillation_threshold_enabled'] ?? false)
+                                                    <span class="!text-white">⚠️  ignored until <strong>{{ $metric['operator'] }} {{ $metric['oscillation_threshold'] }}%</strong></span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <span class="!text-white">None</span>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <!-- Chart -->
-                    <div class="mt-6">
-                        <span class="block text-sm font-medium text-gray-500 mb-1">Performance - tap daily score bars for simulated trade info</span>
-                        <div style="min-width: 100%; min-height: 400px;">
-                            @include('filament.components.user-model-chart', [
-                                'label' => '',
-                                'name' => 'daily-score',
-                                'hint' => null,
-                                'options' => $this->chartData['options'] ?? [],
-                                'rawExtraJsOptions' => $this->chartData['extraJsOptions'] ?? [],
-                            ])
+                        <!-- Chart -->
+                        <div class="mt-6">
+                            <span class="block text-sm font-medium text-gray-500 mb-1">Performance - tap daily score bars for simulated trade info</span>
+                            <div style="min-width: 100%; min-height: 400px;">
+                                @include('filament.components.user-model-chart', [
+                                    'label' => '',
+                                    'name' => 'daily-score',
+                                    'hint' => null,
+                                    'options' => $this->chartData['options'] ?? [],
+                                    'rawExtraJsOptions' => $this->chartData['extraJsOptions'] ?? [],
+                                ])
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
         @endif
