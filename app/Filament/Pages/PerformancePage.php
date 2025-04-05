@@ -15,11 +15,11 @@ use Illuminate\Support\Number;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 
-class UserModelScore extends Page
+class PerformancePage extends Page
 {
     use UserModelChart;
 
-    protected static string $view = 'filament.pages.user-model-score';
+    protected static string $view = 'filament.pages.performance-page';
 
     protected static ?string $title = 'Performance';
 
@@ -105,6 +105,7 @@ class UserModelScore extends Page
 
         // Populate model data for display
         $this->modelData = [
+            'paused' => $userModel->is_paused ?? false, // Add paused status
             'description' => $userModel->description,
             'total_score' => number_format($userModel->total_signal_value ?? 0, 2),
             'last_score' => number_format($userModel->last_score ?? 0, 2),

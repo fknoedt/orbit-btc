@@ -3,7 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\CustomDashboard;
-use App\Filament\Pages\UserModelScore;
+use App\Filament\Pages\PerformancePage;
 use App\Services\WidgetService;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -43,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 CustomDashboard::class,
-                UserModelScore::class
+                PerformancePage::class
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets($service->getUserWidgets())

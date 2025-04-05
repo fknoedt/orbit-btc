@@ -1,6 +1,6 @@
 <?php
 
-use App\Filament\Pages\UserModelScore;
+use App\Filament\Pages\PerformancePage;
 use App\Http\Controllers\BtcRpcController;
 use App\Http\Controllers\SandboxController;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +25,7 @@ Route::get('/prices', \App\Http\Livewire\Counter::class);
 
 Route::get('/sandbox', [SandboxController::class, 'index']);
 
-Route::get('/admin/user-model-score/{id}', UserModelScore::class)
+Route::get('/admin/user-model-score/{id}', PerformancePage::class)
     ->middleware('auth')
     ->name('user-model-score-id');
 
