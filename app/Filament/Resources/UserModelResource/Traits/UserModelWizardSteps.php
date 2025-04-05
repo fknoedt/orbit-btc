@@ -94,12 +94,17 @@ trait UserModelWizardSteps
                 ->hidden(),
             TextInput::make('email_to_notify')
                 ->label('Notify Email')
-                ->hint('Alerts will be sent to this email when the threshold is hit')
+                ->hint('Alerts will be sent to this email when the threshold is hit - currently disabled')
+                ->hintIcon('heroicon-o-no-symbol')
                 ->email()
-                ->maxLength(255),
+                ->maxLength(255)
+                ->disabled(),
             TextInput::make('telegram_to_notify')
                 ->tel()
-                ->maxLength(255),
+                ->maxLength(255)
+                ->hint('currently disabled')
+                ->hintIcon('heroicon-o-no-symbol')
+                ->disabled(),
         ];
     }
 
@@ -219,7 +224,7 @@ trait UserModelWizardSteps
 
         $schema = [
             Toggle::make('is_paused')
-                ->label('Monitoring Paused?')
+                ->label('Paused?')
                 ->default(false)
                 ->columns(1),
             View::make('components.range-slider')
@@ -251,7 +256,7 @@ trait UserModelWizardSteps
         if ($operation !== 'create') {
             $schema[] = View::make('filament.components.user-model-chart')
                 ->viewData([
-                    'label' => 'Daily Score',
+                    'label' => 'Daily Signal',
                     'name' => 'daily-score',
                     'hint' => $operation === 'edit' ? 'Save your Model to see the updated chart' : '',
                     'options' => isset($this->record->id) ? $this->getChartOptions($this->record->id) : [],

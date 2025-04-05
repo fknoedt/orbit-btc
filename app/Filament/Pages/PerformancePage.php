@@ -15,11 +15,11 @@ use Illuminate\Support\Number;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 
-class UserModelScore extends Page
+class PerformancePage extends Page
 {
     use UserModelChart;
 
-    protected static string $view = 'filament.pages.user-model-score';
+    protected static string $view = 'filament.pages.performance-page';
 
     protected static ?string $title = 'Performance';
 

@@ -107,8 +107,13 @@ html.dark .katex-formula {
     margin: 0;
 }
 
+/* Adjusted: Make KaTeX text color adaptive */
 .katex-html .base {
-    color: #fff;
+    color: #000000 !important; /* Black in light mode */
+}
+
+html.dark .katex-html .base {
+    color: #ffffff !important; /* White in dark mode */
 }
 
 .highlight-orange .katex {
@@ -144,7 +149,7 @@ html.dark .fi-fo-wizard-step .bg-gray-900 :not(h2) {
 }
 
 html.dark .bg-gray-900 h2.text-orange-500 {
-    color: #f97316 !important;
+    color: #f97316 !important; /* Orange-500 in dark mode */
 }
 
 .fi-fo-wizard-step:not(.dark) .bg-gray-900 {
@@ -159,6 +164,11 @@ html.dark .bg-gray-900 h2.text-orange-500 {
     color: #000000 !important;
 }
 
+/* Adjusted: Target h2.text-orange-500 in bg-gray-900 directly for light mode */
+.bg-gray-900:not(.dark) h2.text-orange-500 {
+    color: #f97316 !important; /* Orange-500 in light mode */
+}
+
 .bg-gray-900 section:not(:first-child) {
     padding-top: 2rem !important;
 }
@@ -171,4 +181,40 @@ html.dark .bg-gray-900 h2.text-orange-500 {
 .bg-gray-900 ul.list-disc {
     padding-left: 1.25rem !important; /* pl-5, 20px */
     list-style-position: outside !important;
+}
+
+/* NEW: Style the model details container for light/dark mode */
+div[style*="background-color: #161617"] {
+    background-color: #ffffff !important; /* White in light mode */
+}
+
+html.dark div[style*="background-color: #161617"] {
+    background-color: #161617 !important; /* Dark in dark mode */
+}
+
+/* NEW: Adjust label font color (text-gray-500) for light/dark mode */
+.text-gray-500 {
+    color: #6b7280 !important; /* Default gray-500 for light mode */
+}
+
+html.dark .text-gray-500 {
+    color: #9ca3af !important; /* Gray-400 for dark mode */
+}
+
+/* NEW: Adjust value font color (text-white) for light/dark mode */
+.text-white {
+    color: #000000 !important; /* Black in light mode */
+}
+
+html.dark .text-white {
+    color: #ffffff !important; /* White in dark mode */
+}
+
+/* NEW: Fix select font color for light/dark mode */
+select#selectedUserModelId {
+    color: #000000 !important; /* Black in light mode */
+}
+
+html.dark select#selectedUserModelId {
+    color: #ffffff !important; /* White in dark mode */
 }

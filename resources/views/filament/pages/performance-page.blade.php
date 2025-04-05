@@ -1,4 +1,3 @@
-
 <div class="pt-6" x-data="{ open: false }">
     <div class="pt-6">
         <div class="mb-4 flex items-center justify-between gap-4">
@@ -36,8 +35,8 @@
 
                 <!-- Modal -->
                 <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="background-color: rgba(0, 0, 0, 0.5);" @click="open = false">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 relative" style="max-height: 70vh; overflow-y: auto;" @click.stop="">
-                    <!-- Close Button -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-4xl p-6 relative" style="max-height: 84vh; overflow-y: auto;" @click.stop="">
+                        <!-- Close Button -->
                         <button
                             @click="open = false"
                             class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-2xl"
@@ -99,7 +98,7 @@
                         </div>
                         <div>
                             <span class="block text-sm font-medium text-gray-500">Last Trade Signal</span>
-                            <span class="flex items-center gap-1 font-semibold" style="color: {{ $this->modelData['last_score'] > 0 ? '#22c55e' : ($this->modelData['last_score'] == 0 ? '#ffffff' : '#ef4444') }}">
+                            <span class="flex items-center gap-1 font-semibold" style="color: {{ $this->modelData['last_score'] > 0 ? '#22c55e' : ($this->modelData['last_score'] == 0 ? 'inherit' : '#ef4444') }}">
                                 {{ $this->modelData['last_score'] }}
                                 @if ($this->modelData['last_date_calculated'])
                                     <span class="font-light" style="color: white">in {{ \Carbon\Carbon::parse($this->modelData['last_date_calculated'])->format('M d Y') }}</span>
@@ -108,7 +107,7 @@
                         </div>
                         <div>
                             <span class="block text-sm font-medium text-gray-500">Start of Time Series</span>
-                            <span class="flex items-center gap-1 font-semibold text-white">
+                            <span class="!text-white">
                                 @if ($this->modelData['first_date_calculated'])
                                 {{ \Carbon\Carbon::parse($this->modelData['first_date_calculated'])->format('M d Y') }}
                                 @else
