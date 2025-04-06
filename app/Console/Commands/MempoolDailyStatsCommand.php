@@ -18,7 +18,7 @@ class MempoolDailyStatsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:mempool-daily-stats {--initial-data} {--force} {--ignore-errors}';
+    protected $signature = 'btc:mempool-daily-stats {--initial-data}';
 
     /**
      * The console command description.
