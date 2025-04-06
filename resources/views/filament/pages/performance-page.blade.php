@@ -1,58 +1,68 @@
 <div class="pt-6" x-data="{ open: false }">
     <div class="pt-6">
         <div class="mb-4 flex items-center justify-between gap-4">
-            <!-- Centered content (as above) -->
+            <!-- Centered content -->
             <div class="flex justify-center items-center gap-4 w-full">
-                <label for="selectedUserModelId" class="text-lg font-medium text-gray-500">Model</label>
-                <select
-                    id="selectedUserModelId"
-                    wire:model.live="selectedUserModelId"
-                    class="block bg-gray-800 text-gray-200 border-gray-600 rounded-lg p-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600"
-                    style="width: 300px;"
-                >
-                    @foreach ($this->userModels as $id => $name)
-                        <option value="{{ $id }}">{{ $name }}</option>
-                    @endforeach
-                </select>
-                <div class="flex gap-2">
-                    @foreach ($this->getHeaderActions() as $action)
-                        {!! $action->render() !!}
-                    @endforeach
-                </div>
+                @if (!empty($this->userModels))
+                    <label for="selectedUserModelId" class="text-lg font-medium text-gray-500">Model</label>
+                    <select
+                        id="selectedUserModelId"
+                        wire:model.live="selectedUserModelId"
+                        class="block bg-gray-800 text-gray-200 border-gray-600 rounded-lg p-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600"
+                        style="width: 300px;"
+                    >
+                        @foreach ($this->userModels as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <div class="flex gap-2">
+                        @foreach ($this->getHeaderActions() as $action)
+                            {!! $action->render() !!}
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
-            <!-- Help Icon and Modal -->
-            <div x-data="{ open: false }">
-                <!-- Help Button -->
-                <button
-                    @click="open = true"
-                    class="p-2 rounded-md hover:bg-gray-600 focus:outline-none"
-                    style="background-color: #008FFB; height: 40px; width: 40px;"
-                    title="Help"
-                >
-                    <x-heroicon-o-lifebuoy class="w-6 h-6 text-white" />
-                </button>
+            <!-- Help Icon and Modal (only show if there are user models) -->
+            @if (!empty($this->userModels))
+                <div x-data="{ open: false }">
+                    <!-- Help Button -->
+                    <button
+                        @click="open = true"
+                        class="p-2 rounded-md hover:bg-gray-600 focus:outline-none"
+                        style="background-color: #008FFB; height: 40px; width: 40px;"
+                        title="Help"
+                    >
+                        <x-heroicon-o-lifebuoy class="w-6 h-6 text-white" />
+                    </button>
 
-                <!-- Modal -->
-                <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="background-color: rgba(0, 0, 0, 0.5);" @click="open = false">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-4xl p-6 relative" style="max-height: 70vh; overflow-y: auto;" @click.stop="">
-                        <!-- Close Button -->
-                        <button
-                            @click="open = false"
-                            class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-2xl"
-                        >
-                            ×
-                        </button>
-                        <!-- Content -->
-                        <div style="overflow-y: scroll">
-                            @include('help.user-model')
+                    <!-- Modal -->
+                    <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="background-color: rgba(0, 0, 0, 0.5);" @click="open = false">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-4xl p-6 relative" style="max-height: 70vh; overflow-y: auto;" @click.stop="">
+                            <!-- Close Button -->
+                            <button
+                                @click="open = false"
+                                class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-2xl"
+                            >
+                                ×
+                            </button>
+                            <!-- Content -->
+                            <div style="overflow-y: scroll">
+                                @include('help.user-model')
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
         </div>
 
-        @if ($this->selectedUserModelId && $this->modelData)
+        @if (empty($this->userModels))
+            <div class="flex items-center justify-center h-64">
+                <p class="text-lg font-medium text-gray-500 dark:text-gray-400">
+                    You need to create a Model <a href="/admin/user-models" class="text-primary-500 hover:underline">here</a> in order to see its performance
+                </p>
+            </div>
+        @elseif ($this->selectedUserModelId && $this->modelData)
             <div class="isolate">
                 <!-- Model details -->
                 <div class="!p-4 !rounded-lg" style="background-color: #161617; padding: 1rem; border-radius: 0.5rem;">
@@ -76,20 +86,19 @@
                                 <span class="block text-sm font-medium text-gray-500">Daily Threshold</span>
                                 <span class="flex items-center gap-1 text-xl font-semibold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4 threshold-value">
                                     <span>🎯</span>
-                                    <!-- 😬 -->
                                     <span style="color: #F97315">{{ $this->modelData['threshold'] }}</span>
                                 </span>
                             </div>
                             <div>
                                 <span class="block text-sm font-medium text-gray-500">Signal</span>
                                 <span class="flex items-center gap-1 {{ $this->modelData['signal'] === 'buy' ? 'text-blue-500' : 'text-yellow-700' }} font-semibold">
-                                @if ($this->modelData['signal'] === 'buy')
+                                    @if ($this->modelData['signal'] === 'buy')
                                         <span>📈</span>
                                     @elseif ($this->modelData['signal'] === 'sell')
                                         <span>📉</span>
                                     @endif
-                                <span>{{ ucwords($this->modelData['signal']) }}</span>
-                            </span>
+                                    <span>{{ ucwords($this->modelData['signal']) }}</span>
+                                </span>
                             </div>
                             <div>
                                 <span class="block text-sm font-medium text-gray-500">Time Horizon</span>
@@ -98,12 +107,12 @@
                             <div>
                                 <span class="block text-sm font-medium text-gray-500"># Simulated Trades (Threshold Hit)</span>
                                 <span class="flex items-center gap-1 text-xl font-semibold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4 threshold-value">
-                                <span>{{ $this->modelData['total_simulated_trades'] }} (${{ $this->modelData['total_stake'] }})</span>
-                            </span>
+                                    <span>{{ $this->modelData['total_simulated_trades'] }} (${{ $this->modelData['total_stake'] }})</span>
+                                </span>
                             </div>
                             <div>
                                 <span class="block text-sm font-medium text-gray-500">Last Trade Signal</span>
-                            <span class="flex items-center gap-1 font-semibold" style="color: {{ $this->modelData['last_score'] > 0 ? '#22c55e' : ($this->modelData['last_score'] == 0 ? 'inherit' : '#ef4444') }}">
+                                <span class="flex items-center gap-1 font-semibold" style="color: {{ $this->modelData['last_score'] > 0 ? '#22c55e' : ($this->modelData['last_score'] == 0 ? 'inherit' : '#ef4444') }}">
                                     {{ $this->modelData['last_score'] }}
                                     @if ($this->modelData['last_date_calculated'])
                                         <span class="font-light" style="color: white">in {{ \Carbon\Carbon::parse($this->modelData['last_date_calculated'])->format('M d Y') }}</span>
@@ -120,17 +129,6 @@
                                     @endif
                                 </span>
                             </div>
-                            {{-- TODO?: add this with labels and elsewhere
-                            <div>
-                                <span class="block text-sm font-medium text-gray-500">Error / Warnings</span>
-                                @if ($this->modelData['error'])
-                                    <x-heroicon-o-exclamation-circle class="w-6 h-6" style="color: red" />
-                                @endif
-                                @if ($this->modelData['warning'])
-                                    <x-heroicon-o-exclamation-triangle class="w-6 h-6" style="color: orange" />
-                                @endif
-                            </div>
-                            --}}
                             <div style="grid-column: span 3;">
                                 <span class="block text-sm font-medium text-gray-500">Metrics</span>
                                 <div class="!text-white h-[100px] overflow-y-auto">

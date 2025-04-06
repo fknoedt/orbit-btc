@@ -27,7 +27,7 @@ class PerformancePage extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-trending-up';
 
-    public int $selectedUserModelId;
+    public ?int $selectedUserModelId;
 
     public array $modelData = [];
 
@@ -39,12 +39,20 @@ class PerformancePage extends Page
 
     public function mount(?int $id = null): void
     {
+        // Check if there are any user models first
+        $userModels = $this->userModels();
+
+        if (empty($userModels)) {
+            $this->selectedUserModelId = null; // No models, so no selection
+            return; // Skip further initialization
+        }
+
         // If an ID is provided via the route, use it; otherwise, fall back to the first available model
-        $this->selectedUserModelId = $id ?? (array_keys($this->userModels)[0] ?? null);
+        $this->selectedUserModelId = $id ?? array_keys($userModels)[0];
 
         // Ensure the selected ID belongs to the authenticated user (security check)
-        if ($this->selectedUserModelId && !array_key_exists($this->selectedUserModelId, $this->userModels)) {
-            $this->selectedUserModelId = array_keys($this->userModels)[0] ?? null;
+        if ($this->selectedUserModelId && !array_key_exists($this->selectedUserModelId, $userModels)) {
+            $this->selectedUserModelId = array_keys($userModels)[0];
         }
 
         $this->updateModelData();
@@ -62,9 +70,11 @@ class PerformancePage extends Page
     #[On('refresh')]
     public function refresh(): void
     {
-        // Refresh the model data and chart
-        $this->updateModelData();
-        $this->updateChartData();
+        // Refresh the model data and chart only if a model is selected
+        if ($this->selectedUserModelId) {
+            $this->updateModelData();
+            $this->updateChartData();
+        }
     }
 
     public function updatedSelectedUserModelId(): void
@@ -179,7 +189,10 @@ class PerformancePage extends Page
             [
                 Action::make('edit')
                     ->label('Edit')
-                    ->url(UserModelResource::getUrl('edit', ['record' => UserModel::find($this->selectedUserModelId)]))
+                    ->url($this->selectedUserModelId ?
+                        UserModelResource::getUrl('edit', ['record' => UserModel::find($this->selectedUserModelId)])
+                        : null
+                    )
                     ->color('primary'),
             ],
             $this->getChartActions()
