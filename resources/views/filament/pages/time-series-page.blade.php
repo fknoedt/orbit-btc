@@ -16,6 +16,8 @@
                                     'exchanges_reserve' => 'Exchanges Reserve',
                                     'fear_and_greed' => 'Fear & Greed',
                                     'mayer_multiple' => 'Mayer Multiple',
+                                    'average_hashrate' => 'Avg. Hashrate',
+                                    'difficulty' => 'Difficulty',
                                     default => 'BTC Price'
                                 })->implode(count($selectedMetrics) === 1 ? '' : ' x ') }}
                             </span>
@@ -36,6 +38,8 @@
                         <option value="exchanges_reserve">Exchanges Reserve</option>
                         <option value="fear_and_greed">Fear & Greed</option>
                         <option value="mayer_multiple">Mayer Multiple</option>
+                        <option value="average_hashrate">Avg. Hashrate</option>
+                        <option value="difficulty">Difficulty</option>
                     </select>
                 </details>
                 <span class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">

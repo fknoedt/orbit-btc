@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Exceptions\DailyPriceStatsException;
 use App\Models\DailyPrice;
 use App\Services\DailyStatsService;
 use Illuminate\Database\Seeder;
@@ -173,6 +174,7 @@ class InitialDailyPrices extends Seeder
 
     /**
      * Run the database seeds.
+     * @throws DailyPriceStatsException
      */
     public function run(): void
     {
@@ -254,6 +256,8 @@ class InitialDailyPrices extends Seeder
 
         $this->command->info($this->pricesPersisted . ' Prices updated or created');
 
+        // -- Fetch and persist recent daily_prices data from API -- //
+
         $this->command->info(
             'Running `btc:populate-price-history` to populate daily_prices past this migration...'
         );
@@ -267,6 +271,8 @@ class InitialDailyPrices extends Seeder
         echo Artisan::output();
 
         $this->command->info('Done.');
+
+        // -- Historical metrics -- //
 
         $this->command->info('Importing historical fear and greed data from json file into daily_prices...');
 

@@ -52,12 +52,47 @@ class DailyStatsService
                 if (! $force && ! empty($dailyPrice->{$column})) {
                     continue;
                 }
-                $dailyPrice->{$column} = $fillData[$dailyPrice->date][$column];
+                // column might not be set when records are heterogeneous (WARNING: first row needs all columns)
+                if (isset($fillData[$dailyPrice->date][$column])) {
+                    $dailyPrice->{$column} = $fillData[$dailyPrice->date][$column];
+                }
             }
             $dailyPrice->save();
             $pricesSaved++;
         }
 
         return $pricesSaved;
+    }
+
+    /**
+     * Fill intermittent null values based on the last (ordered chronologically asc) value found
+     * Created for `difficulty` (every two weeks)
+     * @param string $column
+     * @param string|null $since
+     * @return int
+     */
+    public function fillForward(string $column, string $since = null): int
+    {
+        $totalUpdates = 0;
+        $query = DailyPrice::query();
+
+        if ($since) {
+            $query->where('date', '>=', $since);
+        }
+
+        $lastValue = null;
+        foreach ($query->orderBy('date', 'asc')->get() as $dailyPrice) {
+            $currentValue = $dailyPrice->{$column};
+            if ($currentValue !== $lastValue && ! is_null($currentValue)) {
+                $lastValue = $currentValue;
+            }
+            if (is_null($currentValue) && ! is_null($lastValue)) {
+                $dailyPrice->{$column} = $lastValue;
+                $dailyPrice->save();
+                $totalUpdates++;
+            }
+        }
+
+        return $totalUpdates;
     }
 }
