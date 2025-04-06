@@ -40,7 +40,7 @@ return [
         ],
         'mempool_space' => [
             'url' => env('MEMPOOL_URL'),
-            'key' => env('MEMPOOL_KEY'),
+            'key' => env('MEMPOOL_KEY', null),
         ],
         'cryptoquant' => [
             'url' => env('CRYPTOQUANT_URL'),

@@ -39,6 +39,11 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 
+        $schedule->command('btc:mempool-daily-stats')
+            ->everyMinute()->when($this->shouldUpdateHashrate())
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo);
+
         $schedule->command('btc:update-future-price-change')
             ->everyMinute()->when($this->shouldUpdateFuturePriceChange())
             ->appendOutputTo($logPath)
@@ -106,11 +111,18 @@ class Kernel extends ConsoleKernel
 
     private function shouldUpdateCmcStats(): bool
     {
-        // TODO: find replacement and turn this command generic
-        return false;
-
         if (DailyPrice::where('date', '>', self::STATS_START_DATE)->whereNull('fear_and_greed')->count()) {
             Log::info('Running CMC stats update');
+            return true;
+        }
+
+        return false;
+    }
+
+    private function shouldUpdateHashrate(): bool
+    {
+        if (DailyPrice::where('date', '>', self::STATS_START_DATE)->whereNull('average_hashrate')->count()) {
+            Log::info('Running Mempool stats update');
             return true;
         }
 
