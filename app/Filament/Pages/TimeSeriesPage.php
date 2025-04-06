@@ -127,6 +127,8 @@ class TimeSeriesPage extends Page
             'exchanges_reserve' => ['name' => 'Exchanges Reserve', 'yTitle' => 'Reserve (BTC)', 'color' => '#FF5722'],
             'fear_and_greed' => ['name' => 'Fear & Greed Index', 'yTitle' => 'Index', 'color' => '#607D8B'],
             'mayer_multiple' => ['name' => 'Mayer Multiple', 'yTitle' => 'Multiple', 'color' => '#E91E63'],
+            'average_hashrate' => ['name' => 'Avg. Hashrate', 'yTitle' => 'Hashrate', 'color' => '#A067E9'],
+            'difficulty' => ['name' => 'Difficulty', 'yTitle' => 'Difficulty', 'color' => '#E9E454'],
         ];
 
         foreach ($metrics as $index => $metric) {

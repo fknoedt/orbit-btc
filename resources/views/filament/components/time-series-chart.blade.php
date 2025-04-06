@@ -91,22 +91,28 @@
         if (Array.isArray(options.yaxis)) {
             options.yaxis.forEach(axis => {
                 axis.labels = axis.labels || {};
-                axis.labels.formatter = function(value) {
-                    if (value >= 1_000_000_000_000) return (value / 1_000_000_000_000).toFixed(1) + 'T';
-                    if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';
-                    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';
-                    if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';
-                    return value.toFixed(0);
+                axis.labels.formatter = function (value) {
+                    if (value >= 1_000_000_000_000_000_000_000) return (value / 1_000_000_000_000_000_000_000).toFixed(1) + 'Z'; // Zetta (10^21)
+                    if (value >= 1_000_000_000_000_000_000) return (value / 1_000_000_000_000_000_000).toFixed(1) + 'E';    // Exa (10^18)
+                    if (value >= 1_000_000_000_000_000) return (value / 1_000_000_000_000_000).toFixed(1) + 'P';       // Peta (10^15)
+                    if (value >= 1_000_000_000_000) return (value / 1_000_000_000_000).toFixed(1) + 'T';              // Tera (10^12)
+                    if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';                      // Billion (10^9)
+                    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';                              // Million (10^6)
+                    if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';                                      // Kilo (10^3)
+                    return value.toFixed(0);                                                                          // Raw value (no suffix)
                 };
             });
         } else {
             options.yaxis.labels = options.yaxis.labels || {};
-            options.yaxis.labels.formatter = function(value) {
-                if (value >= 1_000_000_000_000) return (value / 1_000_000_000_000).toFixed(1) + 'T';
-                if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';
-                if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';
-                if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';
-                return value.toFixed(0);
+            options.yaxis.labels.formatter = function (value) {
+                if (value >= 1_000_000_000_000_000_000_000) return (value / 1_000_000_000_000_000_000_000).toFixed(1) + 'Z'; // Zetta (10^21)
+                if (value >= 1_000_000_000_000_000_000) return (value / 1_000_000_000_000_000_000).toFixed(1) + 'E';    // Exa (10^18)
+                if (value >= 1_000_000_000_000_000) return (value / 1_000_000_000_000_000).toFixed(1) + 'P';       // Peta (10^15)
+                if (value >= 1_000_000_000_000) return (value / 1_000_000_000_000).toFixed(1) + 'T';              // Tera (10^12)
+                if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';                      // Billion (10^9)
+                if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';                              // Million (10^6)
+                if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';                                      // Kilo (10^3)
+                return value.toFixed(0);                                                                          // Raw value (no suffix)
             };
         }
 
@@ -239,22 +245,28 @@
             if (Array.isArray(options.yaxis)) {
                 options.yaxis.forEach(axis => {
                     axis.labels = axis.labels || {};
-                    axis.labels.formatter = function(value) {
-                        if (value >= 1_000_000_000_000) return (value / 1_000_000_000_000).toFixed(1) + 'T';
-                        if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';
-                        if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';
-                        if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';
-                        return value.toFixed(0);
+                    axis.labels.formatter = function (value) {
+                        if (value >= 1_000_000_000_000_000_000_000) return (value / 1_000_000_000_000_000_000_000).toFixed(1) + 'Z'; // Zetta (10^21)
+                        if (value >= 1_000_000_000_000_000_000) return (value / 1_000_000_000_000_000_000).toFixed(1) + 'E';    // Exa (10^18)
+                        if (value >= 1_000_000_000_000_000) return (value / 1_000_000_000_000_000).toFixed(1) + 'P';       // Peta (10^15)
+                        if (value >= 1_000_000_000_000) return (value / 1_000_000_000_000).toFixed(1) + 'T';              // Tera (10^12)
+                        if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';                      // Billion (10^9)
+                        if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';                              // Million (10^6)
+                        if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';                                      // Kilo (10^3)
+                        return value.toFixed(0);                                                                          // Raw value (no suffix)
                     };
                 });
             } else {
                 options.yaxis.labels = options.yaxis.labels || {};
-                options.yaxis.labels.formatter = function(value) {
-                    if (value >= 1_000_000_000_000) return (value / 1_000_000_000_000).toFixed(1) + 'T';
-                    if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';
-                    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';
-                    if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';
-                    return value.toFixed(0);
+                options.yaxis.labels.formatter = function (value) {
+                    if (value >= 1_000_000_000_000_000_000_000) return (value / 1_000_000_000_000_000_000_000).toFixed(1) + 'Z'; // Zetta (10^21)
+                    if (value >= 1_000_000_000_000_000_000) return (value / 1_000_000_000_000_000_000).toFixed(1) + 'E';    // Exa (10^18)
+                    if (value >= 1_000_000_000_000_000) return (value / 1_000_000_000_000_000).toFixed(1) + 'P';       // Peta (10^15)
+                    if (value >= 1_000_000_000_000) return (value / 1_000_000_000_000).toFixed(1) + 'T';              // Tera (10^12)
+                    if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';                      // Billion (10^9)
+                    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';                              // Million (10^6)
+                    if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';                                      // Kilo (10^3)
+                    return value.toFixed(0);                                                                          // Raw value (no suffix)
                 };
             }
 
