@@ -58,4 +58,9 @@
             </label>
         @endforeach
     </div>
+
+    <!-- Add validation error feedback -->
+    @error($statePath)
+    <span class="text-sm text-danger-600 dark:text-danger-400">{{ $message }}</span>
+    @enderror
 </div>
