@@ -162,7 +162,7 @@ trait UserModelWizardSteps
                                 ->columns(1)
                                 ->required(),
                             ViewField::make('operator')
-                                ->label('Up, Down or Both')
+                                ->label('Direction')
                                 ->view('forms.components.custom-operator-icons')
                                 ->viewData([
                                     'operators' => Operators::cases(),

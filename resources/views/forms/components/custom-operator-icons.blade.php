@@ -4,9 +4,20 @@
 @endphp
 
 <div class="space-y-2">
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        Up, Down or Both *
-    </label>
+    <div class="flex items-center gap-x-3 justify-between">
+        <label class="fi-fo-field-wrp-label inline-flex items-center gap-x-3">
+            <span class="text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                Direction
+                <sup class="text-danger-600 dark:text-danger-400 font-medium">*</sup>
+            </span>
+        </label>
+        <div class="fi-fo-field-wrp-hint flex items-center gap-x-3 text-sm">
+            <span class="fi-fo-field-wrp-hint-label text-gray-500 fi-color-gray" style="--c-400:var(--gray-400);--c-600:var(--gray-600);">
+                Up, Down or Both
+            </span>
+        </div>
+    </div>
+
     <div class="flex" style="gap: 8px;">
         @foreach ($operators as $operator)
             @php
