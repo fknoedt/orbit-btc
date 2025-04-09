@@ -16,9 +16,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/admin');
 
 Route::get('/counter', \App\Http\Livewire\Counter::class);
 Route::get('/prices', \App\Http\Livewire\Counter::class);
