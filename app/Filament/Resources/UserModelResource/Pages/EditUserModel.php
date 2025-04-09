@@ -71,7 +71,7 @@ class EditUserModel extends EditRecord
                 FilamentAction::make('view_score') // Add the custom action
                 ->label('Performance')
                     ->button()
-                    ->color('success')
+                    ->color('gray')
                     ->url(fn ($record) => "/admin/user-model-score/{$record->id}"),
                 Actions\ViewAction::make(),
                 Actions\DeleteAction::make(),

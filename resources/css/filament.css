@@ -218,3 +218,90 @@ select#selectedUserModelId {
 html.dark select#selectedUserModelId {
     color: #ffffff !important; /* White in dark mode */
 }
+
+/* Base styles for all steps: grey for uncompleted */
+.fi-fo-wizard-header-step-icon-ctn {
+    background-color: transparent !important; /* Remove background */
+    border: 2px solid !important; /* Consistent border */
+    border-color: #6b7280 !important; /* Grey-500 for uncompleted (light mode) */
+}
+
+/* Completed steps: orange outline */
+.fi-fo-wizard-step--completed .fi-fo-wizard-header-step-icon-ctn {
+    border-color: #f97316 !important; /* Orange (primary-600) */
+}
+
+html.dark .fi-fo-wizard-step--completed .fi-fo-wizard-header-step-icon-ctn {
+    border-color: #fb923c !important; /* Lighter orange (primary-400) for dark mode */
+}
+
+/* Completed steps: orange stroke */
+.fi-fo-wizard-step--completed .fi-fo-wizard-header-step-icon-ctn svg {
+    stroke: #f97316 !important; /* Orange (primary-600) */
+}
+
+html.dark .fi-fo-wizard-step--completed .fi-fo-wizard-header-step-icon-ctn svg {
+    stroke: #fb923c !important; /* Lighter orange (primary-400) for dark mode */
+}
+
+/* Override text-* classes for completed steps */
+.fi-fo-wizard-step--completed .fi-fo-wizard-header-step-icon-ctn svg.text-white {
+    stroke: #f97316 !important; /* Orange for completed */
+}
+
+html.dark .fi-fo-wizard-step--completed .fi-fo-wizard-header-step-icon-ctn svg.text-white {
+    stroke: #fb923c !important; /* Lighter orange for dark mode */
+}
+
+/* Current step: orange outline */
+.fi-fo-wizard-step--active .fi-fo-wizard-header-step-icon-ctn {
+    border-color: #f97316 !important; /* Orange (primary-600) */
+}
+
+html.dark .fi-fo-wizard-step--active .fi-fo-wizard-header-step-icon-ctn {
+    border-color: #fb923c !important; /* Lighter orange (primary-400) for dark mode */
+}
+
+/* Current step: orange stroke */
+.fi-fo-wizard-step--active .fi-fo-wizard-header-step-icon-ctn svg {
+    stroke: #f97316 !important; /* Orange (primary-600) */
+}
+
+html.dark .fi-fo-wizard-step--active .fi-fo-wizard-header-step-icon-ctn svg {
+    stroke: #fb923c !important; /* Lighter orange (primary-400) for dark mode */
+}
+
+/* Override text-* classes for current step */
+.fi-fo-wizard-step--active .fi-fo-wizard-header-step-icon-ctn svg.text-primary-600,
+html.dark .fi-fo-wizard-step--active .fi-fo-wizard-header-step-icon-ctn svg.text-primary-500 {
+    stroke: #f97316 !important; /* Orange for current */
+}
+
+html.dark .fi-fo-wizard-step--active .fi-fo-wizard-header-step-icon-ctn svg.text-primary-500 {
+    stroke: #fb923c !important; /* Lighter orange for dark mode */
+}
+
+/* Match label colors to step state */
+.fi-fo-wizard-header-step-label {
+    color: #6b7280 !important; /* Grey-500 for uncompleted (light mode) */
+}
+
+html.dark .fi-fo-wizard-header-step-label {
+    color: #9ca3af !important; /* Grey-400 for uncompleted (dark mode) */
+}
+
+.fi-fo-wizard-step--completed .fi-fo-wizard-header-step-label {
+    color: #f97316 !important; /* Orange (primary-600) */
+}
+
+html.dark .fi-fo-wizard-step--completed .fi-fo-wizard-header-step-label {
+    color: #fb923c !important; /* Lighter orange (primary-400) for dark mode */
+}
+
+.fi-fo-wizard-step--active .fi-fo-wizard-header-step-label {
+    color: #f97316 !important; /* Orange (primary-600) */
+}
+
+html.dark .fi-fo-wizard-step--active .fi-fo-wizard-header-step-label {
+    color: #fb923c !important; /* Lighter orange (primary-400) for dark mode */
+}
