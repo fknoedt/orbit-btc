@@ -62,6 +62,7 @@ class ViewUserModel extends ViewRecord
                     ->skippable(true)
                     ->startOnStep(4)
                     ->columnSpanFull()
+                    ->persistStepInQueryString()
                     ->nextAction(
                         fn (Action $action) => $action->label('>>')
                     )

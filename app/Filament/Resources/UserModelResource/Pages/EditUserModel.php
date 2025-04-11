@@ -90,6 +90,7 @@ class EditUserModel extends EditRecord
                     ->skippable(true)
                     ->columnSpanFull()
                     ->startOnStep(4)
+                    ->persistStepInQueryString()
                     ->nextAction(
                         fn (Action $action) => $action->label('>>')
                     )
