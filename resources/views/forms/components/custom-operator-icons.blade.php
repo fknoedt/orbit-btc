@@ -13,7 +13,6 @@
         </label>
         <div class="fi-fo-field-wrp-hint flex items-center gap-x-3 text-sm">
             <span class="fi-fo-field-wrp-hint-label text-gray-500 fi-color-gray" style="--c-400:var(--gray-400);--c-600:var(--gray-600);">
-                Up, Down or Both
             </span>
         </div>
     </div>

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\UserModelResource\Traits;
 
 use App\Enum\Operators;
 use App\Enum\TimeHorizon;
+use App\Models\Frequency;
 use App\Models\Metric;
 use App\Services\UserModelService;
 use Filament\Forms\Components\Actions\Action;
@@ -111,6 +112,7 @@ trait UserModelWizardSteps
     public function getMetricsSchema(string $operation = null): array
     {
         $metrics = Metric::with('dataSource')->get();
+        $frequencies = Frequency::orderBy('number_of_days')->get();
 
         $extraActions = $operation === 'view' ? [] :
             [
@@ -140,8 +142,8 @@ trait UserModelWizardSteps
             Section::make()
                 ->schema([
                     Repeater::make('userModelMetrics')
-                        ->label('Weighted Metrics')
-                        ->hint('The Model final Daily Score is the sum of each Metric\'s daily variation x weight (threshold optional)')
+                        ->label('Metrics')
+                        ->hint('Daily Score will be the sum of each metric\'s frequency variation x weight with optional threshold')
                         ->relationship()
                         ->lazy()
                         ->defaultItems(1)
@@ -151,9 +153,19 @@ trait UserModelWizardSteps
                         )
                         ->extraItemActions($extraActions)
                         ->schema([
+                            Select::make('frequency_id')
+                                ->label('Frequency')
+                                ->options(
+                                    $frequencies->mapWithKeys(function ($frequency) {
+                                        return [$frequency->id => $frequency->name];
+                                    })->toArray()
+                                )
+                                ->default(1)
+                                ->columns(1)
+                                ->required(),
                             Select::make('metric_id')
                                 ->label('Metric')
-                                ->hint('daily value % change')
+                                ->hint('% change')
                                 ->options(
                                     $metrics->mapWithKeys(function (Metric $metric) {
                                         return [$metric->id => sprintf('%s (%s)', $metric->name, $metric->dataSource->name)];
@@ -178,7 +190,7 @@ trait UserModelWizardSteps
                                 ->minValue(0)
                                 ->numeric()
                                 ->default('1')
-                                ->hint("multiply change % by")
+                                ->hint("1 - 10")
                                 ->required()
                                 ->live()
                                 ->afterStateUpdated(function ($state, $set, $get, $component) {
@@ -189,14 +201,16 @@ trait UserModelWizardSteps
                                         $set('weight', 0);
                                     }
                                 }),
-                            TextInput::make('oscillation_threshold')
+
+                            // Threshold removed for simplicity sake. If necessary, just re-add it
+                            /*TextInput::make('oscillation_threshold')
                                 ->mask(
                                     RawJs::make("parseFloat(\$input) > 100 ? '100' : (\$input[2] === '.' ? '99.99' : (\$input[1] === '.' ? '9.99' : '999'))")
                                 )
                                 ->numeric()
                                 ->placeholder('%')
                                 ->label('Threshold')
-                                ->hint('score is 0 if not met')
+                                ->hint('in %')
                                 ->columns(1)
                                 ->visible(fn ($get) => $get('oscillation_threshold_enabled') ?? false)
                                 ->required(fn ($get) => $get('oscillation_threshold_enabled') ?? false),
@@ -210,9 +224,10 @@ trait UserModelWizardSteps
                                 ->default(false)
                                 ->live()
                                 ->dehydrated(true), // Ensure it’s always included in the form state
+                            */
                         ])
                         ->reorderable(false)
-                        ->columns(4)
+                        ->columns(4) // increase to 5 when re-adding threshold
                 ]),
         ];
     }

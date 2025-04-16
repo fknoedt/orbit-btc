@@ -60,6 +60,7 @@ class CreateUserModel extends CreateRecord
                     ->skippable(false)
                     ->startOnStep(2)
                     ->columnSpanFull()
+                    ->persistStepInQueryString()
                     ->nextAction(
                         fn (Action $action) => $action->label('>>')
                     )
