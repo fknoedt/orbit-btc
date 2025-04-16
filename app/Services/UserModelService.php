@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Exceptions\UserModelException;
 use App\Exceptions\UserModelFunctionalException;
+use App\Models\Frequency;
 use App\Models\UserModel;
 use App\Models\UserModelDailyScore;
 use App\Models\UserModelMetric;
@@ -93,14 +95,14 @@ class UserModelService
         if (! $since) {
             $since = Carbon::now()->subDays(self::MAX_DAYS_BACK);
         }
-        // always add one more day to allow oscillation calculation from the very first day analysed
-        $since->subDay();
+        // always add maximum frequency (monthly) more days to allow oscillation calculation on the fly
+        $since->subDays(Frequency::MAX_FREQUENCY_IN_DAYS);
 
         // pre-load all daily_prices to avoid repeated DB/cache access
         $priceService->getAllDailyPricesKeyByDate($since, Carbon::now(), true);
 
         // don't eager load userModelMetrics.metric to use a pre-loaded hashmap
-        $query = UserModel::with(['userModelMetrics'])
+        $query = UserModel::with(['userModelMetrics', 'userModelMetrics.frequency'])
             ->where('is_paused', false)
             ->whereHas('userModelMetrics');
 
@@ -110,9 +112,6 @@ class UserModelService
             if ($userId) {
                 $query->where('user_id', $userId);
             }
-            /*if ($lastScoreAt) {
-                $query->where('last_score_at', '>=', $lastScoreAt->format('Y-m-d H:i:s'));
-            }*/
         }
 
         // calculate every Metric of every UserMetric and upsert all related tables
@@ -126,8 +125,6 @@ class UserModelService
                         $userModelSimulatedTrades = 0;
                         $userModelDailyScoresCreated = 0;
                         $warnings = [];
-                        // needed to compare oscillation between the current and previous day
-                        $previousDailyPrice = null;
 
                         // clear all entries for the User Model being calculated
                         UserModelDailyScore::where('user_model_id', $userModel->id)->delete();
@@ -139,10 +136,9 @@ class UserModelService
                             $userModelMetricsCappedAt > $since->format('Y-m-d') ?
                                 $userModelMetricsCappedAt : $since->format('Y-m-d');
                         $startDate = Carbon::parse($userModel->data_limited_at);
+                        // when days fetched for reference end
+                        $subDaysEndDate = $since->copy()->addDays(Frequency::MAX_FREQUENCY_IN_DAYS);
 
-                        // TODO: use or remove when decision is made (see commented code below)
-                        // each Metric should be saved only once, not per day
-                        // $metricsToUpdate = [];
                         $userModelMetricsWarnings = [];
                         $userModelDaysCalculated = 0;
 
@@ -151,6 +147,12 @@ class UserModelService
                             $userModelDailyScore = 0;
 
                             $dailyPrice = $priceService->getDailyPrice($date->format('Y-m-d'));
+
+                            // iterating through day fetched for past variation: skip
+                            if ($date <= $subDaysEndDate) {
+                                continue;
+                            }
+
                             if (! $dailyPrice) {
                                 // create one warning per metric
                                 foreach ($userModel->userModelMetrics->pluck('id')->all() as $userModelMetricId) {
@@ -160,24 +162,10 @@ class UserModelService
                                 continue;
                             }
 
-                            // first day: just save DailyPrice for next day's reference
-                            if (! $previousDailyPrice) {
-                                $previousDailyPrice = $dailyPrice;
-                                continue;
-                            }
-
                             if ($userModelDaysCalculated === 1) {
                                 $userModel->first_date_calculated = $date->format('Y-m-d');
                             }
 
-                            /**
-                             *  $metricDailyScore = weight x oscillation (if threshold is set and was not hit, then 0)
-                             *            $metricCurrentScore[$userModelMetric->id] = $metricDailyScore; (overwritten to be saved in the end with the last day)
-                             *            $userModelDailyScore += $metricDailyScore
-                             *   - operator && oscillation_threshold are now optional
-                             *       - when null (default): weight applied to modular variation of the day
-                             *       - when set: if oscillation was below threshold, no score for the metric/day
-                             */
                             foreach ($userModel->userModelMetrics as $userModelMetric) {
                                 // retrieve from singleton to avoid queries
                                 $metric = $metricService->getMetric($userModelMetric->metric_id, true);
@@ -200,9 +188,33 @@ class UserModelService
                                     continue;
                                 }
 
+                                // get the reference day (current day - frequency in days)
+                                $referenceDate = $date->copy()->subDays($userModelMetric->frequency->number_of_days);
+                                $numberOfAttempts = 0;
+                                while (
+                                    !$referenceDailyPrice =
+                                    $priceService->getDailyPrice($referenceDate->format('Y-m-d'))
+                                ) {
+                                    // tried every day backwards until $since, when it changes to frontwards
+                                    if ($referenceDate->lt($since)) {
+                                        $referenceDate = $date
+                                            ->copy()
+                                            ->subDays($userModelMetric->frequency->number_of_days)
+                                            ->addDay();
+                                    } elseif($referenceDate->gt($date)) {
+                                        $referenceDate->addDay();
+                                    } else {
+                                        $referenceDate->subDay();
+                                    }
+                                    $numberOfAttempts++;
+                                    if ($numberOfAttempts > 10) {
+                                        throw new UserModelException("Could not fetch \$referenceDailyPrice for {$date->format('Y-m-d')}");
+                                    }
+                                }
+
                                 // calculate current metric score based on oscillation from the previous day
                                 $dailyOscillation = $userModelMetric->dailyOscillation(
-                                    $previousDailyPrice,
+                                    $referenceDailyPrice,
                                     $dailyPrice,
                                     $metric->column_name
                                 );
@@ -281,7 +293,7 @@ class UserModelService
                             $userModelDaysCalculated++;
                             $userModelDailyScoresCreated++;
                             $this->totalDailyScoresCreated++;
-                            $previousDailyPrice = $dailyPrice;
+                            $referenceDailyPrice = $dailyPrice;
                         }
 
                         // if not necessary to have detailed information on user_model_metrics, remove this ASAP

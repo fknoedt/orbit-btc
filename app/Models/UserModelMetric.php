@@ -20,13 +20,19 @@ class UserModelMetric extends Model
         return $this->belongsTo(Metric::class);
     }
 
+    public function frequency(): BelongsTo
+    {
+        return $this->belongsTo(Frequency::class);
+    }
+
     /**
-     * Calculate and return current DailyPrice->$columnName oscillation percentage from the previous DailyPrice
+     * Calculate and return current DailyPrice->$columnName oscillation percentage from the reference DailyPrice
+     * (current day - frequency, in days)
      */
-    public function dailyOscillation(DailyPrice $previousDay, DailyPrice $currentDay, string $columnName): ?float
+    public function dailyOscillation(DailyPrice $referenceDay, DailyPrice $currentDay, string $columnName): ?float
     {
         if (
-            (! $previousValue = $previousDay->{$columnName}) ||
+            (! $referenceValue = $referenceDay->{$columnName}) ||
             (! $currentValue = $currentDay->{$columnName})
         ) {
             throw new UserModelException(
@@ -34,7 +40,7 @@ class UserModelMetric extends Model
             );
         }
 
-        $oscillation = $currentValue / $previousValue;
+        $oscillation = $currentValue / $referenceValue;
 
         return (1 - $oscillation) * 100;
     }
