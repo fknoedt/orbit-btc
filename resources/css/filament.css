@@ -305,3 +305,55 @@ html.dark .fi-fo-wizard-step--completed .fi-fo-wizard-header-step-label {
 html.dark .fi-fo-wizard-step--active .fi-fo-wizard-header-step-label {
     color: #fb923c !important; /* Lighter orange (primary-400) for dark mode */
 }
+
+/* Force blue color for Chart action label and icon */
+.fi-ac-action[data-action="chart"] .fi-link-icon,
+.fi-ac-action[data-action="chart"] .fi-link span {
+    color: #2563eb !important; /* Tailwind blue-600 for light mode */
+    stroke: #2563eb !important; /* Ensure the icon stroke is also blue */
+}
+
+html.dark .fi-ac-action[data-action="chart"] .fi-link-icon,
+html.dark .fi-ac-action[data-action="chart"] .fi-link span {
+    color: #3b82f6 !important; /* Tailwind blue-500 for dark mode */
+    stroke: #3b82f6 !important; /* Ensure the icon stroke matches in dark mode */
+}
+
+/* Remove any custom color overrides that might interfere */
+.fi-ac-action[data-action="chart"] .fi-link-icon.text-custom-600,
+.fi-ac-action[data-action="chart"] .fi-link span.text-custom-600 {
+    color: #2563eb !important; /* Override text-custom-600 */
+    stroke: #2563eb !important;
+}
+
+html.dark .fi-ac-action[data-action="chart"] .fi-link-icon.dark\:text-custom-400,
+html.dark .fi-ac-action[data-action="chart"] .fi-link span.dark\:text-custom-400 {
+    color: #3b82f6 !important; /* Override dark:text-custom-400 */
+    stroke: #3b82f6 !important;
+}
+
+/* Force blue color for Chart action in Infolist modal */
+.fi-infolist-action[data-action="chart"] .fi-infolist-action-icon,
+.fi-infolist-action[data-action="chart"] .fi-infolist-action-label {
+    color: #2563eb !important; /* Tailwind blue-600 for light mode */
+    stroke: #2563eb !important; /* Ensure icon stroke is blue */
+}
+
+html.dark .fi-infolist-action[data-action="chart"] .fi-infolist-action-icon,
+html.dark .fi-infolist-action[data-action="chart"] .fi-infolist-action-label {
+    color: #3b82f6 !important; /* Tailwind blue-500 for dark mode */
+    stroke: #3b82f6 !important; /* Ensure icon stroke matches in dark mode */
+}
+
+/* Override Filament's default custom color classes */
+.fi-infolist-action[data-action="chart"] .fi-infolist-action-icon.text-custom-600,
+.fi-infolist-action[data-action="chart"] .fi-infolist-action-label.text-custom-600 {
+    color: #2563eb !important;
+    stroke: #2563eb !important;
+}
+
+html.dark .fi-infolist-action[data-action="chart"] .fi-infolist-action-icon.dark\:text-custom-400,
+html.dark .fi-infolist-action[data-action="chart"] .fi-infolist-action-label.dark\:text-custom-400 {
+    color: #3b82f6 !important;
+    stroke: #3b82f6 !important;
+}

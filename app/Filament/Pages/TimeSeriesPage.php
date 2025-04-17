@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Metric;
 use App\Services\DailyPriceService;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
@@ -17,12 +18,14 @@ class TimeSeriesPage extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
 
+    protected static ?int $navigationSort = 2;
+
     protected static string $view = 'filament.pages.time-series-page';
 
     protected static ?string $title = 'Time Series';
 
     public string $selectedPeriod = '365d';
-    public array $selectedMetrics = ['close'];
+    public array $selectedMetrics = [];
     public ?string $startDateViewed = null;
     public ?string $endDateViewed = null;
     public string $dateLabel = '';
@@ -32,6 +35,13 @@ class TimeSeriesPage extends Page
 
     public function mount(): void
     {
+        // Load selectedMetrics from GET parameter if set (using your fix)
+        if (request()->has('selectedMetrics')) {
+            $this->selectedMetrics = Metric::whereIn('id', explode(',', request()->input('selectedMetrics')))
+                ->pluck('column_name')->toArray();
+        } else {
+            $this->selectedMetrics = ['close']; // Default to 'close' if not set
+        }
         $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetrics);
         $this->chartData = $chartData;
         $this->startDateViewed = $chartData['startDate'];
@@ -119,17 +129,9 @@ class TimeSeriesPage extends Page
         $series = [];
         $colors = [];
         $yaxis = [];
-        $metricOptions = [
-            'market_cap' => ['name' => 'Market Cap (USD)', 'yTitle' => 'Market Cap (USD)', 'color' => '#4CAF50'],
-            'total_volume' => ['name' => 'Total Volume Traded (USD)', 'yTitle' => 'Volume (USD)', 'color' => '#2196F3'],
-            'close' => ['name' => 'BTC Price (USD)', 'yTitle' => 'Price (USD)', 'color' => '#FF9800'],
-            'average_fee' => ['name' => 'Average BTC Fee', 'yTitle' => 'Fee (BTC)', 'color' => '#9C27B0'],
-            'exchanges_reserve' => ['name' => 'Exchanges Reserve', 'yTitle' => 'Reserve (BTC)', 'color' => '#FF5722'],
-            'fear_and_greed' => ['name' => 'Fear & Greed Index', 'yTitle' => 'Index', 'color' => '#607D8B'],
-            'mayer_multiple' => ['name' => 'Mayer Multiple', 'yTitle' => 'Multiple', 'color' => '#E91E63'],
-            'average_hashrate' => ['name' => 'Avg. Hashrate', 'yTitle' => 'Hashrate', 'color' => '#A067E9'],
-            'difficulty' => ['name' => 'Difficulty', 'yTitle' => 'Difficulty', 'color' => '#E9E454'],
-        ];
+
+        // Fetch metric options dynamically from the database
+        $metricOptions = Metric::all()->keyBy('column_name')->toArray();
 
         foreach ($metrics as $index => $metric) {
             $firstValue = reset($dailyPrices)[$metric] ?? 0;
@@ -150,12 +152,14 @@ class TimeSeriesPage extends Page
                 'seriesName' => $metricOptions[$metric]['name'] ?? 'BTC Price (USD)',
                 'opposite' => $index === 1,
                 'title' => [
-                    'text' => $metricOptions[$metric]['yTitle'] ?? 'Price (USD)',
+                    'text' => $metricOptions[$metric]['y_title'] ?? 'Price (USD)',
                 ],
                 'decimalsInFloat' => $metric === 'mayer_multiple' ? 2 : 0,
                 'tickAmount' => 10,
             ];
         }
+
+
 
         $options = [
             'chart' => [
