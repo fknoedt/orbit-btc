@@ -110,7 +110,7 @@ class MetricResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->label('Learn')
+                    ->label('Info')
                     ->modalSubmitAction(false)
                     ->modalHeading('')
                     ->modalCancelActionLabel('Close') // Rename the default "Cancel" to "Close"

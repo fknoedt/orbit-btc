@@ -36,8 +36,8 @@ class UserModelResource extends Resource
                     ->hidden(),
                 TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('time_horizon')
-                    ->label('Horizon')
+                TextColumn::make('total_signal_value')
+                    ->label('Signal Value')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('buy_or_sell')
@@ -46,8 +46,8 @@ class UserModelResource extends Resource
                 TextColumn::make('threshold')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('total_signal_value')
-                    ->label('Signal Value')
+                TextColumn::make('time_horizon')
+                    ->label('Time Horizon')
                     ->numeric()
                     ->sortable(),
                 IconColumn::make('warning')
