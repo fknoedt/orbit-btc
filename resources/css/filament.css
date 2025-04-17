@@ -357,3 +357,184 @@ html.dark .fi-infolist-action[data-action="chart"] .fi-infolist-action-label.dar
     color: #3b82f6 !important;
     stroke: #3b82f6 !important;
 }
+
+/* Get Started Page Styles */
+.get-started-container {
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    display: flex; /* Added to ensure sections stack without gaps */
+    flex-direction: column; /* Stack sections vertically */
+}
+
+.get-started-section {
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    position: relative;
+    /* Removed scroll-snap-align: start */
+    transition: background 0.5s ease;
+}
+
+.get-started-section .content-wrapper {
+    max-width: 800px;
+}
+
+/* NEW: Title and image container */
+.get-started-section .title-image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem; /* Space between title and image */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+/* NEW: Bigger and bolder title font */
+.get-started-section .title-image-container h1 {
+    font-size: 3rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important; /* Changed to white */
+}
+
+/* NEW: Bigger text font */
+.get-started-section .content-wrapper p {
+    font-size: 1.125rem !important;
+    color: #ffffff !important; /* Changed to white */
+}
+
+/* Background transitions with a space theme for light and dark modes */
+#welcome-section {
+    background: linear-gradient(135deg, #2c2c54 0%, #474787 100%) !important; /* Lighter space theme for light mode */
+}
+
+html.dark #welcome-section {
+    background: linear-gradient(135deg, #0a0a23 0%, #1a1a2e 100%) !important; /* Deep space for dark mode */
+}
+
+#metrics-section {
+    background: linear-gradient(135deg, #474787 0%, #5c5c9c 100%) !important;
+}
+
+html.dark #metrics-section {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%) !important;
+}
+
+#time-series-section {
+    background: linear-gradient(135deg, #5c5c9c 0%, #474787 100%) !important;
+}
+
+html.dark #time-series-section {
+    background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%) !important;
+}
+
+#models-section {
+    background: linear-gradient(135deg, #474787 0%, #2c2c54 100%) !important;
+}
+
+html.dark #models-section {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a23 100%) !important;
+}
+
+#performance-section {
+    background: linear-gradient(135deg, #2c2c54 0%, #474787 100%) !important;
+}
+
+html.dark #performance-section {
+    background: linear-gradient(135deg, #0a0a23 0%, #1a1a2e 100%) !important;
+}
+
+/* Layer 1: Base starry effect */
+.get-started-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px); /* Increased opacity for light mode */
+    background-size: 50px 50px;
+    opacity: 0.5;
+    z-index: 0;
+}
+
+html.dark .get-started-section::before {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px); /* Original opacity for dark mode */
+}
+
+/* Layer 2: Smaller, denser stars */
+.get-started-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0.5px, transparent 0.5px); /* Increased opacity for light mode */
+    background-size: 20px 20px;
+    opacity: 0.7;
+    z-index: 1;
+}
+
+html.dark .get-started-section::after {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0.5px, transparent 0.5px); /* Original opacity for dark mode */
+}
+
+/* Layer 3: Subtle nebula-like glow */
+.get-started-section {
+    position: relative;
+    background-blend-mode: overlay;
+}
+
+.get-started-section::before,
+.get-started-section::after {
+    mix-blend-mode: screen; /* Blend stars with the background */
+}
+
+/* Layer 4: Nebula glow effect using a gradient overlay */
+.get-started-section .content-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 165, 0, 0.2) 0%, transparent 70%); /* Slightly more visible in light mode */
+    opacity: 0.3;
+    z-index: 0;
+    pointer-events: none;
+}
+
+html.dark .get-started-section .content-wrapper::before {
+    background: radial-gradient(circle, rgba(255, 165, 0, 0.1) 0%, transparent 70%); /* Original for dark mode */
+}
+
+.get-started-section .content-wrapper {
+    position: relative;
+    z-index: 2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .get-started-section {
+        min-height: auto;
+        padding: 2rem 0.5rem;
+    }
+
+    .get-started-section .content-wrapper {
+        max-width: 100%;
+    }
+
+    .get-started-section .title-image-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .get-started-section .content-wrapper img {
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+    }
+}
