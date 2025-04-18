@@ -40,7 +40,7 @@
                     </svg>
                 </div>
                 <p class="text-gray-700 dark:text-gray-300 mt-4">
-                    Think of Metrics as indicators that can potentially impact the outcome of a market or price you're trying to monitor. A real estate analyst would use average price, inventory levels and median days on the market as his Metrics to monitor the real estate market. In our case, we are looking at bitcoin historical and real time data like market sentiment, hashrate, exchanges reserve, and many others. In the menu you’ll find detailed information and charts about each Metric. Hang tight!
+                    Metrics are at the core of Orbit. Think of them as indicators that can potentially impact the subject you're trying to monitor. Just like a physician monitors heart rate, blood pressure, temperature and white blood cells, we are looking at bitcoin historical and real time data like market sentiment, hashrate, exchanges reserve, and many others. In the menu you’ll find detailed information and charts about each Metric. Hang tight!
                 </p>
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['metrics'] ? 'checked' : '' }}">
