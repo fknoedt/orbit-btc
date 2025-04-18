@@ -363,58 +363,155 @@ html.dark .fi-infolist-action[data-action="chart"] .fi-infolist-action-label.dar
     min-height: 100vh;
     position: relative;
     overflow: hidden;
-    display: flex; /* Added to ensure sections stack without gaps */
-    flex-direction: column; /* Stack sections vertically */
+    display: flex;
+    flex-direction: column;
 }
 
 .get-started-section {
-    min-height: 75vh;
+    min-height: 60vh; /* Increased from 50vh to 60vh */
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
+    padding: 0.25rem 1rem;
     position: relative;
-    /* Removed scroll-snap-align: start */
     transition: background 0.5s ease;
 }
 
 .get-started-section .content-wrapper {
     max-width: 800px;
+    padding: 0.5rem 0; /* Restored padding */
 }
 
-/* NEW: Title and image container */
+/* Style the container holding title and icon */
 .get-started-section .title-image-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 2rem; /* Space between title and image */
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
-/* NEW: Bigger and bolder title font */
+/* Center the title text without taking extra space */
+.get-started-section .title-wrapper {
+    text-align: center;
+    margin-right: 1rem;
+}
+
+/* Update title color to orange with tighter line height */
 .get-started-section .title-image-container h1 {
     font-size: 3rem !important;
     font-weight: 800 !important;
-    color: #ffffff !important; /* Changed to white */
+    color: #f97316 !important;
+    line-height: 1.2 !important;
+}
+
+html.dark .get-started-section .title-image-container h1 {
+    color: #fb923c !important;
+}
+
+/* NEW: Bigger text font */
+/* NEW: Bigger text font */
+.get-started-section .content-wrapper p {
+    font-size: 1.125rem !important;
+    color: #1f2937 !important; /* Dark grey in light mode */
+    margin-top: 1.5rem !important;
 }
 
 /* NEW: Bigger text font */
 .get-started-section .content-wrapper p {
     font-size: 1.125rem !important;
-    color: #ffffff !important; /* Changed to white */
+    color: #1f2937 !important; /* Dark grey in light mode */
+    margin-top: 1.5rem !important;
+}
+
+html.dark .get-started-section .content-wrapper p {
+    color: #d1d5db !important; /* Light grey in dark mode */
+}
+
+/* Style the heroicons */
+.get-started-section .title-image-container svg.section-icon {
+    height: 80px !important;
+    width: 80px !important;
+    color: #f97316 !important;
+    stroke: #f97316 !important;
+}
+
+/* Dark mode adjustments */
+html.dark .get-started-section .title-image-container svg.section-icon {
+    color: #fb923c !important;
+    stroke: #fb923c !important;
+}
+
+/* Checklist container */
+.get-started-section .checklist-container {
+    margin-top: 2rem; /* Restored from 0.5rem to 1rem */
+    border: 2px solid #d1d5db;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+html.dark .get-started-section .checklist-container {
+    border-color: #4b5563;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Checklist item */
+.get-started-section .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    color: #1f2937;
+}
+
+html.dark .get-started-section .checklist-item {
+    color: #d1d5db;
+}
+
+/* Grey out checked item text (not links) */
+.get-started-section .checklist-item.checked .checklist-text {
+    color: #9ca3af;
+    opacity: 0.6;
+}
+
+html.dark .get-started-section .checklist-item.checked .checklist-text {
+    color: #6b7280;
+    opacity: 0.6;
+}
+
+/* Style links in checklist */
+.get-started-section .checklist-item a {
+    color: #f97316 !important;
+    text-decoration: underline;
+}
+
+html.dark .get-started-section .checklist-item a {
+    color: #fb923c !important;
+}
+
+/* Divider line */
+.get-started-section .checklist-divider {
+    border: none;
+    border-top: 1px dashed #d1d5db;
+    margin: 0.5rem 0;
+}
+
+html.dark .get-started-section .checklist-divider {
+    border-top-color: #4b5563;
 }
 
 /* Background transitions with a space theme for light and dark modes */
 #welcome-section {
-    background: linear-gradient(135deg, #2c2c54 0%, #474787 100%) !important; /* Lighter space theme for light mode */
+    background: linear-gradient(135deg, #d1d5db 0%, #e5e7eb 100%) !important;
 }
 
 html.dark #welcome-section {
-    background: linear-gradient(135deg, #0a0a23 0%, #1a1a2e 100%) !important; /* Deep space for dark mode */
+    background: linear-gradient(135deg, #0a0a23 0%, #1a1a2e 100%) !important;
 }
 
 #metrics-section {
-    background: linear-gradient(135deg, #474787 0%, #5c5c9c 100%) !important;
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
 }
 
 html.dark #metrics-section {
@@ -422,7 +519,7 @@ html.dark #metrics-section {
 }
 
 #time-series-section {
-    background: linear-gradient(135deg, #5c5c9c 0%, #474787 100%) !important;
+    background: linear-gradient(135deg, #d1d5db 0%, #e5e7eb 100%) !important;
 }
 
 html.dark #time-series-section {
@@ -430,7 +527,7 @@ html.dark #time-series-section {
 }
 
 #models-section {
-    background: linear-gradient(135deg, #474787 0%, #2c2c54 100%) !important;
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
 }
 
 html.dark #models-section {
@@ -438,7 +535,7 @@ html.dark #models-section {
 }
 
 #performance-section {
-    background: linear-gradient(135deg, #2c2c54 0%, #474787 100%) !important;
+    background: linear-gradient(135deg, #d1d5db 0%, #e5e7eb 100%) !important;
 }
 
 html.dark #performance-section {
@@ -453,14 +550,14 @@ html.dark #performance-section {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px); /* Increased opacity for light mode */
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
     background-size: 50px 50px;
     opacity: 0.5;
     z-index: 0;
 }
 
 html.dark .get-started-section::before {
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px); /* Original opacity for dark mode */
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
 }
 
 /* Layer 2: Smaller, denser stars */
@@ -471,14 +568,14 @@ html.dark .get-started-section::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0.5px, transparent 0.5px); /* Increased opacity for light mode */
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0.5px, transparent 0.5px);
     background-size: 20px 20px;
     opacity: 0.7;
     z-index: 1;
 }
 
 html.dark .get-started-section::after {
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0.5px, transparent 0.5px); /* Original opacity for dark mode */
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0.5px, transparent 0.5px);
 }
 
 /* Layer 3: Subtle nebula-like glow */
@@ -489,7 +586,7 @@ html.dark .get-started-section::after {
 
 .get-started-section::before,
 .get-started-section::after {
-    mix-blend-mode: screen; /* Blend stars with the background */
+    mix-blend-mode: screen;
 }
 
 /* Layer 4: Nebula glow effect using a gradient overlay */
@@ -500,14 +597,14 @@ html.dark .get-started-section::after {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255, 165, 0, 0.2) 0%, transparent 70%); /* Slightly more visible in light mode */
+    background: radial-gradient(circle, rgba(255, 165, 0, 0.2) 0%, transparent 70%);
     opacity: 0.3;
     z-index: 0;
     pointer-events: none;
 }
 
 html.dark .get-started-section .content-wrapper::before {
-    background: radial-gradient(circle, rgba(255, 165, 0, 0.1) 0%, transparent 70%); /* Original for dark mode */
+    background: radial-gradient(circle, rgba(255, 165, 0, 0.1) 0%, transparent 70%);
 }
 
 .get-started-section .content-wrapper {
@@ -519,22 +616,17 @@ html.dark .get-started-section .content-wrapper::before {
 @media (max-width: 768px) {
     .get-started-section {
         min-height: auto;
-        padding: 2rem 0.5rem;
+        padding: 0.5rem;
     }
 
     .get-started-section .content-wrapper {
         max-width: 100%;
+        padding: 0.5rem 0;
     }
 
     .get-started-section .title-image-container {
         flex-direction: column;
         align-items: center;
         text-align: center;
-    }
-
-    .get-started-section .content-wrapper img {
-        width: 100%;
-        max-width: 300px;
-        height: auto;
     }
 }
