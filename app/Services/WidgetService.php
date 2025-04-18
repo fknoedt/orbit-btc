@@ -18,7 +18,7 @@ class WidgetService
         return [
             BitcoinPriceWidget::class,
             BitcoinDominanceWidget::class,
-            BtcPriceChartWidget::class,
+            // TODO: improve and re-add BtcPriceChartWidget::class
         ];
     }
 
