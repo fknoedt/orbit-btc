@@ -1,6 +1,5 @@
-<!-- resources/views/filament/pages/get-started-page.blade.php -->
 <x-filament-panels::page>
-    <meta http-equiv="refresh" content="45">
+    <meta http-equiv="refresh" content="60">
     <div class="get-started-container">
         <!-- Section 1: Welcome to Orbit -->
         <section class="get-started-section" id="welcome-section">
@@ -21,7 +20,7 @@
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['get-started-page'] ? 'checked' : '' }}">
                         <input type="checkbox" {{ $this->getChecklistStatus()['get-started-page'] ? 'checked' : '' }} disabled>
-                        <span class="checklist-text">Kick off the </span><a href="http://orbit-btc.test/admin/get-started-page">Get Started</a><span class="checklist-text"> guide</span>
+                        <span class="checklist-text">Kick off the Get Started guide</span>
                     </div>
                 </div>
             </div>
@@ -46,7 +45,7 @@
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['metrics'] ? 'checked' : '' }}">
                         <input type="checkbox" {{ $this->getChecklistStatus()['metrics'] ? 'checked' : '' }} disabled>
-                        <span class="checklist-text">Learn about different </span><a href="http://orbit-btc.test/admin/metrics">Metrics</a><span class="checklist-text"> indicators</span>
+                        <span class="checklist-text">Learn about different </span><a target="_blank" href="/admin/metrics">Metrics</a><span class="checklist-text"> indicators</span>
                     </div>
                 </div>
             </div>
@@ -71,7 +70,7 @@
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['time-series'] ? 'checked' : '' }}">
                         <input type="checkbox" {{ $this->getChecklistStatus()['time-series'] ? 'checked' : '' }} disabled>
-                        <span class="checklist-text">Compare </span><a href="http://orbit-btc.test/admin/time-series-page">Time Series</a><span class="checklist-text"> patterns across years</span>
+                        <span class="checklist-text">Compare </span><a target="_blank" href="/admin/time-series-page">Time Series</a><span class="checklist-text"> patterns across years</span>
                     </div>
                 </div>
             </div>
@@ -96,7 +95,7 @@
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['user-models'] ? 'checked' : '' }}">
                         <input type="checkbox" {{ $this->getChecklistStatus()['user-models'] ? 'checked' : '' }} disabled>
-                        <span class="checklist-text">Create your first </span><a href="http://orbit-btc.test/admin/user-models">Model</a>
+                        <span class="checklist-text">Create your first </span><a target="_blank" href="/admin/user-models/create?step=info">Model</a>
                     </div>
                 </div>
             </div>
@@ -121,7 +120,7 @@
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['performance-page'] ? 'checked' : '' }}">
                         <input type="checkbox" {{ $this->getChecklistStatus()['performance-page'] ? 'checked' : '' }} disabled>
-                        <span class="checklist-text">Analyze your Model’s </span><a href="http://orbit-btc.test/admin/performance-page">Performance</a><span class="checklist-text"> trends over time</span>
+                        <span class="checklist-text">Analyze your Model’s </span><a target="_blank" href="/admin/performance-page">Performance</a><span class="checklist-text"> trends over time</span>
                     </div>
                 </div>
             </div>
@@ -146,7 +145,7 @@
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['dashboard'] ? 'checked' : '' }}">
                         <input type="checkbox" {{ $this->getChecklistStatus()['dashboard'] ? 'checked' : '' }} disabled>
-                        <span class="checklist-text">Explore your </span><a href="http://orbit-btc.test/admin">Dashboard</a><span class="checklist-text"> for real-time insights</span>
+                        <span class="checklist-text">Explore your </span><a target="_blank" href="/admin">Dashboard</a><span class="checklist-text"> for real-time insights</span>
                     </div>
                 </div>
             </div>

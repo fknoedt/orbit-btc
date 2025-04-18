@@ -11,7 +11,7 @@ class GetStartedPage extends Page
 
     protected static ?string $title = 'Get Started';
 
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationIcon = 'heroicon-o-rocket-launch';
 
