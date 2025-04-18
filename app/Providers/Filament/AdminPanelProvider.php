@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\CustomDashboard;
 use App\Filament\Pages\PerformancePage;
+use App\Models\UserActivityLog;
 use App\Services\WidgetService;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -12,12 +13,16 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
+
 use Filament\Support\Colors\Color;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
@@ -56,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\LogUserActivity::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -72,11 +78,62 @@ class AdminPanelProvider extends PanelProvider
                     ->group('Dev')
                     ->sort(5)
                     ->visible(fn () => auth()->user()?->role_id === 3 && app()->environment('local')),
-                ]
-            )
+            ])
             ->sidebarWidth('250')
             ->brandName(config('app.name'))
             ->favicon(asset('images/orbit-btc.ico'))
             ->plugins([FilamentApexChartsPlugin::make()]);
+    }
+
+    public function boot(): void
+    {
+        // Register CRUD event listeners
+        Event::listen(RecordCreated::class, function (RecordCreated $event) {
+            if (Auth::check()) {
+                $resourceName = $this->getResourceName($event->resource);
+                UserActivityLog::create([
+                    'user_id' => Auth::id(),
+                    'action' => "created_{$resourceName}",
+                    'method' => 'POST',
+                    'date' => now(),
+                ]);
+            }
+        });
+
+        Event::listen(RecordUpdated::class, function (RecordUpdated $event) {
+            if (Auth::check()) {
+                $resourceName = $this->getResourceName($event->resource);
+                UserActivityLog::create([
+                    'user_id' => Auth::id(),
+                    'action' => "updated_{$resourceName}",
+                    'method' => 'PATCH',
+                    'date' => now(),
+                ]);
+            }
+        });
+
+        Event::listen(RecordDeleted::class, function (RecordDeleted $event) {
+            if (Auth::check()) {
+                $resourceName = $this->getResourceName($event->resource);
+                UserActivityLog::create([
+                    'user_id' => Auth::id(),
+                    'action' => "deleted_{$resourceName}",
+                    'method' => 'DELETE',
+                    'date' => now(),
+                ]);
+            }
+        });
+    }
+
+    /**
+     * Get the snake_case name of the resource from its class.
+     *
+     * @param  string  $resourceClass
+     * @return string
+     */
+    private function getResourceName(string $resourceClass): string
+    {
+        $className = class_basename($resourceClass);
+        return Str::snake(str_replace('Resource', '', $className));
     }
 }

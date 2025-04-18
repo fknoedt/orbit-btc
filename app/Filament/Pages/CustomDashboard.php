@@ -10,6 +10,8 @@ class CustomDashboard extends Dashboard
 
     protected static string $view = 'filament.pages.custom-dashboard';*/
 
+    protected static ?int $navigationSort = 1;
+
     public function getColumns(): int | array
     {
         return [
