@@ -35,6 +35,9 @@ class GetStartedPage extends Page
             'performance-page' => UserActivityLog::where('user_id', $userId)
                 ->where('action', 'visited_performance_page')
                 ->exists(),
+            'dashboard' => UserActivityLog::where('user_id', $userId)
+                ->where('action', 'visited_dashboard')
+                ->exists(),
         ];
     }
 

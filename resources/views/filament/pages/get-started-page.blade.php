@@ -126,5 +126,30 @@
                 </div>
             </div>
         </section>
+
+        <!-- Section 6: Dashboard -->
+        <section class="get-started-section" id="dashboard-section">
+            <div class="content-wrapper">
+                <div class="title-image-container">
+                    <div class="title-wrapper">
+                        <h1 class="text-3xl font-bold text-primary-600 dark:text-primary-400">
+                            Dashboard
+                        </h1>
+                    </div>
+                    <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                </div>
+                <p class="text-gray-900 dark:text-gray-300 mt-4">
+                    The Dashboard is your central hub for staying on top of your Bitcoin analysis. Monitor your latest alerts, track model performance, and keep up with fresh, up-to-date Bitcoin metrics—all in one place.
+                </p>
+                <div class="checklist-container">
+                    <div class="checklist-item {{ $this->getChecklistStatus()['dashboard'] ? 'checked' : '' }}">
+                        <input type="checkbox" {{ $this->getChecklistStatus()['dashboard'] ? 'checked' : '' }} disabled>
+                        <span class="checklist-text">Explore your </span><a href="http://orbit-btc.test/admin">Dashboard</a><span class="checklist-text"> for real-time insights</span>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </x-filament-panels::page>

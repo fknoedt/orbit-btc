@@ -471,7 +471,7 @@ html.dark .get-started-section .checklist-item {
 
 /* Grey out checked item text (not links) */
 .get-started-section .checklist-item.checked .checklist-text {
-    color: #9ca3af;
+    color: #767780;
     opacity: 0.6;
 }
 
@@ -540,6 +540,15 @@ html.dark #models-section {
 
 html.dark #performance-section {
     background: linear-gradient(135deg, #0a0a23 0%, #1a1a2e 100%) !important;
+}
+
+/* Background for Dashboard section */
+#dashboard-section {
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
+}
+
+html.dark #dashboard-section {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a23 100%) !important;
 }
 
 /* Layer 1: Base starry effect */
