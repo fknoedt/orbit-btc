@@ -43,7 +43,7 @@ class StatsOverview extends BaseWidget
                 ->chartColor('success')
                 ->description(
                     sprintf(
-                        '%s Metrics | %s days calculated',
+                        '%s Metrics | %s days history',
                         $userStats['total_metrics'],
                         Number::abbreviate($userStats['total_daily_scores']),
                     )
