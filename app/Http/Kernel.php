@@ -49,6 +49,7 @@ class Kernel extends HttpKernel
 
     protected $routeMiddleware = [
         'log.activity' => \App\Http\Middleware\LogUserActivity::class,
+        'auth.api-client' => \App\Http\Middleware\AuthenticateApiClient::class,
     ];
 
     /**

@@ -12,5 +12,6 @@ return [
         'coinmarketcap_id' => 4,
         'mempool_space_id' => 5,
         'cryptoquant_id' => 6,
+        'orbit_btc_id' => 7,
     ]
 ];

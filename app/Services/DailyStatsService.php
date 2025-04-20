@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\DailyPriceStatsException;
 use App\Models\DailyPrice;
+use Carbon\Carbon;
 
 class DailyStatsService
 {
@@ -16,18 +17,40 @@ class DailyStatsService
      */
     public function fillStats(array $data, bool $force = false): int
     {
-        $fillData = [];
         $columnsToUpdate = [];
+        $previousDay = null;
+
+        if (empty($data)) {
+            throw new \InvalidArgumentException("DailyPrices is empty");
+        }
+
+        // get column names and validate date order
         foreach ($data as $day => $values) {
+            if (! \DateTime::createFromFormat('Y-m-d', $day)) {
+                throw new \InvalidArgumentException("DailyPrices has to be indexed by dates");
+            }
+            if ($previousDay && $day < $previousDay) {
+                throw new \InvalidArgumentException("DailyPrices has changed previous date");
+            }
+            // clean up values that should never be changed
+            unset(
+                $values['id'],
+                $values['date'],
+                $values['data_source_id'],
+                $values['created_at'],
+                $values['updated_at']
+            );
+            $data[$day] = $values;
+
             if (empty($columnsToUpdate)) {
                 $columnsToUpdate = array_keys($values);
             }
-            $fillData[$day] = $values;
+            $previousDay = $day;
         }
 
         // fetch all daily_princes in the given interval..
-        $start = array_key_first($fillData);
-        $end = array_key_last($fillData);
+        $start = array_key_first($data);
+        $end = array_key_last($data);
 
         $query = DailyPrice::where('date', '>=', $start)->where('date', '<=', $end);
 
@@ -42,7 +65,7 @@ class DailyStatsService
 
         $pricesSaved = 0;
         foreach ($query->get() as $dailyPrice) {
-            if (empty($fillData[$dailyPrice->date])) {
+            if (empty($data[$dailyPrice->date])) {
                 throw new DailyPriceStatsException(
                     "Missing \$fillingData[{$dailyPrice->date}] when filling daily_prices"
                 );
@@ -53,8 +76,8 @@ class DailyStatsService
                     continue;
                 }
                 // column might not be set when records are heterogeneous (WARNING: first row needs all columns)
-                if (isset($fillData[$dailyPrice->date][$column])) {
-                    $dailyPrice->{$column} = $fillData[$dailyPrice->date][$column];
+                if (isset($data[$dailyPrice->date][$column])) {
+                    $dailyPrice->{$column} = $data[$dailyPrice->date][$column];
                 }
             }
             $dailyPrice->save();
