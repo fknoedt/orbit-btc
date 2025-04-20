@@ -29,6 +29,7 @@ class TimeSeriesPage extends Page
     public ?string $startDateViewed = null;
     public ?string $endDateViewed = null;
     public string $dateLabel = '';
+    public string $metricDescriptionLabel = 'Select up to two metrics to compare. Choose a time range to search for similar patterns.'; // New property
 
     public array $chartData = [];
     public array $additionalCharts = [];
@@ -47,6 +48,7 @@ class TimeSeriesPage extends Page
         $this->startDateViewed = $chartData['startDate'];
         $this->endDateViewed = $chartData['endDate'];
         $this->updateDateLabel();
+        $this->updateMetricDescriptionLabel(); // Initialize label
     }
 
     public function updatedSelectedPeriod(): void
@@ -62,6 +64,7 @@ class TimeSeriesPage extends Page
         }
         $this->additionalCharts = [];
         $this->updateChartData();
+        $this->updateMetricDescriptionLabel(); // Update label when metrics change
     }
 
     protected function updateChartData(): void
@@ -89,6 +92,27 @@ class TimeSeriesPage extends Page
             $this->dateLabel = "{$this->startDateViewed} to {$this->endDateViewed}";
         } else {
             $this->dateLabel = '';
+        }
+    }
+
+    // New method to update the metric description label
+    protected function updateMetricDescriptionLabel(): void
+    {
+        if (empty($this->selectedMetrics)) {
+            $this->metricDescriptionLabel = 'Select up to two metrics to compare. Choose a time range to search for similar patterns.';
+            return;
+        }
+
+        $metrics = Metric::whereIn('column_name', $this->selectedMetrics)->get()->keyBy('column_name');
+
+        if (count($this->selectedMetrics) === 1) {
+            $metric = $this->selectedMetrics[0];
+            $this->metricDescriptionLabel = $metrics[$metric]->description ?? 'Select up to two metrics to compare. Choose a time range to search for similar patterns.';
+        } else {
+            // If two metrics, prefer the non-'close' metric's description
+            $nonCloseMetric = array_diff($this->selectedMetrics, ['close']);
+            $metric = reset($nonCloseMetric) ?: $this->selectedMetrics[0];
+            $this->metricDescriptionLabel = $metrics[$metric]->description ?? 'Select up to two metrics to compare. Choose a time range to search for similar patterns.';
         }
     }
 
@@ -158,8 +182,6 @@ class TimeSeriesPage extends Page
                 'tickAmount' => 10,
             ];
         }
-
-
 
         $options = [
             'chart' => [
