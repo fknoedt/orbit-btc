@@ -19,7 +19,7 @@ abstract class BaseClient
 {
     /** default request cache time to live in seconds */
     private const int REQUEST_CACHE_TTL = 20;
-    protected const string CLIENT_ADAPTER_SUFFIX = 'ApiClientAdapter';
+    protected const string CLIENT_ADAPTER_SUFFIX = 'ApiAdapter';
     protected const string CLIENT_SUFFIX = 'Client';
 
     protected static int $dataSourceId;
@@ -114,7 +114,7 @@ abstract class BaseClient
             $callerMethod .
             $url .
             $method .
-            implode('', $args) .
+            json_encode($args) .
             implode('', array_keys($args))
         );
 
@@ -154,7 +154,7 @@ abstract class BaseClient
                 );
             } else {
                 throw new ExternalApiException(
-                    $response->getBody()->getContents(),
+                    $body,
                     $response->getStatusCode(),
                     $response->toException()
                 );

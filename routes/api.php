@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DailyPriceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdapterController;
@@ -20,7 +21,7 @@ use App\Http\Controllers\AdapterController;
 });*/
 
 // wrapper general endpoints
-Route::controller(AdapterController::class)->group(function () {
+Route::middleware('auth.api-client')->controller(AdapterController::class)->group(function () {
     Route::get(
         '/current-price',
         'getCurrentPrice'
@@ -37,4 +38,10 @@ Route::controller(AdapterController::class)->group(function () {
         '/price-by-days/{days}',
         'getBtcPriceByDays'
     )->name('api.priceHistory');
+});
+
+
+Route::middleware('auth.api-client')->group(function () {
+    Route::post('/update-daily-prices', [DailyPriceController::class, 'updateDailyPrices'])
+        ->name('api.updateDailyPrices');
 });

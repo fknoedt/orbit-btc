@@ -40,11 +40,15 @@ return [
         ],
         'mempool_space' => [
             'url' => env('MEMPOOL_URL'),
-            'key' => env('MEMPOOL_KEY', null),
+            'key' => env('MEMPOOL_KEY'),
         ],
         'cryptoquant' => [
             'url' => env('CRYPTOQUANT_URL'),
             'auth_token' => env('CRYPTOQUANT_ACCESS_TOKEN'),
         ],
+        'orbit_btc' => [
+            'url' => env('ORBIT_BTC_REMOTE_URL'),
+            'key' => env('ORBIT_BTC_CLIENT_KEY'),
+        ]
     ]
 ];
