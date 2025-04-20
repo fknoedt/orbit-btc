@@ -1,6 +1,7 @@
 @php use Carbon\Carbon; @endphp
 <x-filament-panels::page>
     <div class="p-6">
+        <p class="text-base text-gray-500 dark:text-gray-400 mb-4">{{ $metricDescriptionLabel }}</p> <!-- Add this line -->
         <div class="mb-4 flex justify-between items-center gap-6">
             <div class="flex items-center gap-6">
                 <details class="relative">
@@ -27,9 +28,9 @@
                         id="selectedMetrics"
                         wire:model.live="selectedMetrics"
                         multiple
-                        size="7"
+                        size="9"
                         class="absolute top-full mt-1 block bg-white text-gray-900 border-gray-300 rounded-lg p-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 opacity-90 z-10 appearance-none"
-                        style="width: 150px;"
+                        style="width: 250px;"
                     >
                         <option value="market_cap">Market Cap</option>
                         <option value="total_volume">Total Volume Traded</option>
@@ -42,9 +43,6 @@
                         <option value="difficulty">Difficulty</option>
                     </select>
                 </details>
-                <span class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    <x-heroicon-o-question-mark-circle class="w-6 h-6" title="Ctrl+click for up to 2 metrics" />
-                </span>
             </div>
             <div class="flex items-center gap-6">
                 <label for="selectedPeriod" class="text-lg font-medium text-gray-500">Period</label>
