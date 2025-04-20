@@ -38,7 +38,12 @@ class OrbitBtcClient extends BaseClient
      */
     public function updateRemotePrices(string $since): int
     {
-        $data = DailyPrice::where('date', '>=', $since)->get()->keyBy('date')->toArray();
+        $data = DailyPrice::where('date', '>=', $since)
+            ->orderBy('date', 'asc')
+            ->get()
+            ->keyBy('date')
+            ->toArray();
+
         $response = $this->request('post', 'update-daily-prices', ['daily_prices' => $data]);
 
         return $response['daily-prices-updated'];

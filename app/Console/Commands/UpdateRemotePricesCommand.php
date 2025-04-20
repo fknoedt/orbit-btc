@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 
 class UpdateRemotePricesCommand extends Command
 {
-    protected const int DEFAULT_NUMBER_OF_DAYS_AGO = 3;
+    protected const int DEFAULT_NUMBER_OF_DAYS_AGO = 30;
 
     /**
      * The name and signature of the console command.
