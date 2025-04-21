@@ -40,7 +40,7 @@ abstract class BaseClient
      */
     public function getClientName(): string
     {
-        $className = explode(DIRECTORY_SEPARATOR, get_class($this));
+        $className = explode('\\', get_class($this));
         $class = str_replace(self::CLIENT_ADAPTER_SUFFIX, '', end($className));
 
         return str_replace(self::CLIENT_SUFFIX, '', $class);
