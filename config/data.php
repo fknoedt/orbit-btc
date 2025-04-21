@@ -13,5 +13,7 @@ return [
         'mempool_space_id' => 5,
         'cryptoquant_id' => 6,
         'orbit_btc_id' => 7,
+        'glassnode_id' => 8,
+        'blockchain_com_id' => 9,
     ]
 ];

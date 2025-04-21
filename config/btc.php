@@ -49,6 +49,12 @@ return [
         'orbit_btc' => [
             'url' => env('ORBIT_BTC_REMOTE_URL'),
             'key' => env('ORBIT_BTC_CLIENT_KEY'),
+        ],
+        'glassnode' => [
+            'url' => env('GLASSNODE_URL'),
+        ],
+        'blockchain_com' => [
+            'url' => env('BLOCKCHAIN_COM_URL'),
         ]
     ]
 ];
