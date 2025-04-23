@@ -13,7 +13,7 @@ use Symfony\Component\Mime\Exception\RuntimeException;
  */
 class CurlCryptoQuantClient extends BaseClient
 {
-    private string $version = 'v3';
+    private string $version = 'v4';
 
     private ?string $authToken;
 
@@ -36,7 +36,7 @@ class CurlCryptoQuantClient extends BaseClient
         if (! $url = config('btc.apis.cryptoquant.url')) {
             throw new \RuntimeException('could not load config: data.data_source.cryptoquant_id');
         }
-        self::$url = $url . '/' . $this->version . '/charts/';
+        self::$url = $url . '/live/' . $this->version . '/charts/';
         $this->authToken = config('btc.apis.cryptoquant.auth_token');
         if (! $this->authToken) {
             throw new \RuntimeException('could not load config: btc.apis.cryptoquant.auth_token');

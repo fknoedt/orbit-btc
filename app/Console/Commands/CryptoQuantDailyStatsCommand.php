@@ -37,7 +37,7 @@ class CryptoQuantDailyStatsCommand extends Command
         $metrics = $this->argument('metrics');
 
         $allEndpoints = CurlCryptoQuantClient::METRICS_TO_ENDPOINT;
-        $client = new CryptoQuantClient();
+        $client = new CurlCryptoQuantClient();
 
         $output->writeln('<info>Upserting daily_prices with CryptoQuant data</info>');
 
@@ -49,7 +49,7 @@ class CryptoQuantDailyStatsCommand extends Command
             foreach (explode(',', $metrics) as $metric) {
                 if (! isset($allEndpoints[$metric])) {
                     throw new RuntimeException(
-                        "invalid metric `{$metric}` -- valids: " .
+                        "invalid metric `{$metric}` -- valid: " .
                         implode(",", array_keys($allEndpoints))
                     );
                 }
