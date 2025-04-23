@@ -55,6 +55,10 @@ return [
         ],
         'blockchain_com' => [
             'url' => env('BLOCKCHAIN_COM_URL'),
+        ],
+        'cryptocompare' => [
+            'url' => env('CRYPTOCOMPARE_URL'),
+            'key' => env('CRYPTOCOMPARE_KEY'),
         ]
     ]
 ];

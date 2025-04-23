@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Clients\CryptoQuantClient;
+use App\Clients\CurlCryptoQuantClient;
 use App\Services\DailyStatsService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -35,8 +36,8 @@ class CryptoQuantDailyStatsCommand extends Command
         $output = new ConsoleOutput();
         $metrics = $this->argument('metrics');
 
-        $allEndpoints = CryptoQuantClient::METRICS_TO_ENDPOINT;
-        $client = new CryptoQuantClient();
+        $allEndpoints = CurlCryptoQuantClient::METRICS_TO_ENDPOINT;
+        $client = new CurlCryptoQuantClient();
 
         $output->writeln('<info>Upserting daily_prices with CryptoQuant data</info>');
 
@@ -48,7 +49,7 @@ class CryptoQuantDailyStatsCommand extends Command
             foreach (explode(',', $metrics) as $metric) {
                 if (! isset($allEndpoints[$metric])) {
                     throw new RuntimeException(
-                        "invalid metric `{$metric}` -- valids: " .
+                        "invalid metric `{$metric}` -- valid: " .
                         implode(",", array_keys($allEndpoints))
                     );
                 }
