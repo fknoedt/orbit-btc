@@ -29,20 +29,29 @@ class TimeSeriesPage extends Page
     public ?string $startDateViewed = null;
     public ?string $endDateViewed = null;
     public string $dateLabel = '';
-    public string $metricDescriptionLabel = 'Select up to two metrics to compare. Choose a time range to search for similar patterns.'; // New property
+    public string $metricDescriptionLabel = 'Select up to two metrics to compare. Choose a time range to search for similar patterns.';
+    public array $metrics = []; // New property to store all metrics
 
     public array $chartData = [];
     public array $additionalCharts = [];
 
     public function mount(): void
     {
-        // Load selectedMetrics from GET parameter if set (using your fix)
+        // Load all metrics from the Metric model
+        $this->metrics = Metric::all()->map(fn($metric) => [
+            'id' => $metric->id,
+            'column_name' => $metric->column_name,
+            'name' => $metric->name,
+        ])->toArray();
+
+        // Load selectedMetrics from GET parameter if set
         if (request()->has('selectedMetrics')) {
             $this->selectedMetrics = Metric::whereIn('id', explode(',', request()->input('selectedMetrics')))
                 ->pluck('column_name')->toArray();
         } else {
             $this->selectedMetrics = ['close']; // Default to 'close' if not set
         }
+
         $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetrics);
         $this->chartData = $chartData;
         $this->startDateViewed = $chartData['startDate'];
@@ -138,12 +147,11 @@ class TimeSeriesPage extends Page
 
         if ($startDate) {
             $startDate = Carbon::parse($startDate);
-        }
-        else {
+        } else {
             if ($period === '0d') {
                 $startDate = Carbon::parse(config('btc.first_cmc_available_date'));
             } else {
-                $days = (int)str_replace('d', '', $period);
+                $days = (int) str_replace('d', '', $period);
                 $startDate = $endDate->copy()->subDays($days);
             }
         }

@@ -1,7 +1,7 @@
 @php use Carbon\Carbon; @endphp
 <x-filament-panels::page>
     <div class="p-6">
-        <p class="text-base text-gray-500 dark:text-gray-400 mb-4">{{ $metricDescriptionLabel }}</p> <!-- Add this line -->
+        <p class="text-base text-gray-500 dark:text-gray-400 mb-4">{{ $metricDescriptionLabel }}</p>
         <div class="mb-4 flex justify-between items-center gap-6">
             <div class="flex items-center gap-6">
                 <details class="relative">
@@ -9,17 +9,9 @@
                         <span>
                             {{ count($selectedMetrics) === 1 ? 'Metric: ' : 'Metrics: ' }}
                             <span class="text-white">
-                                {{ collect($selectedMetrics)->map(fn($metric) => match($metric) {
-                                    'market_cap' => 'Market Cap',
-                                    'total_volume' => 'Total Volume',
-                                    'close' => 'BTC Price',
-                                    'average_fee' => 'Average Fee',
-                                    'exchanges_reserve' => 'Exchanges Reserve',
-                                    'fear_and_greed' => 'Fear & Greed',
-                                    'mayer_multiple' => 'Mayer Multiple',
-                                    'average_hashrate' => 'Avg. Hashrate',
-                                    'difficulty' => 'Difficulty',
-                                    default => 'BTC Price'
+                                {{ collect($selectedMetrics)->map(function($metric) use ($metrics) {
+                                    $metricData = collect($metrics)->firstWhere('column_name', $metric);
+                                    return $metricData['name'] ?? 'Unknown Metric';
                                 })->implode(count($selectedMetrics) === 1 ? '' : ' x ') }}
                             </span>
                         </span>
@@ -32,15 +24,9 @@
                         class="absolute top-full mt-1 block bg-white text-gray-900 border-gray-300 rounded-lg p-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 opacity-90 z-10 appearance-none"
                         style="width: 250px;"
                     >
-                        <option value="market_cap">Market Cap</option>
-                        <option value="total_volume">Total Volume Traded</option>
-                        <option value="close">BTC Price</option>
-                        <option value="average_fee">Average BTC Fee</option>
-                        <option value="exchanges_reserve">Exchanges Reserve</option>
-                        <option value="fear_and_greed">Fear & Greed</option>
-                        <option value="mayer_multiple">Mayer Multiple</option>
-                        <option value="average_hashrate">Avg. Hashrate</option>
-                        <option value="difficulty">Difficulty</option>
+                        @foreach($metrics as $metric)
+                            <option value="{{ $metric['column_name'] }}">{{ $metric['name'] }}</option>
+                        @endforeach
                     </select>
                 </details>
             </div>
@@ -198,7 +184,7 @@
                         }
                     }
                 });
-            }, 200); // Increased delay to ensure DOM is ready
+            }, 200);
         });
 
         document.addEventListener('DOMContentLoaded', function () {

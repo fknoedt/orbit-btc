@@ -155,7 +155,9 @@ class CoinMarketCapApiAdapter extends BaseClient implements ExternalApiAdapterIn
 
     /**
      * Get price [$date => $price] for the given date interval
-     * @warning this is a paid endpoint
+     * @warning this is a paid endpoint and we currently are not paying for CMC access
+     * https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyMarketpairsLatest which is
+     * deprecated, is also paid
      * @see https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyOhlcvHistorical
      * @throws \Exception
      * @throws AdapterException

@@ -2,7 +2,8 @@
 
 namespace App\Console;
 
-use App\Clients\CryptoQuantClient;
+use App\Clients\CurlCryptoQuantClient;
+use App\Console\Commands\CryptoCompareDailyStatsCommand;
 use App\Models\DailyPrice;
 use App\Models\UserModelDailyScore;
 use Carbon\Carbon;
@@ -15,7 +16,7 @@ class Kernel extends ConsoleKernel
     /** how many days in the past to look for missing daily_prices entries */
     private const int PRICE_SYNC_LAST_X_DAYS = 30;
 
-    /** since when NULL stats should be auto-populated */
+    /** since when NULL CruptoQuant stats should be updated */
     private const string STATS_START_DATE = '2023-01-01';
 
     /**
@@ -54,12 +55,29 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 
-        $cqMetrics = array_keys(CryptoQuantClient::METRICS_TO_ENDPOINT);
+        $cqMetrics = array_keys(CurlCryptoQuantClient::METRICS_TO_ENDPOINT);
 
         $schedule->command(
             'btc:crypto-quant-daily-stats ' . implode(',', $cqMetrics) . ' --ignore-errors'
         )
             ->everyMinute()->when($this->shouldUpdateCryptoQuantStats($cqMetrics))
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo)
+            ->onFailure(function (\Throwable $e) {
+                \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
+            });
+
+        $schedule->command(
+            'btc:cryptocompare-daily-stats --ignore-errors'
+        )
+            ->everyMinute()->when($this->shouldUpdateCryptoCompareStats([
+                'transaction_count',
+                'large_transaction_count',
+                'average_transaction_value',
+                'new_addresses',
+                'block_size',
+                'exchanges_volume'
+            ]))
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo)
             ->onFailure(function (\Throwable $e) {
@@ -103,6 +121,24 @@ class Kernel extends ConsoleKernel
             })->count();
         if ($pricesMissingStats) {
             Log::info('Running CQ stats update');
+            return true;
+        }
+
+        return false;
+    }
+
+    private function shouldUpdateCryptoCompareStats(array $columnsToUpdate): bool
+    {
+        $since = Carbon::now()->subDays(CryptoCompareDailyStatsCommand::FETCH_DAYS_AGO)->format('Y-m-d');
+        $pricesMissingStats = DailyPrice::where('date', '>', $since)
+            ->where('date', '<', Carbon::now()->format('Y-m-d'))
+            ->where(function ($q) use ($columnsToUpdate) {
+                foreach ($columnsToUpdate as $column) {
+                    $q->orWhereNull($column);
+                }
+            })->count();
+        if ($pricesMissingStats) {
+            Log::info('Running CC stats update');
             return true;
         }
 

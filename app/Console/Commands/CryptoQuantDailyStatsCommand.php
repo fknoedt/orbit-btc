@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Clients\CryptoQuantClient;
+use App\Clients\CurlCryptoQuantClient;
 use App\Services\DailyStatsService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -35,7 +36,7 @@ class CryptoQuantDailyStatsCommand extends Command
         $output = new ConsoleOutput();
         $metrics = $this->argument('metrics');
 
-        $allEndpoints = CryptoQuantClient::METRICS_TO_ENDPOINT;
+        $allEndpoints = CurlCryptoQuantClient::METRICS_TO_ENDPOINT;
         $client = new CryptoQuantClient();
 
         $output->writeln('<info>Upserting daily_prices with CryptoQuant data</info>');
