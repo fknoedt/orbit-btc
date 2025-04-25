@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Metric;
-use App\Models\UserModel;
+use App\Models\UserSignal;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dateTime('data_limited_at')->nullable();
         });
 
-        UserModel::where('id', '>', 0)->update(['error' => false, 'warning' => false, 'buy_or_sell' => 'sell']);
+        UserSignal::where('id', '>', 0)->update(['error' => false, 'warning' => false, 'buy_or_sell' => 'sell']);
 
         // enforce constraints
         Schema::table('user_models', function (Blueprint $table) {
@@ -72,7 +72,7 @@ will score points that will be weighted based on `weight`'
         Schema::create('user_model_daily_scores', function (Blueprint $table) {
             $table->id();
             $table->date('date');
-            $table->foreignIdFor(UserModel::class);
+            $table->foreignIdFor(UserSignal::class);
             $table
                 ->foreign('user_model_id')
                 ->references('id')

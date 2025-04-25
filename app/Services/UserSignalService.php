@@ -2,18 +2,18 @@
 
 namespace App\Services;
 
-use App\Exceptions\UserModelException;
-use App\Exceptions\UserModelFunctionalException;
+use App\Exceptions\UserSignalException;
+use App\Exceptions\UserSignalFunctionalException;
 use App\Models\Frequency;
-use App\Models\UserModel;
-use App\Models\UserModelDailyScore;
-use App\Models\UserModelMetric;
+use App\Models\UserSignal;
+use App\Models\UserSignalDailyScore;
+use App\Models\UserSignalMetric;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class UserModelService
+class UserSignalService
 {
-    /** How far back a user_model will span */
+    /** How far back a user_signal will span */
     public const int MAX_DAYS_BACK = 1096;
 
     /** used to calculate max threshold */
@@ -59,11 +59,11 @@ class UserModelService
         ];
     }
 
-    public function getMaxThreshold(int $userModelId): int
+    public function getMaxThreshold(int $userSignalId): int
     {
         $max = 0;
 
-        $metrics = UserModelMetric::where('user_model_id', $userModelId)->get();
+        $metrics = UserSignalMetric::where('user_signal_id', $userSignalId)->get();
 
         if (empty($metrics)) {
             return $max;
@@ -77,7 +77,7 @@ class UserModelService
     }
 
     public function updateDailyScores(
-        int               $userModelId = null,
+        int               $userSignalId = null,
         int               $userId = null,
         Carbon            $since = null,
         MetricService     $metricService = null,
@@ -101,13 +101,13 @@ class UserModelService
         // pre-load all daily_prices to avoid repeated DB/cache access
         $priceService->getAllDailyPricesKeyByDate($since, Carbon::now(), true);
 
-        // don't eager load userModelMetrics.metric to use a pre-loaded hashmap
-        $query = UserModel::with(['userModelMetrics', 'userModelMetrics.frequency'])
+        // don't eager load userSignalMetrics.metric to use a pre-loaded hashmap
+        $query = UserSignal::with(['userSignalMetrics', 'userSignalMetrics.frequency'])
             ->where('is_paused', false)
-            ->whereHas('userModelMetrics');
+            ->whereHas('userSignalMetrics');
 
-        if ($userModelId) {
-            $query->where('id', $userModelId);
+        if ($userSignalId) {
+            $query->where('id', $userSignalId);
         } else {
             if ($userId) {
                 $query->where('user_id', $userId);
@@ -115,36 +115,36 @@ class UserModelService
         }
 
         // calculate every Metric of every UserMetric and upsert all related tables
-        foreach ($query->get() as $userModel) {
+        foreach ($query->get() as $userSignal) {
             try {
-                // if one UserModel fail processing, report and save errors to this object and try every other UserModel
+                // if one UserSignal fail processing, report and save errors to this object and try every other UserSignal
                 DB::transaction(
-                    function () use ($userModel, $since, $metricService, $priceService) {
+                    function () use ($userSignal, $since, $metricService, $priceService) {
                         $now = Carbon::now();
                         $totalSignalValue = 0;
-                        $userModelSimulatedTrades = 0;
-                        $userModelDailyScoresCreated = 0;
+                        $userSignalSimulatedTrades = 0;
+                        $userSignalDailyScoresCreated = 0;
                         $warnings = [];
 
-                        // clear all entries for the User Model being calculated
-                        UserModelDailyScore::where('user_model_id', $userModel->id)->delete();
+                        // clear all entries for the User Signal being calculated
+                        UserSignalDailyScore::where('user_signal_id', $userSignal->id)->delete();
 
                         // get the earliest date when all metrics of this model had data
-                        $userModelMetricsCappedAt = $userModel->getMetricsDataCappedAt();
-                        // and set where the user model really starts
-                        $userModel->data_limited_at =
-                            $userModelMetricsCappedAt > $since->format('Y-m-d') ?
-                                $userModelMetricsCappedAt : $since->format('Y-m-d');
-                        $startDate = Carbon::parse($userModel->data_limited_at);
+                        $userSignalMetricsCappedAt = $userSignal->getMetricsDataCappedAt();
+                        // and set where the User Signal really starts
+                        $userSignal->data_limited_at =
+                            $userSignalMetricsCappedAt > $since->format('Y-m-d') ?
+                                $userSignalMetricsCappedAt : $since->format('Y-m-d');
+                        $startDate = Carbon::parse($userSignal->data_limited_at);
                         // when days fetched for reference end
                         $subDaysEndDate = $since->copy()->addDays(Frequency::MAX_FREQUENCY_IN_DAYS);
 
-                        $userModelMetricsWarnings = [];
-                        $userModelDaysCalculated = 0;
+                        $userSignalMetricsWarnings = [];
+                        $userSignalDaysCalculated = 0;
 
                         // iterate through every day of the time series and, on each day, go through every metric
                         for ($date = $startDate->copy(); $date->lte($now); $date->addDay()) {
-                            $userModelDailyScore = 0;
+                            $userSignalDailyScore = 0;
 
                             $dailyPrice = $priceService->getDailyPrice($date->format('Y-m-d'));
 
@@ -155,23 +155,23 @@ class UserModelService
 
                             if (! $dailyPrice) {
                                 // create one warning per metric
-                                foreach ($userModel->userModelMetrics->pluck('id')->all() as $userModelMetricId) {
-                                    $userModelMetricsWarnings[$userModelMetricId]['Missing Day(s)'] ??= 0;
-                                    $userModelMetricsWarnings[$userModelMetricId]['Missing Day(s)']++;
+                                foreach ($userSignal->userSignalMetrics->pluck('id')->all() as $userSignalMetricId) {
+                                    $userSignalMetricsWarnings[$userSignalMetricId]['Missing Day(s)'] ??= 0;
+                                    $userSignalMetricsWarnings[$userSignalMetricId]['Missing Day(s)']++;
                                 }
                                 continue;
                             }
 
-                            if ($userModelDaysCalculated === 1) {
-                                $userModel->first_date_calculated = $date->format('Y-m-d');
+                            if ($userSignalDaysCalculated === 1) {
+                                $userSignal->first_date_calculated = $date->format('Y-m-d');
                             }
 
-                            foreach ($userModel->userModelMetrics as $userModelMetric) {
+                            foreach ($userSignal->userSignalMetrics as $userSignalMetric) {
                                 // retrieve from singleton to avoid queries
-                                $metric = $metricService->getMetric($userModelMetric->metric_id, true);
+                                $metric = $metricService->getMetric($userSignalMetric->metric_id, true);
                                 // metric has to be configured or whole model fails
                                 if (empty($metric->data_limited_at)) {
-                                    throw new UserModelFunctionalException(
+                                    throw new UserSignalFunctionalException(
                                         sprintf(
                                             'Metric %s not ready/enabled to process',
                                             $metric->name
@@ -182,14 +182,14 @@ class UserModelService
                                 $currentMetricValue = $dailyPrice->{$metric->column_name};
 
                                 if (! $currentMetricValue) {
-                                    $warnings[$userModelMetric->id] ??= []; // Initialize if not set
-                                    $warnings[$userModelMetric->id]['Day(s) missing value'] ??= 0; // Initialize if not set
-                                    $warnings[$userModelMetric->id]['Day(s) missing value']++;
+                                    $warnings[$userSignalMetric->id] ??= []; // Initialize if not set
+                                    $warnings[$userSignalMetric->id]['Day(s) missing value'] ??= 0; // Initialize if not set
+                                    $warnings[$userSignalMetric->id]['Day(s) missing value']++;
                                     continue;
                                 }
 
                                 // get the reference day (current day - frequency in days)
-                                $referenceDate = $date->copy()->subDays($userModelMetric->frequency->number_of_days);
+                                $referenceDate = $date->copy()->subDays($userSignalMetric->frequency->number_of_days);
                                 $numberOfAttempts = 0;
                                 while (
                                     !$referenceDailyPrice =
@@ -199,7 +199,7 @@ class UserModelService
                                     if ($referenceDate->lt($since)) {
                                         $referenceDate = $date
                                             ->copy()
-                                            ->subDays($userModelMetric->frequency->number_of_days)
+                                            ->subDays($userSignalMetric->frequency->number_of_days)
                                             ->addDay();
                                     } elseif($referenceDate->gt($date)) {
                                         $referenceDate->addDay();
@@ -208,12 +208,12 @@ class UserModelService
                                     }
                                     $numberOfAttempts++;
                                     if ($numberOfAttempts > 10) {
-                                        throw new UserModelException("Could not fetch \$referenceDailyPrice for {$date->format('Y-m-d')}");
+                                        throw new UserSignalException("Could not fetch \$referenceDailyPrice for {$date->format('Y-m-d')}");
                                     }
                                 }
 
                                 // calculate current metric score based on oscillation from the previous day
-                                $dailyOscillation = $userModelMetric->dailyOscillation(
+                                $dailyOscillation = $userSignalMetric->dailyOscillation(
                                     $referenceDailyPrice,
                                     $dailyPrice,
                                     $metric->column_name
@@ -221,8 +221,8 @@ class UserModelService
 
                                 // ignore variations against what is expected
                                 if (
-                                    $userModelMetric->operator === '+' && $dailyOscillation < 0 ||
-                                    $userModelMetric->operator === '-' && $dailyOscillation > 0
+                                    $userSignalMetric->operator === '+' && $dailyOscillation < 0 ||
+                                    $userSignalMetric->operator === '-' && $dailyOscillation > 0
                                 ) {
                                         continue;
                                 }
@@ -230,15 +230,15 @@ class UserModelService
                                 $dailyOscillation = abs($dailyOscillation);
 
                                 // ignore if variation is below threshold
-                                if (isset($userModelMetric->threshold) && $userModelMetric->threshold > $dailyOscillation) {
+                                if (isset($userSignalMetric->threshold) && $userSignalMetric->threshold > $dailyOscillation) {
                                     continue;
                                 }
 
                                 // apply weight and use absolute value to sum up to the score
-                                $userModelMetricLastScore = $dailyOscillation * $userModelMetric->weight;
+                                $userSignalMetricLastScore = $dailyOscillation * $userSignalMetric->weight;
 
-                                // add points to User Model grand score for the day
-                                $userModelDailyScore += $userModelMetricLastScore;
+                                // add points to User Signal grand score for the day
+                                $userSignalDailyScore += $userSignalMetricLastScore;
                             }
 
                             // with (all metrics) daily score set, calculate signal_value
@@ -246,13 +246,13 @@ class UserModelService
                             $conviction = null;
                             $tradeValue = null;
                             $dailySignalValue = null;
-                            if ($userModelDailyScore >= $userModel->threshold) {
-                                // TODO: user_model.conviction_trade bool to make it proportional to how past threshold
-                                if (! empty($userModel->conviction_trade)) {
+                            if ($userSignalDailyScore >= $userSignal->threshold) {
+                                // TODO: user_signal.conviction_trade bool to make it proportional to how past threshold
+                                if (! empty($userSignal->conviction_trade)) {
                                     // how strong - above the threshold - the model is today
                                     $tradeStrength =
-                                        ($userModelDailyScore - $userModel->threshold) /
-                                        $userModel->threshold;
+                                        ($userSignalDailyScore - $userSignal->threshold) /
+                                        $userSignal->threshold;
                                     // amount bought or sold depends on conviction (cap to full value)
                                     $conviction = min($tradeStrength, 1);
                                 } else {
@@ -261,65 +261,65 @@ class UserModelService
                                 $tradeValue = $conviction * self::TRADE_SIZE_IN_USD;
 
                                 // get the future price change
-                                $futurePriceColumnName = 'price_change_' . $userModel->time_horizon . 'd';
+                                $futurePriceColumnName = 'price_change_' . $userSignal->time_horizon . 'd';
                                 // and normalize it (maybe it should be stored like that in the first place?)
                                 $futureTradeValueChange = ($dailyPrice->{$futurePriceColumnName} / 100);
                                 // total gained or saved this day
                                 $futureValueDelta = $tradeValue * $futureTradeValueChange;
                                 // if signal was to sell, invert value (price going up is bad while down is good)
-                                $dailySignalValue = ($userModel->buy_or_sell === 'buy') ?
+                                $dailySignalValue = ($userSignal->buy_or_sell === 'buy') ?
                                     $futureValueDelta : (-1 * $futureValueDelta);
                                 // sum to the model's grand signal score
                                 $totalSignalValue += $dailySignalValue;
 
-                                $userModelSimulatedTrades++;
+                                $userSignalSimulatedTrades++;
                                 $this->totalSimulatedTrades++;
                             }
 
-                            $userModel->last_score = $userModelDailyScore;
-                            $userModel->last_date_calculated = $date->format('Y-m-d');
-                            $userModel->last_signal_value = $dailySignalValue;
+                            $userSignal->last_score = $userSignalDailyScore;
+                            $userSignal->last_date_calculated = $date->format('Y-m-d');
+                            $userSignal->last_signal_value = $dailySignalValue;
 
-                            // save day in user_model_daily_scores
-                            UserModelDailyScore::create([
+                            // save day in user_signal_daily_scores
+                            UserSignalDailyScore::create([
                                 'date' => $date->format('Y-m-d'),
-                                'user_model_id' => $userModel->id,
-                                'score' => $userModelDailyScore,
+                                'user_signal_id' => $userSignal->id,
+                                'score' => $userSignalDailyScore,
                                 'signal_value' => $dailySignalValue,
                                 'conviction' => $conviction,
                                 'stake' => $tradeValue,
                             ]);
 
-                            $userModelDaysCalculated++;
-                            $userModelDailyScoresCreated++;
+                            $userSignalDaysCalculated++;
+                            $userSignalDailyScoresCreated++;
                             $this->totalDailyScoresCreated++;
                             $referenceDailyPrice = $dailyPrice;
                         }
 
-                        // if not necessary to have detailed information on user_model_metrics, remove this ASAP
-                        /*foreach ($userModelMetricsToUpdate as $userModelMetricId => $data) {
-                            if (! empty($warnings[$userModelMetricId])) {
+                        // if not necessary to have detailed information on user_signal_metrics, remove this ASAP
+                        /*foreach ($userSignalMetricsToUpdate as $userSignalMetricId => $data) {
+                            if (! empty($warnings[$userSignalMetricId])) {
                                 $data['warning'] = implode(' | ', array_map(
                                     function ($warning, $count) {
                                         return $count . ' ' . $warning;
                                     },
-                                    array_keys($warnings[$userModelMetricId]),
-                                    $warnings[$userModelMetricId]
+                                    array_keys($warnings[$userSignalMetricId]),
+                                    $warnings[$userSignalMetricId]
                                 ));
 
                             }
-                            UserModelMetric::where('id', $userModelMetricId)->update($data);
+                            UserSignalMetric::where('id', $userSignalMetricId)->update($data);
                         }*/
 
-                        $userModel->total_signal_value = $totalSignalValue;
-                        $userModel->scores_last_updated_at = $now->format('Y-m-d H:i:s');
-                        $userModel->total_simulated_trades = $userModelSimulatedTrades;
+                        $userSignal->total_signal_value = $totalSignalValue;
+                        $userSignal->scores_last_updated_at = $now->format('Y-m-d H:i:s');
+                        $userSignal->total_simulated_trades = $userSignalSimulatedTrades;
 
-                        $userModel->warning = !empty($warnings);
+                        $userSignal->warning = !empty($warnings);
 
-                        $userModel->error = ($userModelDailyScoresCreated === 0);
+                        $userSignal->error = ($userSignalDailyScoresCreated === 0);
 
-                        $userModel->save();
+                        $userSignal->save();
                     }
                 );
             } catch (\Throwable $e) {
@@ -342,30 +342,30 @@ class UserModelService
 
     public function getUserStats(int $userId): array
     {
-        // Fetch UserModel records for the given user_id with counts of dailyScores and userModelMetrics
-        $userModels = UserModel::where('user_id', $userId)
-            ->withCount(['dailyScores', 'userModelMetrics'])
+        // Fetch UserSignal records for the given user_id with counts of dailyScores and userSignalMetrics
+        $userSignals = UserSignal::where('user_id', $userId)
+            ->withCount(['dailyScores', 'userSignalMetrics'])
             ->get();
 
-        // Count the total UserModel records
-        $totalModels = $userModels->count();
+        // Count the total UserSignal records
+        $totalModels = $userSignals->count();
 
-        // Sum the counts of dailyScores and userModelMetrics across all UserModel records
-        $totalDailyScores = $userModels->sum('daily_scores_count');
-        $totalUserModelMetrics = $userModels->sum('user_model_metrics_count');
+        // Sum the counts of dailyScores and userSignalMetrics across all UserSignal records
+        $totalDailyScores = $userSignals->sum('daily_scores_count');
+        $totalUserSignalMetrics = $userSignals->sum('user_signal_metrics_count');
 
         return [
-            'total_models' => $totalModels,
+            'total_signals' => $totalModels,
             'total_daily_scores' => $totalDailyScores,
-            'total_metrics' => $totalUserModelMetrics,
+            'total_metrics' => $totalUserSignalMetrics,
         ];
     }
 
     /**
      *
      */
-    public function getUserTopModel(int $userId)
+    public function getUserTopSignal(int $userId)
     {
-        return UserModel::where('user_id', $userId)->orderBy('total_signal_value', 'desc')->first();
+        return UserSignal::where('user_id', $userId)->orderBy('total_signal_value', 'desc')->first();
     }
 }

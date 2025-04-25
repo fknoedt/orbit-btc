@@ -3,7 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Resources\DashboardResource\Widgets\MempoolWidget;
-use App\Services\UserModelService;
+use App\Services\UserSignalService;
 use App\Services\WidgetService;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
@@ -24,7 +24,7 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
         $userId = auth()->user()->id;
-        $modelService = new UserModelService();
+        $signalService = new UserSignalService();
         $widgetService = new WidgetService();
 
         try {
@@ -36,8 +36,8 @@ class StatsOverview extends BaseWidget
         }
 
         try {
-            $userStats = $modelService->getUserStats($userId);
-            $totalModelsStat = Stat::make('Total Models', $userStats['total_models'])
+            $userStats = $signalService->getUserStats($userId);
+            $totalSignalsStat = Stat::make('Total Signals', $userStats['total_signals'])
                 ->icon('heroicon-o-cube')
                 ->iconPosition('end')
                 ->chartColor('success')
@@ -52,19 +52,19 @@ class StatsOverview extends BaseWidget
                 ->iconColor('success');
         } catch (\Throwable $e) {
             report($e);
-            $totalModelsStat = $widgetService->getErrorStat('Models');
+            $totalSignalsStat = $widgetService->getErrorStat('Signals');
         }
 
         try {
-            $topModel = $modelService->getUserTopModel($userId);
-            $topModelStat = Stat::make('Top Performing Model', Str::limit($topModel->name, 15, '.'))
+            $topSignal = $signalService->getUserTopSignal($userId);
+            $topSignalStat = Stat::make('Top Performing Signal', Str::limit($topSignal->name, 15, '.'))
                 ->icon('heroicon-o-trophy')
                 ->iconPosition('end')
                 ->chartColor('success')
                 ->description(
                     sprintf(
                         'score: %s | rank: %s',
-                        Number::format($topModel->total_signal_value, 1),
+                        Number::format($topSignal->total_signal_value, 1),
                         rand(1, 50000),
                     )
                 )
@@ -72,12 +72,12 @@ class StatsOverview extends BaseWidget
                 ->iconColor('success');
         } catch (\Throwable $e) {
             report($e);
-            $topModelStat = $widgetService->getErrorStat('Top Model');
+            $topSignalStat = $widgetService->getErrorStat('Top Signal');
         }
 
         return [
-            $totalModelsStat,
-            $topModelStat,
+            $totalSignalsStat,
+            $topSignalStat,
             $mempoolStat,
         ];
 

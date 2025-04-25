@@ -5,7 +5,7 @@ namespace App\Console;
 use App\Clients\CurlCryptoQuantClient;
 use App\Console\Commands\CryptoCompareDailyStatsCommand;
 use App\Models\DailyPrice;
-use App\Models\UserModelDailyScore;
+use App\Models\UserSignalDailyScore;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -84,8 +84,8 @@ class Kernel extends ConsoleKernel
                 \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
             });
 
-        $schedule->command('btc:update-all-user-model-scores')
-            ->everyMinute()->when($this->shouldUpdateUserModels())
+        $schedule->command('btc:update-all-user-signal-scores')
+            ->everyMinute()->when($this->shouldUpdateUserSignals())
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
     }
@@ -165,13 +165,13 @@ class Kernel extends ConsoleKernel
         return false;
     }
 
-    private function shouldUpdateUserModels(): bool
+    private function shouldUpdateUserSignals(): bool
     {
         $lastDailyPrice = DailyPrice::max('date');
-        $lastUserModelScore = UserModelDailyScore::max('date');
+        $lastUserSignalScore = UserSignalDailyScore::max('date');
 
-        if ($lastDailyPrice > $lastUserModelScore) {
-            Log::info('Running UserModels update all scores');
+        if ($lastDailyPrice > $lastUserSignalScore) {
+            Log::info('Running UserSignals update all scores');
             return true;
         }
 

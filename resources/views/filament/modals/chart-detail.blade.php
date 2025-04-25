@@ -20,22 +20,22 @@
                 Threshold:
             </span>
             <span class="text-base font-semibold !text-white">
-                @if ($dailyScore->score > $userModel->threshold)
-                    {{ $userModel->threshold }}
+                @if ($dailyScore->score > $userSignal->threshold)
+                    {{ $userSignal->threshold }}
                     🎯
                     <x-heroicon-o-arrow-right class="inline w-5 h-5" />
-                    {{ ucfirst($userModel->buy_or_sell) }}
-                    {{ $userModel->buy_or_sell === 'buy' ? '📈' : '📉' }}
+                    {{ ucfirst($userSignal->buy_or_sell) }}
+                    {{ $userSignal->buy_or_sell === 'buy' ? '📈' : '📉' }}
                 @else
-                    {{ $userModel->threshold }}
+                    {{ $userSignal->threshold }}
                     <x-heroicon-o-x-circle class="inline w-5 h-5 text-red-300" style="color: indianred"/>
                     <x-heroicon-o-arrow-right class="inline w-5 h-5" style="color: grey" />
-                    Don't {{ ucfirst($userModel->buy_or_sell) }}
+                    Don't {{ ucfirst($userSignal->buy_or_sell) }}
                 @endif
             </span>
         </p>
         @php
-            $futureChange = $dailyPrice->{'price_change_' . $userModel->time_horizon . 'd'};
+            $futureChange = $dailyPrice->{'price_change_' . $userSignal->time_horizon . 'd'};
             $futurePrice =
                 $dailyPrice->close + (
                     $dailyPrice->close * ($futureChange / 100)
@@ -43,7 +43,7 @@
         @endphp
         <p class="mt-2 text-sm">
             <span class="text-gray-600 dark:text-gray-400">
-                Price After {{ $userModel->time_horizon }} day(s):
+                Price After {{ $userSignal->time_horizon }} day(s):
             </span>
             <span class="text-base font-semibold !text-white" style="color: {{ $futurePrice > $dailyPrice->close ? '#008FFB' : '#ef4444' }}">
                 {{ number_format($futurePrice, 2) }} |
@@ -55,7 +55,7 @@
                 {{ number_format($futureChange, 2) }}%
             </span>
         </p>
-        @if($dailyScore->score > $userModel->threshold)
+        @if($dailyScore->score > $userSignal->threshold)
             <p class="mt-2 text-sm">
             <span class="text-gray-600 dark:text-gray-400">
                 Stake:

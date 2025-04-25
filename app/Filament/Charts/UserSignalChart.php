@@ -3,20 +3,20 @@
 namespace App\Filament\Charts;
 
 use App\Models\DailyPrice;
-use App\Models\UserModel;
-use App\Models\UserModelDailyScore;
+use App\Models\UserSignal;
+use App\Models\UserSignalDailyScore;
 use App\Services\DailyPriceService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\On;
 
-trait UserModelChart
+trait UserSignalChart
 {
     public const int MONTHS_BACK = 3;
     public ?string $selectedDate = null;
     protected array $fullDates = [];
-    protected ?int $userModelId = null;
+    protected ?int $userSignalId = null;
 
     #[On('open-chart-modal')]
     public function handleChartModal($date = null)
@@ -26,7 +26,7 @@ trait UserModelChart
         if ($date) {
             $this->selectedDate = $date;
 
-            // For resource pages (ViewUserModel, EditUserModel)
+            // For resource pages (ViewUserSignal, EditUserSignal)
             $actionId = $this->mountAction('chartDetailModal');
             if ($actionId) {
                 $this->dispatch('open-modal', id: $actionId);
@@ -34,21 +34,21 @@ trait UserModelChart
 
             $dispatchData = [
                 'chartId' => 'daily-score',
-                'options' => $this->getChartOptions($this->userModelId)
+                'options' => $this->getChartOptions($this->userSignalId)
             ];
             $this->dispatch('refresh-chart', $dispatchData);
         }
     }
 
-    private function getChartOptions(int $userModelId = null, int $monthsBack = self::MONTHS_BACK): array
+    private function getChartOptions(int $userSignalId = null, int $monthsBack = self::MONTHS_BACK): array
     {
-        if (!$userModelId) {
+        if (!$userSignalId) {
             return [];
         }
         $service = new DailyPriceService();
         $since = (new Carbon())->subMonths($monthsBack);
         $dailyPrices = $service->getAllDailyPricesKeyByDate($since, null, false)->toArray();
-        $dailyScores = UserModelDailyScore::where('user_model_id', $userModelId)
+        $dailyScores = UserSignalDailyScore::where('user_signal_id', $userSignalId)
             ->where('date', '>=', $since->format('Y-m-d'))
             ->get()
             ->toArray();
@@ -69,8 +69,8 @@ trait UserModelChart
                 : 0;
         }, $this->fullDates);
 
-        $userModel = UserModel::findOrFail($userModelId);
-        $threshold = $userModel->threshold ?? 0;
+        $userSignal = UserSignal::findOrFail($userSignalId);
+        $threshold = $userSignal->threshold ?? 0;
         $maxPrice = !empty($prices) ? round(max($prices), -3) : 1000;
         $minPrice = $maxPrice / 2;
 
@@ -206,14 +206,14 @@ trait UserModelChart
 
     public function getChartData(): array
     {
-        if (method_exists($this, 'getRecord') && $this->getRecord() instanceof UserModel) {
-            $userModel = $this->getRecord();
+        if (method_exists($this, 'getRecord') && $this->getRecord() instanceof UserSignal) {
+            $userSignal = $this->getRecord();
         } else {
-            $userModel = UserModel::where('user_id', auth()->id())->first();
+            $userSignal = UserSignal::where('user_id', auth()->id())->first();
         }
 
-        $this->userModelId = $userModel?->id;
-        $options = $this->getChartOptions($userModel?->id);
+        $this->userSignalId = $userSignal?->id;
+        $options = $this->getChartOptions($userSignal?->id);
 
         return [
             'options' => $options,
@@ -243,10 +243,10 @@ trait UserModelChart
                         return DailyPrice::where('date', $this->selectedDate)->first();
                     });
 
-                    $cacheKey = 'first_model_score_by_date_' . $this->selectedDate;
+                    $cacheKey = 'first_signal_score_by_date_' . $this->selectedDate;
                     $dailyScore = Cache::remember($cacheKey, now()->endOfDay(), function() {
-                        return UserModelDailyScore::where('date', $this->selectedDate)
-                            ->where('user_model_id', $this->selectedUserModelId ?? $this->record->id)
+                        return UserSignalDailyScore::where('date', $this->selectedDate)
+                            ->where('user_signal_id', $this->selectedUserSignalId ?? $this->record->id)
                             ->first();
                     });
 
@@ -254,7 +254,7 @@ trait UserModelChart
                         'date' => $this->selectedDate,
                         'dailyPrice' => $dailyPrice,
                         'dailyScore' => $dailyScore,
-                        'userModel' => $this->record ?? UserModel::find($this->selectedUserModelId),
+                        'userSignal' => $this->record ?? UserSignal::find($this->selectedUserSignalId),
                     ]);
                 })
                 ->modalSubmitAction(false)

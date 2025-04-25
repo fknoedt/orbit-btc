@@ -29,8 +29,8 @@ class GetStartedPage extends Page
             'time-series' => UserActivityLog::where('user_id', $userId)
                 ->where('action', 'visited_time_series_page')
                 ->exists(),
-            'user-models' => UserActivityLog::where('user_id', $userId)
-                ->where('action', 'created_user_model')
+            'user-signals' => UserActivityLog::where('user_id', $userId)
+                ->where('action', 'created_user_signal')
                 ->exists(),
             'performance-page' => UserActivityLog::where('user_id', $userId)
                 ->where('action', 'visited_performance_page')

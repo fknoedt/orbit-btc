@@ -15,7 +15,7 @@
                     </svg>
                 </div>
                 <p class="text-gray-700 dark:text-gray-300 mt-4">
-                    Orbit BTC is your place to explore and monitor bitcoin's price with the right set of tools. Whether you’re looking to explore and monitor key metrics or build your own custom models with thresholded alerts, this platform offers a straightforward way to gain insights, test ideas, and make informed and calculated decisions.
+                    Orbit BTC is your place to explore and monitor bitcoin's price with the right set of tools. Whether you’re looking to explore and monitor key metrics or build your own custom Signals with thresholded alerts, this platform offers a straightforward way to gain insights, test ideas, and make informed and calculated decisions.
                 </p>
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['get-started-page'] ? 'checked' : '' }}">
@@ -76,26 +76,26 @@
             </div>
         </section>
 
-        <!-- Section 4: Models -->
-        <section class="get-started-section" id="models-section">
+        <!-- Section 4: Signals -->
+        <section class="get-started-section" id="signals-section">
             <div class="content-wrapper">
                 <div class="title-image-container">
                     <div class="title-wrapper">
                         <h1 class="text-3xl font-bold text-primary-600 dark:text-primary-400">
-                            Models
+                            Signals
                         </h1>
                     </div>
                     <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12.75 19.5v-.75a7.5 7.5 0 0 0-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                     </svg>
                 </div>
                 <p class="text-gray-700 dark:text-gray-300 mt-4">
-                    Now that you understand Metrics, we can build Models which are the way to monitor one or more Metrics by calculating a signal according to your weights and thresholds versus the chosen Metric(s) movement. Orbit will monitor these for you and send you alerts when conditions are met and your Model generates Buy or Sell signals. Create and tune your Models and rely on Orbit instead of browsing through and digesting the same charts everyday.
+                    Signals blend one or more Metrics, each with tailored frequencies and weights, to track Bitcoin’s price and market trends comprehensively. Set a global threshold for Buy or Sell alerts, fine-tune your strategy, and let Orbit monitor them in real-time while showing past performance with historical on-chain and market data. Forget the daily chart grind—let Orbit clear the noise and deliver your signal!
                 </p>
                 <div class="checklist-container">
-                    <div class="checklist-item {{ $this->getChecklistStatus()['user-models'] ? 'checked' : '' }}">
-                        <input type="checkbox" {{ $this->getChecklistStatus()['user-models'] ? 'checked' : '' }} disabled>
-                        <span class="checklist-text">Create your first </span><a target="_blank" href="/admin/user-models/create?step=info">Model</a>
+                    <div class="checklist-item {{ $this->getChecklistStatus()['user-signals'] ? 'checked' : '' }}">
+                        <input type="checkbox" {{ $this->getChecklistStatus()['user-signals'] ? 'checked' : '' }} disabled>
+                        <span class="checklist-text">Create your first </span><a target="_blank" href="/admin/user-signals/create?step=info">Signal</a>
                     </div>
                 </div>
             </div>
@@ -115,12 +115,12 @@
                     </svg>
                 </div>
                 <p class="text-gray-700 dark:text-gray-300 mt-4">
-                    Now that you have created a Model, the Performance page shows you how they hold up. Simulated trades triggered by your Model's thresholds will show you, on a daily basis, how your model would perform if you followed the Buy or Sell signal and purchased a fixed USD amount in BTC. This will give you insights into what works, what doesn’t, and how to improve your analysis.
+                    Now that you have created a Signal, the Performance page shows you how they hold up. Simulated trades triggered by your Signal's thresholds will show you, on a daily basis, how your signal would perform if you followed the Buy or Sell signal and purchased a fixed USD amount in BTC. This will give you insights into what works, what doesn’t, and how to improve your analysis.
                 </p>
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['performance-page'] ? 'checked' : '' }}">
                         <input type="checkbox" {{ $this->getChecklistStatus()['performance-page'] ? 'checked' : '' }} disabled>
-                        <span class="checklist-text">Analyze your Model’s </span><a target="_blank" href="/admin/performance-page">Performance</a><span class="checklist-text"> trends over time</span>
+                        <span class="checklist-text">Analyze your Signal’s </span><a target="_blank" href="/admin/performance-page">Performance</a><span class="checklist-text"> trends over time</span>
                     </div>
                 </div>
             </div>
@@ -140,7 +140,7 @@
                     </svg>
                 </div>
                 <p class="text-gray-900 dark:text-gray-300 mt-4">
-                    The Dashboard is your central hub for staying on top of your Bitcoin analysis. Monitor your latest alerts, track model performance, and keep up with fresh, up-to-date Bitcoin metrics—all in one place.
+                    The Dashboard is your central hub for staying on top of your Bitcoin analysis. Monitor your latest alerts, track signal performance, and keep up with fresh, up-to-date Bitcoin metrics—all in one place.
                 </p>
                 <div class="checklist-container">
                     <div class="checklist-item {{ $this->getChecklistStatus()['dashboard'] ? 'checked' : '' }}">

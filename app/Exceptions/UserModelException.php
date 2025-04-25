@@ -3,8 +3,8 @@
 namespace App\Exceptions;
 
 /**
- * Should be used for UserModel Metrics calculation errors
+ * Should be used for UserSignal Metrics calculation errors
  */
-class UserModelException extends \Exception
+class UserSignalException extends \Exception
 {
 }

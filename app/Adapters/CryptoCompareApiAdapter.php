@@ -220,7 +220,7 @@ class CryptoCompareApiAdapter extends BaseClient implements ExternalApiAdapterIn
         return $data;
     }
 
-    // TODO: persist initial stats info (since 2009-10-05) and save everything
+    // TODO: get and persist exchanges volume + persist initial stats info (since 2009-10-05) and save everything
 
     /**
      * Get price [$date => $price] for the given date interval

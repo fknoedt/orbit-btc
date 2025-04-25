@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Resources\UserModelResource\Traits;
+namespace App\Filament\Resources\UserSignalResource\Traits;
 
 use App\Enum\Operators;
 use App\Enum\TimeHorizon;
 use App\Models\Frequency;
 use App\Models\Metric;
-use App\Services\UserModelService;
+use App\Services\UserSignalService;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
@@ -21,7 +21,7 @@ use Filament\Forms\Components\ViewField;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Support\RawJs;
 
-trait UserModelWizardSteps
+trait UserSignalWizardSteps
 {
     protected function getSteps(): array
     {
@@ -30,21 +30,21 @@ trait UserModelWizardSteps
         return [
             Step::make('Help')
                 ->description("I'm lost")
-                ->schema([View::make('help.user-model')])
+                ->schema([View::make('help.user-signal')])
                 ->icon('heroicon-o-lifebuoy')
                 ->completedIcon('heroicon-o-lifebuoy'),
             Step::make('Info')
-                ->description('Define your Model')
+                ->description('Define your Signal')
                 ->schema($this->getInfoSchema())
                 ->icon('heroicon-o-identification')
                 ->completedIcon('heroicon-o-identification'),
             Step::make('Metrics')
-                ->description("Manage your Model's Metrics")
+                ->description("Manage your Signal's Metrics")
                 ->schema($this->getMetricsSchema($operation))
                 ->icon('heroicon-o-adjustments-horizontal')
                 ->completedIcon('heroicon-o-adjustments-horizontal'),
             Step::make('Tuning')
-                ->description('Tune your Model')
+                ->description('Tune your Signal')
                 ->schema($this->getTuningSchema($operation, $this->record->id ?? null))
                 ->icon('heroicon-o-presentation-chart-bar')
                 ->completedIcon('heroicon-o-presentation-chart-bar'),
@@ -87,7 +87,7 @@ trait UserModelWizardSteps
                 ->required()
                 ->maxLength(255),
             Textarea::make('description')
-                ->placeholder('What is your Model looking for?')
+                ->placeholder('What is your Signal looking into?')
                 ->required()
                 ->columnSpanFull(),
             TextInput::make('last_score')
@@ -122,7 +122,7 @@ trait UserModelWizardSteps
                     ->tooltip('Toggle Change Threshold')
                     ->action(function ($set, $get, $arguments) {
                         $itemKey = $arguments['item'] ?? 'no key';
-                        $statePath = "userModelMetrics.{$itemKey}";
+                        $statePath = "userSignalMetrics.{$itemKey}";
                         $enabledPath = "{$statePath}.oscillation_threshold_enabled";
                         $currentState = $get($enabledPath) ?? false;
 
@@ -141,7 +141,7 @@ trait UserModelWizardSteps
         return [
             Section::make()
                 ->schema([
-                    Repeater::make('userModelMetrics')
+                    Repeater::make('userSignalMetrics')
                         ->label('Metrics')
                         ->hint('Daily Score will be the sum of each metric\'s frequency variation x weight with optional threshold')
                         ->relationship()
@@ -232,10 +232,10 @@ trait UserModelWizardSteps
         ];
     }
 
-    public function getTuningSchema(string $operation = null, int $userModelId = null): array
+    public function getTuningSchema(string $operation = null, int $userSignalId = null): array
     {
-        $service = app(UserModelService::class);
-        $maxThreshold = $userModelId ? $service->getMaxThreshold($userModelId) : 100;
+        $service = app(UserSignalService::class);
+        $maxThreshold = $userSignalId ? $service->getMaxThreshold($userSignalId) : 100;
 
         $schema = [
             Toggle::make('is_paused')
@@ -252,7 +252,7 @@ trait UserModelWizardSteps
                     'label' => "Threshold (0-{$maxThreshold}): ",
                     'disabled' => ($operation === 'view'),
                     'hint' => 'Maximum threshold is the weight of each Metric x ' .
-                        UserModelService::MAX_OSCILLATION_PER_METRIC . ' (fixed daily change percentage)'
+                        UserSignalService::MAX_OSCILLATION_PER_METRIC . ' (fixed daily change percentage)'
                 ]),
             Radio::make('buy_or_sell')
                 ->label('Signal')
@@ -269,11 +269,11 @@ trait UserModelWizardSteps
         ];
 
         if ($operation !== 'create') {
-            $schema[] = View::make('filament.components.user-model-chart')
+            $schema[] = View::make('filament.components.user-signal-chart')
                 ->viewData([
                     'label' => 'Daily Signal',
                     'name' => 'daily-score',
-                    'hint' => $operation === 'edit' ? 'Save your Model to see the updated chart' : '',
+                    'hint' => $operation === 'edit' ? 'Save your Signal to see the updated chart' : '',
                     'options' => isset($this->record->id) ? $this->getChartOptions($this->record->id) : [],
                     'rawExtraJsOptions' => $this->getExtraJsOptions(),
                 ])
