@@ -211,11 +211,11 @@ html.dark .text-white {
 }
 
 /* NEW: Fix select font color for light/dark mode */
-select#selectedUserModelId {
+select#selectedUserSignalId {
     color: #000000 !important; /* Black in light mode */
 }
 
-html.dark select#selectedUserModelId {
+html.dark select#selectedUserSignalId {
     color: #ffffff !important; /* White in dark mode */
 }
 

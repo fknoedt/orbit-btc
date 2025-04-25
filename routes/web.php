@@ -23,9 +23,9 @@ Route::get('/prices', \App\Http\Livewire\Counter::class);
 
 Route::get('/sandbox', [SandboxController::class, 'index']);
 
-Route::get('/admin/user-model-score/{id}', PerformancePage::class)
+Route::get('/admin/user-signal-score/{id}', PerformancePage::class)
     ->middleware('auth')
-    ->name('user-model-score-id');
+    ->name('user-signal-score-id');
 
 Route::get('/lightning', function () {
     $service = new \App\Services\LightningService();

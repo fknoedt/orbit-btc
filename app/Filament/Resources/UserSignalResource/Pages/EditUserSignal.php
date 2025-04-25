@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\UserModelResource\Pages;
+namespace App\Filament\Resources\UserSignalResource\Pages;
 
-use App\Filament\Charts\UserModelChart;
-use App\Filament\Resources\UserModelResource;
-use App\Filament\Resources\UserModelResource\Traits\UserModelWizardSteps;
-use App\Services\UserModelService;
+use App\Filament\Charts\UserSignalChart;
+use App\Filament\Resources\UserSignalResource;
+use App\Filament\Resources\UserSignalResource\Traits\UserSignalWizardSteps;
+use App\Services\UserSignalService;
 use Filament\Actions;
 use Filament\Actions\Action as FilamentAction;
 use Filament\Actions\Concerns\HasWizard;
@@ -16,11 +16,11 @@ use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
 
-class EditUserModel extends EditRecord
+class EditUserSignal extends EditRecord
 {
-    use HasWizard, UserModelWizardSteps, UserModelChart;
+    use HasWizard, UserSignalWizardSteps, UserSignalChart;
 
-    protected static string $resource = UserModelResource::class;
+    protected static string $resource = UserSignalResource::class;
     private array $originalRecord;
     private array $originalMetrics;
     private bool $scoreUpdated;
@@ -31,9 +31,9 @@ class EditUserModel extends EditRecord
     {
         $this->threshold = $data['threshold'] ?? 0;
 
-        // Load the userModelMetrics relationship
+        // Load the userSignalMetrics relationship
         $record = $this->getRecord();
-        $metrics = $record->userModelMetrics()->get();
+        $metrics = $record->userSignalMetrics()->get();
 
         if ($metrics->isNotEmpty()) {
             // Update oscillation_threshold_enabled in the database
@@ -50,7 +50,7 @@ class EditUserModel extends EditRecord
             }
 
             // Reload the updated metrics to ensure the form uses the latest data
-            $data['userModelMetrics'] = $record->userModelMetrics()->get()->toArray();
+            $data['userSignalMetrics'] = $record->userSignalMetrics()->get()->toArray();
             $this->form->fill($data);
         }
 
@@ -72,7 +72,7 @@ class EditUserModel extends EditRecord
                 ->label('Performance')
                     ->button()
                     ->color('gray')
-                    ->url(fn ($record) => "/admin/user-model-score/{$record->id}"),
+                    ->url(fn ($record) => "/admin/user-signal-score/{$record->id}"),
                 Actions\ViewAction::make(),
                 Actions\DeleteAction::make(),
             ],
@@ -121,21 +121,21 @@ class EditUserModel extends EditRecord
     protected function beforeSave(): void
     {
         $this->originalRecord = $this->getRecord()->toArray();
-        $this->originalMetrics = $this->getRecord()->userModelMetrics->toArray();
+        $this->originalMetrics = $this->getRecord()->userSignalMetrics->toArray();
 
         $livewire = $this->form->getLivewire();
         $formData = $livewire->data;
 
-        if (!empty($formData['userModelMetrics'])) {
+        if (!empty($formData['userSignalMetrics'])) {
             $updatedMetrics = [];
-            foreach ($formData['userModelMetrics'] as $key => $item) {
+            foreach ($formData['userSignalMetrics'] as $key => $item) {
                 if (!($item['oscillation_threshold_enabled'] ?? false)) {
                     $item['oscillation_threshold'] = null;
                 }
                 $updatedMetrics[$key] = $item;
             }
 
-            $formData['userModelMetrics'] = $updatedMetrics;
+            $formData['userSignalMetrics'] = $updatedMetrics;
             $livewire->data = $formData;
         }
     }
@@ -145,25 +145,25 @@ class EditUserModel extends EditRecord
      */
     protected function afterSave(): void
     {
-        $userModel = $this->getRecord();
-        $userModelId = $userModel->id;
+        $userSignal = $this->getRecord();
+        $userSignalId = $userSignal->id;
 
-        // Check if threshold or userModelMetrics changed
-        $currentMetrics = array_values($userModel->userModelMetrics->toArray());
+        // Check if threshold or userSignalMetrics changed
+        $currentMetrics = array_values($userSignal->userSignalMetrics->toArray());
 
-        $this->scoreUpdated = $this->originalRecord['threshold'] != $userModel->threshold ||
+        $this->scoreUpdated = $this->originalRecord['threshold'] != $userSignal->threshold ||
             $this->originalMetrics !== $currentMetrics ||
-            $this->originalRecord['buy_or_sell'] != $userModel->buy_or_sell ||
-            $this->originalRecord['time_horizon'] != $userModel->time_horizon;
+            $this->originalRecord['buy_or_sell'] != $userSignal->buy_or_sell ||
+            $this->originalRecord['time_horizon'] != $userSignal->time_horizon;
 
         // Run service method if either changed
         if ($this->scoreUpdated) {
-            $service = app(UserModelService::class);
-            $service->updateDailyScores($userModelId);
+            $service = app(UserSignalService::class);
+            $service->updateDailyScores($userSignalId);
 
             $dispatchData = [
                 'chartId' => 'chart-daily-score',
-                'options' => $this->getChartOptions($userModelId)
+                'options' => $this->getChartOptions($userSignalId)
             ];
 
             // Dispatch a Filament event to refresh the chart
@@ -174,7 +174,7 @@ class EditUserModel extends EditRecord
     protected function getSavedNotification(): ?\Filament\Notifications\Notification
     {
         return \Filament\Notifications\Notification::make()
-            ->title('Model Updated')
+            ->title('Signal Updated')
             ->body($this->scoreUpdated ? 'Scores were updated' : '')
             ->success();
     }

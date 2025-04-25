@@ -7,11 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
-/**
- * 'Model' in this context is the formula, over multiple metrics, that a user can have
- * Not to confuse with Eloquent Models 👀
- */
-class UserModel extends Model
+class UserSignal extends Model
 {
     protected $guarded = ['id'];
 
@@ -20,19 +16,19 @@ class UserModel extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function userModelMetrics(): HasMany
+    public function userSignalMetrics(): HasMany
     {
-        return $this->hasMany(UserModelMetric::class);
+        return $this->hasMany(UserSignalMetric::class);
     }
 
     public function metrics(): HasManyThrough
     {
-        return $this->hasManyThrough(Metric::class, UserModelMetric::class);
+        return $this->hasManyThrough(Metric::class, UserSignalMetric::class);
     }
 
     public function dailyScores(): HasMany
     {
-        return $this->hasMany(UserModelDailyScore::class);
+        return $this->hasMany(UserSignalDailyScore::class);
     }
 
     /**
@@ -42,9 +38,9 @@ class UserModel extends Model
     public function getMetricsDataCappedAt(): ?string
     {
         $cappedAt = null;
-        foreach ($this->userModelMetrics as $userModelMetric) {
-            if ($userModelMetric->metrics) {
-                foreach ($userModelMetric->metrics as $metric) {
+        foreach ($this->userSignalMetrics as $userSignalMetric) {
+            if ($userSignalMetric->metrics) {
+                foreach ($userSignalMetric->metrics as $metric) {
                     if (is_null($cappedAt) || $metric->data_limited_at > $cappedAt) {
                         $cappedAt = $metric->data_limited_at;
                     }

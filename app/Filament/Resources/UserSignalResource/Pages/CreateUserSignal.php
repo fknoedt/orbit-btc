@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\UserModelResource\Pages;
+namespace App\Filament\Resources\UserSignalResource\Pages;
 
-use App\Filament\Charts\UserModelChart;
-use App\Filament\Resources\UserModelResource;
-use App\Filament\Resources\UserModelResource\Traits\UserModelWizardSteps;
-use App\Services\UserModelService;
+use App\Filament\Charts\UserSignalChart;
+use App\Filament\Resources\UserSignalResource;
+use App\Filament\Resources\UserSignalResource\Traits\UserSignalWizardSteps;
+use App\Services\UserSignalService;
 use Filament\Actions\Concerns\HasWizard;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Wizard;
@@ -14,11 +14,11 @@ use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
 
-class CreateUserModel extends CreateRecord
+class CreateUserSignal extends CreateRecord
 {
-    use HasWizard, UserModelWizardSteps, UserModelChart;
+    use HasWizard, UserSignalWizardSteps, UserSignalChart;
 
-    protected static string $resource = UserModelResource::class;
+    protected static string $resource = UserSignalResource::class;
 
     protected static bool $canCreateAnother = false;
 
@@ -28,12 +28,12 @@ class CreateUserModel extends CreateRecord
     {
         $this->threshold = $data['threshold'] ?? 0;
 
-        // Initialize userModelMetrics for new record
-        if (isset($data['userModelMetrics'])) {
-            $data['userModelMetrics'] = array_map(function ($item) {
+        // Initialize userSignalMetrics for new record
+        if (isset($data['userSignalMetrics'])) {
+            $data['userSignalMetrics'] = array_map(function ($item) {
                 $item['oscillation_threshold_enabled'] = !empty($item['oscillation_threshold']);
                 return $item;
-            }, $data['userModelMetrics']);
+            }, $data['userSignalMetrics']);
             $this->form->fill($data);
         }
 
@@ -87,18 +87,18 @@ class CreateUserModel extends CreateRecord
     }
 
     /**
-     * Hook to calculate UserModelDailyScore upon creation
+     * Hook to calculate UserSignalDailyScore upon creation
      */
     protected function afterCreate(): void
     {
-        $userModel = $this->getRecord();
-        if ($userModel->userModelMetrics->count()) {
-            $service = app(UserModelService::class);
-            $service->updateDailyScores($userModel->id);
+        $userSignal = $this->getRecord();
+        if ($userSignal->userSignalMetrics->count()) {
+            $service = app(UserSignalService::class);
+            $service->updateDailyScores($userSignal->id);
             // Debug the dispatch data
             $dispatchData = [
                 'chartId' => 'chart-daily-score',
-                'options' => $this->getChartOptions($userModel->id)
+                'options' => $this->getChartOptions($userSignal->id)
             ];
 
             // Dispatch a Filament event to refresh the chart

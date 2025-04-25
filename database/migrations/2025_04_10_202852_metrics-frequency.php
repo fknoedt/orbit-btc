@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Frequency;
-use App\Models\UserModelMetric;
+use App\Models\UserSignalMetric;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -58,7 +58,7 @@ return new class extends Migration
             Frequency::create($frequency);
         }
 
-        UserModelMetric::where('id', '>', 0)->update(['frequency_id' => 1]);
+        UserSignalMetric::where('id', '>', 0)->update(['frequency_id' => 1]);
 
         Schema::table('user_model_metrics', function (Blueprint $table) {
             $table->dropForeign(['frequency_id']);

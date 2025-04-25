@@ -2,12 +2,12 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Charts\UserModelChart;
-use App\Filament\Resources\UserModelResource;
+use App\Filament\Charts\UserSignalChart;
+use App\Filament\Resources\UserSignalResource;
 use App\Models\DailyPrice;
-use App\Models\UserModel;
-use App\Models\UserModelDailyScore;
-use App\Services\UserModelService;
+use App\Models\UserSignal;
+use App\Models\UserSignalDailyScore;
+use App\Services\UserSignalService;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Cache;
@@ -17,7 +17,7 @@ use Livewire\Attributes\On;
 
 class PerformancePage extends Page
 {
-    use UserModelChart;
+    use UserSignalChart;
 
     protected static string $view = 'filament.pages.performance-page';
 
@@ -27,9 +27,9 @@ class PerformancePage extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-trending-up';
 
-    public ?int $selectedUserModelId;
+    public ?int $selectedUserSignalId;
 
-    public array $modelData = [];
+    public array $signalData = [];
 
     public array $chartData = [];
 
@@ -39,30 +39,30 @@ class PerformancePage extends Page
 
     public function mount(?int $id = null): void
     {
-        // Check if there are any user models first
-        $userModels = $this->userModels();
+        // Check if there are any User Signals first
+        $userSignals = $this->userSignals();
 
-        if (empty($userModels)) {
-            $this->selectedUserModelId = null; // No models, so no selection
+        if (empty($userSignals)) {
+            $this->selectedUserSignalId = null; // No Signals, so no selection
             return; // Skip further initialization
         }
 
-        // If an ID is provided via the route, use it; otherwise, fall back to the first available model
-        $this->selectedUserModelId = $id ?? array_keys($userModels)[0];
+        // If an ID is provided via the route, use it; otherwise, fall back to the first available Signal
+        $this->selectedUserSignalId = $id ?? array_keys($userSignals)[0];
 
         // Ensure the selected ID belongs to the authenticated user (security check)
-        if ($this->selectedUserModelId && !array_key_exists($this->selectedUserModelId, $userModels)) {
-            $this->selectedUserModelId = array_keys($userModels)[0];
+        if ($this->selectedUserSignalId && !array_key_exists($this->selectedUserSignalId, $userSignals)) {
+            $this->selectedUserSignalId = array_keys($userSignals)[0];
         }
 
-        $this->updateModelData();
+        $this->updateSignalData();
         $this->updateChartData();
     }
 
     #[Computed]
-    public function userModels()
+    public function userSignals()
     {
-        return UserModel::where('user_id', auth()->id())
+        return UserSignal::where('user_id', auth()->id())
             ->pluck('name', 'id')
             ->toArray();
     }
@@ -70,17 +70,17 @@ class PerformancePage extends Page
     #[On('refresh')]
     public function refresh(): void
     {
-        // Refresh the model data and chart only if a model is selected
-        if ($this->selectedUserModelId) {
-            $this->updateModelData();
+        // Refresh the Signal data and chart only if a Signal is selected
+        if ($this->selectedUserSignalId) {
+            $this->updateSignalData();
             $this->updateChartData();
         }
     }
 
-    public function updatedSelectedUserModelId(): void
+    public function updatedSelectedUserSignalId(): void
     {
-        // Update model data and chart when the selected model changes
-        $this->updateModelData();
+        // Update Signal data and chart when the selected Signal changes
+        $this->updateSignalData();
         $this->updateChartData();
 
         // Dispatch refresh-chart event to update the chart in the frontend
@@ -90,71 +90,71 @@ class PerformancePage extends Page
         ];
         $this->dispatch('refresh-chart', $dispatchData);
 
-        // Update the URL to reflect the new selectedUserModelId
-        $this->dispatch('update-url', ['id' => $this->selectedUserModelId]);
+        // Update the URL to reflect the new selectedUserSignalId
+        $this->dispatch('update-url', ['id' => $this->selectedUserSignalId]);
     }
 
-    protected function updateModelData(): void
+    protected function updateSignalData(): void
     {
-        // Clear model data if no model is selected
-        if (!$this->selectedUserModelId) {
-            $this->modelData = [];
+        // Clear Signal data if no Signal is selected
+        if (!$this->selectedUserSignalId) {
+            $this->signalData = [];
             return;
         }
 
-        $userModel = UserModel::with(['userModelMetrics' => function ($query) {
+        $userSignal = UserSignal::with(['userSignalMetrics' => function ($query) {
             return $query->orderBy('weight', 'desc');
-        }, 'userModelMetrics.metric'])
-            ->find($this->selectedUserModelId);
+        }, 'userSignalMetrics.metric'])
+            ->find($this->selectedUserSignalId);
 
-        // Clear model data if the model is not found
-        if (!$userModel) {
-            $this->modelData = [];
+        // Clear Signal data if the Signal is not found
+        if (!$userSignal) {
+            $this->signalData = [];
             return;
         }
 
-        // Populate model data for display
-        $this->modelData = [
-            'paused' => $userModel->is_paused ?? false, // Add paused status
-            'description' => $userModel->description,
-            'total_score' => number_format($userModel->total_signal_value ?? 0, 2),
-            'last_score' => number_format($userModel->last_score ?? 0, 2),
-            'metrics' => $userModel->userModelMetrics->map(function ($userModelMetric) {
+        // Populate Signal data for display
+        $this->signalData = [
+            'paused' => $userSignal->is_paused ?? false, // Add paused status
+            'description' => $userSignal->description,
+            'total_score' => number_format($userSignal->total_signal_value ?? 0, 2),
+            'last_score' => number_format($userSignal->last_score ?? 0, 2),
+            'metrics' => $userSignal->userSignalMetrics->map(function ($userSignalMetric) {
                 return [
-                    'id' => $userModelMetric->id,
-                    'metric_id' => $userModelMetric->metric_id,
-                    'weight' => $userModelMetric->weight,
-                    'operator' => $userModelMetric->operator,
-                    'oscillation_threshold' => $userModelMetric->oscillation_threshold,
-                    'oscillation_threshold_enabled' => $userModelMetric->oscillation_threshold_enabled,
-                    'metric_name' => $userModelMetric->metric->name,
+                    'id' => $userSignalMetric->id,
+                    'metric_id' => $userSignalMetric->metric_id,
+                    'weight' => $userSignalMetric->weight,
+                    'operator' => $userSignalMetric->operator,
+                    'oscillation_threshold' => $userSignalMetric->oscillation_threshold,
+                    'oscillation_threshold_enabled' => $userSignalMetric->oscillation_threshold_enabled,
+                    'metric_name' => $userSignalMetric->metric->name,
                 ];
             })->toArray(),
-            'threshold' => $userModel->threshold ?? 0,
-            'signal' => $userModel->buy_or_sell ?? 'N/A',
-            'horizon' => $userModel->time_horizon ? ($userModel->time_horizon . ' day' . ($userModel->time_horizon == 1 ? '' : 's')) : 'N/A',
-            'total_simulated_trades' => $userModel->total_simulated_trades ?? 0,
-            'last_signal_value' => $userModel->last_signal_value ?? 0,
-            'first_date_calculated' => $userModel->first_date_calculated ?? null,
-            'last_date_calculated' => $userModel->last_date_calculated ?? null,
-            'error' => $userModel->error,
-            'warning' => $userModel->warning,
-            'stake_value' => UserModelService::TRADE_SIZE_IN_USD,
-            'total_stake' => Number::abbreviate(UserModelService::TRADE_SIZE_IN_USD * ($userModel->total_simulated_trades ?? 0)),
+            'threshold' => $userSignal->threshold ?? 0,
+            'signal' => $userSignal->buy_or_sell ?? 'N/A',
+            'horizon' => $userSignal->time_horizon ? ($userSignal->time_horizon . ' day' . ($userSignal->time_horizon == 1 ? '' : 's')) : 'N/A',
+            'total_simulated_trades' => $userSignal->total_simulated_trades ?? 0,
+            'last_signal_value' => $userSignal->last_signal_value ?? 0,
+            'first_date_calculated' => $userSignal->first_date_calculated ?? null,
+            'last_date_calculated' => $userSignal->last_date_calculated ?? null,
+            'error' => $userSignal->error,
+            'warning' => $userSignal->warning,
+            'stake_value' => UserSignalService::TRADE_SIZE_IN_USD,
+            'total_stake' => Number::abbreviate(UserSignalService::TRADE_SIZE_IN_USD * ($userSignal->total_simulated_trades ?? 0)),
         ];
     }
 
     protected function updateChartData(): void
     {
-        // Clear chart data if no model is selected
-        if (!$this->selectedUserModelId) {
+        // Clear chart data if no Signal is selected
+        if (!$this->selectedUserSignalId) {
             $this->chartData = [];
             return;
         }
 
-        // Update chart data based on the selected model, overriding default behavior
-        $this->userModelId = $this->selectedUserModelId; // Set for trait methods if needed
-        $options = $this->getChartOptions($this->selectedUserModelId, 5);
+        // Update chart data based on the selected Signal, overriding default behavior
+        $this->userSignalId = $this->selectedUserSignalId; // Set for trait methods if needed
+        $options = $this->getChartOptions($this->selectedUserSignalId, 5);
         $this->chartData = [
             'options' => $options,
             'extraJsOptions' => $this->getExtraJsOptions(),
@@ -172,7 +172,7 @@ class PerformancePage extends Page
 
             $dispatchData = [
                 'chartId' => 'chart-daily-score', // Match DOM ID
-                'options' => $this->getChartOptions($this->selectedUserModelId, 5)
+                'options' => $this->getChartOptions($this->selectedUserSignalId, 5)
             ];
             $this->dispatch('refresh-chart', $dispatchData);
         }
@@ -189,8 +189,8 @@ class PerformancePage extends Page
             [
                 Action::make('edit')
                     ->label('Edit')
-                    ->url($this->selectedUserModelId ?
-                        UserModelResource::getUrl('edit', ['record' => UserModel::find($this->selectedUserModelId)])
+                    ->url($this->selectedUserSignalId ?
+                        UserSignalResource::getUrl('edit', ['record' => UserSignal::find($this->selectedUserSignalId)])
                         : null
                     )
                     ->color('primary'),
@@ -210,20 +210,20 @@ class PerformancePage extends Page
             'chartDetailModal' => view('filament.modals.chart-detail', [
                 'date' => $this->selectedDate,
                 'dailyPrice' => $this->selectedDate ? Cache::remember('first_daily_price_by_date_' . $this->selectedDate, now()->endOfDay(), fn() => DailyPrice::where('date', $this->selectedDate)->first()) : null,
-                'dailyScore' => $this->selectedDate ? Cache::remember('first_model_score_by_date_' . $this->selectedDate, now()->endOfDay(), fn() => UserModelDailyScore::where('date', $this->selectedDate)->where('user_model_id', $this->selectedUserModelId)->first()) : null,
-                'userModel' => UserModel::find($this->selectedUserModelId),
+                'dailyScore' => $this->selectedDate ? Cache::remember('first_signal_score_by_date_' . $this->selectedDate, now()->endOfDay(), fn() => UserSignalDailyScore::where('date', $this->selectedDate)->where('user_signal_id', $this->selectedUserSignalId)->first()) : null,
+                'userSignal' => UserSignal::find($this->selectedUserSignalId),
             ]),
         ];
     }
 
     /**
-     * Override getChartData to use selectedUserModelId explicitly
+     * Override getChartData to use selectedUserSignalId explicitly
      */
     public function getChartData(): array
     {
-        $userModel = UserModel::find($this->selectedUserModelId);
-        $this->userModelId = $userModel?->id;
-        $options = $this->getChartOptions($userModel?->id, 5);
+        $userSignal = UserSignal::find($this->selectedUserSignalId);
+        $this->userSignalId = $userSignal?->id;
+        $options = $this->getChartOptions($userSignal?->id, 5);
 
         return [
             'options' => $options,

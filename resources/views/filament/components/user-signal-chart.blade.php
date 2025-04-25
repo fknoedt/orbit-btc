@@ -5,7 +5,7 @@
     </div>
 
     <div wire:ignore>
-        <div id="chart-{{ $name ?? 'user-model-chart-' . uniqid() }}" style="width: 100%; height: 350px; min-height: 350px; position: relative; overflow: visible !important;"></div>
+        <div id="chart-{{ $name ?? 'user-signal-chart-' . uniqid() }}" style="width: 100%; height: 350px; min-height: 350px; position: relative; overflow: visible !important;"></div>
     </div>
 
     @if (isset($hint) && $hint)
@@ -19,7 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2/dist/apexcharts.min.js"></script>
 <script>
     window.chartInstances = window.chartInstances || {};
-    const chartId = 'chart-{{ $name ?? 'user-model-chart-' . uniqid() }}';
+    const chartId = 'chart-{{ $name ?? 'user-signal-chart-' . uniqid() }}';
 
     function initializeChart(chartId, options) {
         const chartElement = document.querySelector(`#${chartId}`);

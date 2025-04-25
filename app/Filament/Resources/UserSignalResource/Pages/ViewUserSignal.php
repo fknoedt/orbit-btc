@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\UserModelResource\Pages;
+namespace App\Filament\Resources\UserSignalResource\Pages;
 
-use App\Filament\Charts\UserModelChart;
-use App\Filament\Resources\UserModelResource;
-use App\Filament\Resources\UserModelResource\Traits\UserModelWizardSteps;
-use App\Services\UserModelService;
+use App\Filament\Charts\UserSignalChart;
+use App\Filament\Resources\UserSignalResource;
+use App\Filament\Resources\UserSignalResource\Traits\UserSignalWizardSteps;
+use App\Services\UserSignalService;
 use Filament\Actions;
 use Filament\Actions\Action as FilamentAction; // Alias to avoid conflict
 use Filament\Actions\Concerns\HasWizard;
@@ -14,11 +14,11 @@ use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Resources\Pages\ViewRecord;
 
-class ViewUserModel extends ViewRecord
+class ViewUserSignal extends ViewRecord
 {
-    use HasWizard, UserModelWizardSteps, UserModelChart;
+    use HasWizard, UserSignalWizardSteps, UserSignalChart;
 
-    protected static string $resource = UserModelResource::class;
+    protected static string $resource = UserSignalResource::class;
 
     public $threshold;
 
@@ -26,9 +26,9 @@ class ViewUserModel extends ViewRecord
     {
         $this->threshold = $data['threshold'] ?? 0;
 
-        // Load the userModelMetrics relationship
+        // Load the userSignalMetrics relationship
         $record = $this->getRecord();
-        $metrics = $record->userModelMetrics()->get();
+        $metrics = $record->userSignalMetrics()->get();
 
         if ($metrics->isNotEmpty()) {
             // Update oscillation_threshold_enabled in the database based on oscillation_threshold
@@ -41,7 +41,7 @@ class ViewUserModel extends ViewRecord
             }
 
             // Reload the updated metrics to ensure the form uses the latest data
-            $data['userModelMetrics'] = $record->userModelMetrics()->get()->toArray();
+            $data['userSignalMetrics'] = $record->userSignalMetrics()->get()->toArray();
             $this->form->fill($data);
         }
 
@@ -82,7 +82,7 @@ class ViewUserModel extends ViewRecord
                 ->label('Performance')
                     ->button()
                     ->color('success')
-                    ->url(fn ($record) => "/admin/user-model-score/{$record->id}"),
+                    ->url(fn ($record) => "/admin/user-signal-score/{$record->id}"),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
             ],
@@ -92,15 +92,15 @@ class ViewUserModel extends ViewRecord
 
     protected function afterSave(): void
     {
-        $userModel = $this->getRecord();
-        $userModelId = $userModel->id;
+        $userSignal = $this->getRecord();
+        $userSignalId = $userSignal->id;
 
-        $service = app(UserModelService::class);
-        $service->updateDailyScores($userModelId);
+        $service = app(UserSignalService::class);
+        $service->updateDailyScores($userSignalId);
 
         $dispatchData = [
             'chartId' => 'chart-daily-score',
-            'options' => $this->getChartOptions($userModelId)
+            'options' => $this->getChartOptions($userSignalId)
         ];
 
         // Dispatch a Filament event to refresh the chart

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\UserModel;
+use App\Models\UserSignal;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +16,7 @@ return new class extends Migration
             $table->enum('time_horizon', [1, 3, 5, 10])->default(1)->nullable();
         });
 
-        UserModel::query()->update(['time_horizon' => 1]);
+        UserSignal::query()->update(['time_horizon' => 1]);
     }
 
     public function down(): void

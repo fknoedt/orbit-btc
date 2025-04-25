@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Enum\Operators;
-use App\Exceptions\UserModelException;
+use App\Exceptions\UserSignalException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class UserModelMetric extends Model
+class UserSignalMetric extends Model
 {
-    protected $table = 'user_model_metrics';
+    protected $table = 'user_signal_metrics';
 
     protected $guarded = ['id'];
 
@@ -35,7 +35,7 @@ class UserModelMetric extends Model
             (! $referenceValue = $referenceDay->{$columnName}) ||
             (! $currentValue = $currentDay->{$columnName})
         ) {
-            throw new UserModelException(
+            throw new UserSignalException(
                 "TODO: maybe this can be expected, if tested before, and we can just return 0 or NULL"
             );
         }

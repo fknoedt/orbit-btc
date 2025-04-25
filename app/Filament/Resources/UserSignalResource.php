@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserModelResource\Pages;
-use App\Models\UserModel;
+use App\Filament\Resources\UserSignalResource\Pages;
+use App\Models\UserSignal;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -14,15 +14,15 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class UserModelResource extends Resource
+class UserSignalResource extends Resource
 {
-    protected static ?string $model = UserModel::class;
+    protected static ?string $model = UserSignal::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cube';
+    protected static ?string $navigationIcon = 'heroicon-o-rss';
 
     public static ?array $options = [];
 
-    protected static ?string $label = 'Model';
+    protected static ?string $label = 'Your Signals';
 
     protected static ?int $navigationSort = 2;
 
@@ -108,10 +108,10 @@ class UserModelResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUserModels::route('/'),
-            'create' => Pages\CreateUserModel::route('/create'),
-            'view' => Pages\ViewUserModel::route('/{record}'),
-            'edit' => Pages\EditUserModel::route('/{record}/edit'),
+            'index' => Pages\ListUserSignals::route('/'),
+            'create' => Pages\CreateUserSignal::route('/create'),
+            'view' => Pages\ViewUserSignal::route('/{record}'),
+            'edit' => Pages\EditUserSignal::route('/{record}/edit'),
         ];
     }
 
