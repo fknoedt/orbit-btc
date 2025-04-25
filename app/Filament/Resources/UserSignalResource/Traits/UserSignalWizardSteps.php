@@ -34,17 +34,17 @@ trait UserSignalWizardSteps
                 ->icon('heroicon-o-lifebuoy')
                 ->completedIcon('heroicon-o-lifebuoy'),
             Step::make('Info')
-                ->description('Define your Model')
+                ->description('Define your Signal')
                 ->schema($this->getInfoSchema())
                 ->icon('heroicon-o-identification')
                 ->completedIcon('heroicon-o-identification'),
             Step::make('Metrics')
-                ->description("Manage your Model's Metrics")
+                ->description("Manage your Signal's Metrics")
                 ->schema($this->getMetricsSchema($operation))
                 ->icon('heroicon-o-adjustments-horizontal')
                 ->completedIcon('heroicon-o-adjustments-horizontal'),
             Step::make('Tuning')
-                ->description('Tune your Model')
+                ->description('Tune your Signal')
                 ->schema($this->getTuningSchema($operation, $this->record->id ?? null))
                 ->icon('heroicon-o-presentation-chart-bar')
                 ->completedIcon('heroicon-o-presentation-chart-bar'),
@@ -87,7 +87,7 @@ trait UserSignalWizardSteps
                 ->required()
                 ->maxLength(255),
             Textarea::make('description')
-                ->placeholder('What is your Model looking for?')
+                ->placeholder('What is your Signal looking into?')
                 ->required()
                 ->columnSpanFull(),
             TextInput::make('last_score')
@@ -273,7 +273,7 @@ trait UserSignalWizardSteps
                 ->viewData([
                     'label' => 'Daily Signal',
                     'name' => 'daily-score',
-                    'hint' => $operation === 'edit' ? 'Save your Model to see the updated chart' : '',
+                    'hint' => $operation === 'edit' ? 'Save your Signal to see the updated chart' : '',
                     'options' => isset($this->record->id) ? $this->getChartOptions($this->record->id) : [],
                     'rawExtraJsOptions' => $this->getExtraJsOptions(),
                 ])
