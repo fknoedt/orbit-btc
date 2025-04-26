@@ -14,7 +14,7 @@ class TimeSeriesPage extends Page
     protected const int MAX_MATCHING_TIME_SERIES = 5;
 
     /** how many extra-days (not highlighted) on each side of a similar pattern chart */
-    protected const int MATCHED_TIME_SERIES_MARGIN = 30;
+    protected const int MATCHED_TIME_SERIES_MARGIN = 60;
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
 
