@@ -14,38 +14,42 @@ return new class extends Migration
     {
         // Step 1: Update user_model_metrics table (drop FK, rename column)
         Schema::table('user_model_metrics', function (Blueprint $table) {
-            // Dynamically find and drop the foreign key constraint
             $constraintName = $this->findForeignKeyConstraint('user_model_metrics', 'user_model_id');
             if ($constraintName) {
                 $table->dropForeign($constraintName);
             } else {
                 \Log::warning("Foreign key constraint for column user_model_id on table user_model_metrics not found.");
             }
-            // Rename the column
             $table->renameColumn('user_model_id', 'user_signal_id');
         });
 
         // Step 2: Update user_model_daily_scores table (drop FK and unique, rename column)
         Schema::table('user_model_daily_scores', function (Blueprint $table) {
-            // Dynamically find and drop the foreign key constraint
             $constraintName = $this->findForeignKeyConstraint('user_model_daily_scores', 'user_model_id');
             if ($constraintName) {
                 $table->dropForeign($constraintName);
             } else {
                 \Log::warning("Foreign key constraint for column user_model_id on table user_model_daily_scores not found.");
             }
-            // Drop the unique constraint
             $table->dropUnique(['date', 'user_model_id']);
-            // Rename the column
             $table->renameColumn('user_model_id', 'user_signal_id');
         });
 
-        // Step 3: Rename the tables
+        // Step 3: Check and rename the sequence for user_model_daily_scores if it exists (before renaming the table)
+        $sequenceName = DB::selectOne("SELECT pg_get_serial_sequence('user_model_daily_scores', 'id') as sequence_name")->sequence_name;
+        if ($sequenceName) {
+            $newSequenceName = str_replace('user_model', 'user_signal', $sequenceName);
+            DB::statement("ALTER SEQUENCE {$sequenceName} RENAME TO {$newSequenceName}");
+        } else {
+            \Log::warning("Sequence for user_model_daily_scores.id not found, skipping rename.");
+        }
+
+        // Step 4: Rename the tables
         Schema::rename('user_models', 'user_signals');
         Schema::rename('user_model_metrics', 'user_signal_metrics');
         Schema::rename('user_model_daily_scores', 'user_signal_daily_scores');
 
-        // Step 4: Recreate foreign key constraints with new table names
+        // Step 5: Recreate foreign key constraints with new table names
         Schema::table('user_signal_metrics', function (Blueprint $table) {
             $table->foreign('user_signal_id')
                 ->references('id')
@@ -63,15 +67,6 @@ return new class extends Migration
                 ->name('user_signal_daily_scores_user_signal_id_foreign');
             $table->unique(['date', 'user_signal_id'], 'user_signal_daily_scores_date_user_signal_id_unique');
         });
-
-        // Step 5: Rename the sequence for user_signal_daily_scores if it exists
-        $sequenceName = DB::selectOne("SELECT pg_get_serial_sequence('user_model_daily_scores', 'id') as sequence_name")->sequence_name;
-        if ($sequenceName) {
-            $newSequenceName = str_replace('user_model', 'user_signal', $sequenceName);
-            DB::statement("ALTER SEQUENCE {$sequenceName} RENAME TO {$newSequenceName}");
-        } else {
-            \Log::warning("Sequence for user_model_daily_scores.id not found, skipping rename.");
-        }
 
         // Step 6: Rename constraints on user_signals table
         DB::statement('ALTER TABLE user_signals RENAME CONSTRAINT user_models_name_unique TO user_signals_name_unique');
@@ -97,7 +92,6 @@ return new class extends Migration
                 \Log::warning("Foreign key constraint user_signal_daily_scores_user_signal_id_foreign on table user_signal_daily_scores not found, skipping drop.");
             }
 
-            // Check if the unique constraint exists before dropping
             $uniqueConstraintName = 'user_signal_daily_scores_date_user_signal_id_unique';
             $uniqueExists = DB::selectOne(
                 "SELECT constraint_name
@@ -151,12 +145,12 @@ return new class extends Migration
         });
 
         // Step 5: Rename sequence back if it exists
-        $sequenceName = DB::selectOne("SELECT pg_get_serial_sequence('user_signal_daily_scores', 'id') as sequence_name")->sequence_name;
+        $sequenceName = DB::selectOne("SELECT pg_get_serial_sequence('user_model_daily_scores', 'id') as sequence_name")->sequence_name;
         if ($sequenceName) {
             $originalSequenceName = str_replace('user_signal', 'user_model', $sequenceName);
             DB::statement("ALTER SEQUENCE {$sequenceName} RENAME TO {$originalSequenceName}");
         } else {
-            \Log::warning("Sequence for user_signal_daily_scores.id not found, skipping rename.");
+            \Log::warning("Sequence for user_model_daily_scores.id not found, skipping rename.");
         }
 
         // Step 6: Rename constraints back
