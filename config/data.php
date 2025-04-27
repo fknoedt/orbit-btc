@@ -15,5 +15,10 @@ return [
         'orbit_btc_id' => 7,
         'glassnode_id' => 8,
         'blockchain_com_id' => 9,
+    ],
+    'role_id' => [
+        'user' => 1,
+        'admin' => 2,
+        'super_admin' => 3,
     ]
 ];

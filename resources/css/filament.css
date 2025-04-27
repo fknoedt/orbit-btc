@@ -7,29 +7,57 @@
     padding: 0 2.5rem 0 0 !important; /* Add right padding to make space for the button */
 }
 
-/* Resize the logo wrapper to 300px wide */
+/* Default styles for the logo wrapper (applied to both pages) */
 .orbit-btc-logo-wrapper {
-    width: 300px !important; /* Changed from 153px to 300px */
-    height: auto !important; /* Let height adjust to maintain aspect ratio */
-    margin: 0 0 0 1.5rem !important; /* Keep existing margin */
     padding: 0 !important;
     line-height: 0 !important;
 }
 
-/* Resize the logo image to 300px wide */
+/* Default styles for the logo image (applied to both pages) */
 .orbit-btc-logo {
-    width: 300px !important; /* Changed from 153px to 300px */
-    height: auto !important; /* Let height adjust to maintain aspect ratio */
-    object-fit: contain !important; /* Ensure the logo scales properly */
+    object-fit: contain !important;
     display: block !important;
 }
 
-/* Adjust Filament's default logo container to match */
+/* Default styles for Filament's logo container */
 .fi-logo {
-    height: auto !important; /* Let height adjust to maintain aspect ratio */
-    width: 300px !important; /* Changed from 153px to 300px */
     margin: 0 !important;
     padding: 0 !important;
+    height: auto !important; /* Override inline height to allow logo to fit */
+}
+
+/* Styles for the login page logo */
+.orbit-btc-logo-wrapper.login-page {
+    width: 250px !important;
+    height: auto !important;
+    margin: 0 0 0 1.5rem !important; /* Ensure margin is applied on login page */
+}
+
+.orbit-btc-logo-wrapper.login-page .orbit-btc-logo {
+    width: 250px !important;
+    height: auto !important;
+}
+
+.fi-simple-page .fi-logo {
+    width: 250px !important;
+    height: auto !important;
+}
+
+/* Styles for the main page logo (and other non-login pages) */
+.orbit-btc-logo-wrapper.main-page {
+    width: 153px !important;
+    height: 43px !important;
+    margin: 0 0 0 0.5rem !important; /* Ensure the left margin for proper positioning */
+}
+
+.orbit-btc-logo-wrapper.main-page .orbit-btc-logo {
+    width: 153px !important;
+    height: 43px !important;
+}
+
+.fi-header .fi-logo {
+    width: 153px !important;
+    height: 43px !important; /* Ensure the container matches the logo height */
 }
 
 /* Add padding below the "Sign In" label */
@@ -287,7 +315,7 @@ html.dark .fi-fo-wizard-step--active .fi-fo-wizard-header-step-icon-ctn svg.text
 }
 
 /* Match label colors to step state */
-.fi-fo-wizard-header-step-label {
+.fiフォ-wizard-header-step-label {
     color: #6b7280 !important; /* Grey-500 for uncompleted (light mode) */
 }
 
@@ -412,14 +440,6 @@ html.dark .fi-infolist-action[data-action="chart"] .fi-infolist-action-label.dar
 
 html.dark .get-started-section .title-image-container h1 {
     color: #fb923c !important;
-}
-
-/* NEW: Bigger text font */
-/* NEW: Bigger text font */
-.get-started-section .content-wrapper p {
-    font-size: 1.125rem !important;
-    color: #1f2937 !important; /* Dark grey in light mode */
-    margin-top: 1.5rem !important;
 }
 
 /* NEW: Bigger text font */
