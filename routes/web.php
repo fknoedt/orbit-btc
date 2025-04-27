@@ -18,9 +18,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin');
 
-Route::get('/counter', \App\Http\Livewire\Counter::class);
-Route::get('/prices', \App\Http\Livewire\Counter::class);
-
 Route::get('/sandbox', [SandboxController::class, 'index']);
 
 Route::get('/admin/user-signal-score/{id}', PerformancePage::class)
