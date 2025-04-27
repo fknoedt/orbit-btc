@@ -43,6 +43,6 @@ class GetStartedPage extends Page
 
     public function getTitle(): string
     {
-        return '';
+        return 'Get Started';
     }
 }
