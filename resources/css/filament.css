@@ -7,29 +7,34 @@
     padding: 0 2.5rem 0 0 !important; /* Add right padding to make space for the button */
 }
 
-/* Resize the logo wrapper (reduced by 10%) */
+/* Resize the logo wrapper to 300px wide */
 .orbit-btc-logo-wrapper {
-    width: 153px !important; /* Reduced from 170px to 153px */
-    height: 43px !important; /* Reduced from 48px to 43px */
-    margin: 0 0 0 1.5rem !important; /* 24px left margin */
+    width: 300px !important; /* Changed from 153px to 300px */
+    height: auto !important; /* Let height adjust to maintain aspect ratio */
+    margin: 0 0 0 1.5rem !important; /* Keep existing margin */
     padding: 0 !important;
     line-height: 0 !important;
 }
 
-/* Resize the logo image (reduced by 10%) */
+/* Resize the logo image to 300px wide */
 .orbit-btc-logo {
-    width: 153px !important; /* Reduced from 170px to 153px */
-    height: 43px !important; /* Reduced from 48px to 43px */
-    object-fit: contain !important; /* Ensure the logo scales properly without cropping */
+    width: 300px !important; /* Changed from 153px to 300px */
+    height: auto !important; /* Let height adjust to maintain aspect ratio */
+    object-fit: contain !important; /* Ensure the logo scales properly */
     display: block !important;
 }
 
-/* Resize Filament's default logo container (reduced by 10%) */
+/* Adjust Filament's default logo container to match */
 .fi-logo {
-    height: 43px !important; /* Reduced from 48px to 43px */
-    width: 153px !important; /* Reduced from 170px to 153px */
+    height: auto !important; /* Let height adjust to maintain aspect ratio */
+    width: 300px !important; /* Changed from 153px to 300px */
     margin: 0 !important;
     padding: 0 !important;
+}
+
+/* Add padding below the "Sign In" label */
+.fi-simple-header-heading {
+    padding-bottom: 1.5rem !important; /* Adds 24px of padding below the "Sign In" label */
 }
 
 /* Hide the logo when sidebar is collapsed */
