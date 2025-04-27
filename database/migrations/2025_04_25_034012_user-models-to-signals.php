@@ -15,7 +15,12 @@ return new class extends Migration
         // Step 1: Update user_model_metrics table (drop FK, rename column)
         Schema::table('user_model_metrics', function (Blueprint $table) {
             // Dynamically find and drop the foreign key constraint
-            $this->dropForeignKey('user_model_metrics', 'user_model_id');
+            $constraintName = $this->findForeignKeyConstraint('user_model_metrics', 'user_model_id');
+            if ($constraintName) {
+                $table->dropForeign($constraintName);
+            } else {
+                \Log::warning("Foreign key constraint for column user_model_id on table user_model_metrics not found.");
+            }
             // Rename the column
             $table->renameColumn('user_model_id', 'user_signal_id');
         });
@@ -23,7 +28,12 @@ return new class extends Migration
         // Step 2: Update user_model_daily_scores table (drop FK and unique, rename column)
         Schema::table('user_model_daily_scores', function (Blueprint $table) {
             // Dynamically find and drop the foreign key constraint
-            $this->dropForeignKey('user_model_daily_scores', 'user_model_id');
+            $constraintName = $this->findForeignKeyConstraint('user_model_daily_scores', 'user_model_id');
+            if ($constraintName) {
+                $table->dropForeign($constraintName);
+            } else {
+                \Log::warning("Foreign key constraint for column user_model_id on table user_model_daily_scores not found.");
+            }
             // Drop the unique constraint
             $table->dropUnique(['date', 'user_model_id']);
             // Rename the column
@@ -54,8 +64,14 @@ return new class extends Migration
             $table->unique(['date', 'user_signal_id'], 'user_signal_daily_scores_date_user_signal_id_unique');
         });
 
-        // Step 5: Rename the sequence for user_signal_daily_scores
-        DB::statement('ALTER SEQUENCE daily_user_model_scores_id_seq RENAME TO daily_user_signal_scores_id_seq');
+        // Step 5: Rename the sequence for user_signal_daily_scores if it exists
+        $sequenceName = DB::selectOne("SELECT pg_get_serial_sequence('user_model_daily_scores', 'id') as sequence_name")->sequence_name;
+        if ($sequenceName) {
+            $newSequenceName = str_replace('user_model', 'user_signal', $sequenceName);
+            DB::statement("ALTER SEQUENCE {$sequenceName} RENAME TO {$newSequenceName}");
+        } else {
+            \Log::warning("Sequence for user_model_daily_scores.id not found, skipping rename.");
+        }
 
         // Step 6: Rename constraints on user_signals table
         DB::statement('ALTER TABLE user_signals RENAME CONSTRAINT user_models_name_unique TO user_signals_name_unique');
@@ -72,14 +88,39 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Step 1: Drop new constraints
+        // Step 1: Drop new constraints if they exist
         Schema::table('user_signal_daily_scores', function (Blueprint $table) {
-            $table->dropForeign(['user_signal_id']);
-            $table->dropUnique(['date', 'user_signal_id']);
+            $constraintName = $this->findForeignKeyConstraint('user_signal_daily_scores', 'user_signal_id');
+            if ($constraintName) {
+                $table->dropForeign($constraintName);
+            } else {
+                \Log::warning("Foreign key constraint user_signal_daily_scores_user_signal_id_foreign on table user_signal_daily_scores not found, skipping drop.");
+            }
+
+            // Check if the unique constraint exists before dropping
+            $uniqueConstraintName = 'user_signal_daily_scores_date_user_signal_id_unique';
+            $uniqueExists = DB::selectOne(
+                "SELECT constraint_name
+                 FROM information_schema.table_constraints
+                 WHERE table_name = ?
+                 AND constraint_type = 'UNIQUE'
+                 AND constraint_name = ?",
+                ['user_signal_daily_scores', $uniqueConstraintName]
+            );
+            if ($uniqueExists) {
+                $table->dropUnique($uniqueConstraintName);
+            } else {
+                \Log::warning("Unique constraint user_signal_daily_scores_date_user_signal_id_unique on table user_signal_daily_scores not found, skipping drop.");
+            }
         });
 
         Schema::table('user_signal_metrics', function (Blueprint $table) {
-            $table->dropForeign(['user_signal_id']);
+            $constraintName = $this->findForeignKeyConstraint('user_signal_metrics', 'user_signal_id');
+            if ($constraintName) {
+                $table->dropForeign($constraintName);
+            } else {
+                \Log::warning("Foreign key constraint user_signal_metrics_user_signal_id_foreign on table user_signal_metrics not found, skipping drop.");
+            }
         });
 
         // Step 2: Rename tables back
@@ -109,8 +150,14 @@ return new class extends Migration
             $table->unique(['date', 'user_model_id'], 'user_model_daily_scores_date_user_model_id_unique');
         });
 
-        // Step 5: Rename sequence back
-        DB::statement('ALTER SEQUENCE daily_user_signal_scores_id_seq RENAME TO daily_user_model_scores_id_seq');
+        // Step 5: Rename sequence back if it exists
+        $sequenceName = DB::selectOne("SELECT pg_get_serial_sequence('user_signal_daily_scores', 'id') as sequence_name")->sequence_name;
+        if ($sequenceName) {
+            $originalSequenceName = str_replace('user_signal', 'user_model', $sequenceName);
+            DB::statement("ALTER SEQUENCE {$sequenceName} RENAME TO {$originalSequenceName}");
+        } else {
+            \Log::warning("Sequence for user_signal_daily_scores.id not found, skipping rename.");
+        }
 
         // Step 6: Rename constraints back
         DB::statement('ALTER TABLE user_models RENAME CONSTRAINT user_signals_name_unique TO user_models_name_unique');
@@ -123,15 +170,15 @@ return new class extends Migration
     }
 
     /**
-     * Dynamically drop a foreign key constraint by table and column.
+     * Find a foreign key constraint by table and column.
      *
      * @param string $table
      * @param string $column
-     * @return void
+     * @return string|null
      */
-    private function dropForeignKey(string $table, string $column): void
+    private function findForeignKeyConstraint(string $table, string $column): ?string
     {
-        $constraintName = DB::selectOne(
+        $constraint = DB::selectOne(
             "SELECT tc.constraint_name
              FROM information_schema.table_constraints tc
              JOIN information_schema.constraint_column_usage ccu
@@ -141,15 +188,8 @@ return new class extends Migration
                  AND tc.constraint_type = 'FOREIGN KEY'
                  AND ccu.column_name = ?",
             [$table, $column]
-        )?->constraint_name;
+        );
 
-        if ($constraintName) {
-            Schema::table($table, function (Blueprint $table) use ($constraintName) {
-                $table->dropForeign($constraintName);
-            });
-        } else {
-            // Log or handle the case where the constraint is not found
-            \Log::warning("Foreign key constraint for column {$column} on table {$table} not found.");
-        }
+        return $constraint?->constraint_name;
     }
 };
