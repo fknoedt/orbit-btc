@@ -4,7 +4,6 @@ namespace App\Http\Livewire;
 
 use App\Models\Frequency;
 use App\Models\UserMetricAlert;
-use App\Models\Metric;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -20,15 +19,12 @@ class AlertManagement extends Component implements HasTable, HasForms
     use InteractsWithTable, InteractsWithForms;
 
     public $metricId;
-    public $metricName;
     public $frequencies;
 
-    public function mount($metricId, $metricName)
+    public function mount($metricId)
     {
         $this->metricId = $metricId;
-        $this->metricName = $metricName;
         $this->frequencies = Frequency::all();
-        logger("Mounted AlertManagement with metricId: {$metricId}, metricName: {$metricName}");
     }
 
     protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
@@ -55,7 +51,7 @@ class AlertManagement extends Component implements HasTable, HasForms
                 Tables\Actions\Action::make('create_alert')
                     ->label('Add Alert')
                     ->color('warning')
-                    ->modalHeading(fn () => "Create Alert for {$this->metricName}")
+                    ->modalHeading('Create Alert')
                     ->form([
                         Forms\Components\Select::make('frequency_id')
                             ->label('Frequency')
@@ -86,7 +82,7 @@ class AlertManagement extends Component implements HasTable, HasForms
                         logger("Dispatched refresh-table event");
                     })
                     ->modalSubmitActionLabel('Create')
-                    ->modalCancelActionLabel('Cancel'),
+                    ->extraAttributes(['wire:ignore.self' => true]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
