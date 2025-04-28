@@ -37,7 +37,7 @@ Route::middleware('auth.api-client')->controller(AdapterController::class)->grou
     Route::get(
         '/price-by-days/{days}',
         'getBtcPriceByDays'
-    )->name('api.priceHistory');
+    )->name('api.priceHistoryByDays');
 });
 
 
