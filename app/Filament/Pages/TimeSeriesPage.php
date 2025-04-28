@@ -98,7 +98,9 @@ class TimeSeriesPage extends Page
     protected function updateDateLabel(): void
     {
         if ($this->startDateViewed && $this->endDateViewed) {
-            $this->dateLabel = "{$this->startDateViewed} to {$this->endDateViewed}";
+            $startDate = Carbon::parse($this->startDateViewed)->format('D, d M Y');
+            $endDate = Carbon::parse($this->endDateViewed)->format('D, d M Y');
+            $this->dateLabel = "{$startDate} to {$endDate}";
         } else {
             $this->dateLabel = '';
         }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\TimeSeriesException;
+use App\Math\DtwDistance;
 use App\Models\DailyPrice;
 use App\Models\Metric;
 use Carbon\Carbon;
@@ -183,8 +184,6 @@ class DailyPriceService
         $timeSeries = [];
         $lastValue = null;
 
-        // TODO #86: when this change is pre-calculated, remove it here
-        // @see https://trello.com/c/Q7SixbjK
         // parse prices to calculate daily_change while populating $inputDailyPrices
         foreach ($prices as $dailyPrice) {
             if (is_null($lastValue)) {
@@ -215,7 +214,8 @@ class DailyPriceService
             $lastValue = $dailyPrice->$metric;
         }
 
-        $euclidean = new Euclidean();
+        //$euclidean = new Euclidean();
+        $dtw = new DtwDistance();
 
         $windowSize = count($input);
         $matches = [];
@@ -225,7 +225,7 @@ class DailyPriceService
         $quarantineUntil = null;
         for ($i = 0; $i <= count($timeSeries) - $windowSize; $i++) {
             $window = array_slice($timeSeries, $i, $windowSize);
-            $distance = $euclidean->distance($input, array_values($window));
+            $distance = $dtw->distance($input, array_values($window));
             $seriesStartDate = Carbon::parse(array_key_first($window));
             // avoid hits too close to each other if they're smaller than the last one
             if ($quarantineUntil && $quarantineUntil > $seriesStartDate) {
