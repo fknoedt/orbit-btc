@@ -67,9 +67,21 @@
         </div>
         <div class="w-full flex flex-col gap-3 mt-6">
             <div class="flex items-center gap-3">
-                <button wire:click="searchSimilar" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                        style="background-color: #1f2937;">
-                    Search for Similar Time Series Pattern
+                <button
+                    wire:click="searchSimilar"
+                    class="relative px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                    style="background-color: #1f2937;"
+                    wire:loading.attr="disabled"
+                >
+                    <!-- Button Text -->
+                    <span>Search for Similar Time Series Pattern</span>
+                    <!-- Loading Spinner (hidden by default, shown during loading) -->
+                    <span wire:loading wire:target="searchSimilar">
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </span>
                 </button>
                 <span id="selected-dates" class="text-sm text-gray-500 dark:text-gray-400">{{ $dateLabel }}</span>
             </div>
@@ -87,7 +99,7 @@
                             $chart['startDate']->diffInDays($chart['endDate']),
                         ),
                         'name' => 'additional-chart-' . $index,
-                        'hint' => "Euclidean Distance: {$chart['distance']}",
+                        'hint' => "DTW Distance: {$chart['distance']}",
                         'options' => $chart['options'],
                         'rawExtraJsOptions' => [],
                         'distance' => $chart['distance'] ?? null,
@@ -132,6 +144,18 @@
             };
         }
 
+        // Format date as "D, d M Y" (e.g., "Mon, 28 Apr 2025")
+        function formatDateToMDY(dateStr) {
+            const date = new Date(dateStr);
+            const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const dayName = dayNames[date.getDay()];
+            const day = String(date.getDate()).padStart(2, '0'); // Add leading zero
+            const month = monthNames[date.getMonth()];
+            const year = date.getFullYear();
+            return `${dayName}, ${day} ${month} ${year}`;
+        }
+
         // Handle selectionUpdated event for zoom/selection
         const handleSelectionUpdated = debounce(function(event) {
             const { start, end } = event.detail;
@@ -140,8 +164,10 @@
             window.selectedDates.start = start;
             window.selectedDates.end = end;
 
-            // Update the UI with selected dates
-            document.getElementById('selected-dates').textContent = `${start} to ${end}`;
+            // Format the dates and update the UI
+            const formattedStart = formatDateToMDY(start);
+            const formattedEnd = formatDateToMDY(end);
+            document.getElementById('selected-dates').textContent = `${formattedStart} to ${formattedEnd}`;
 
             // Trigger the hidden button to update the server
             const updateButton = document.getElementById('update-date-range');
@@ -155,7 +181,9 @@
         // Ensure the label persists after Livewire re-renders
         document.addEventListener('livewire:load', function() {
             if (window.selectedDates.start && window.selectedDates.end) {
-                document.getElementById('selected-dates').textContent = `${window.selectedDates.start} to ${window.selectedDates.end}`;
+                const formattedStart = formatDateToMDY(window.selectedDates.start);
+                const formattedEnd = formatDateToMDY(window.selectedDates.end);
+                document.getElementById('selected-dates').textContent = `${formattedStart} to ${formattedEnd}`;
             }
         });
 

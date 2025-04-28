@@ -609,3 +609,30 @@ html.dark .get-started-section .checklist-divider {
         text-align: center;
     }
 }
+
+/* Ensure button text remains white in both light and dark modes */
+button.bg-blue-600.text-white {
+    color: #ffffff !important; /* White text in light mode */
+}
+
+html.dark button.bg-blue-600.text-white {
+    color: #ffffff !important; /* White text in dark mode */
+}
+
+/* Spinner border colors */
+.border-orange-500 {
+    border-color: #f97316 !important; /* Orange in light mode */
+}
+
+.dark .border-orange-400 {
+    border-color: #fb923c !important; /* Lighter orange in dark mode */
+}
+
+/* "Searching" text colors */
+.text-orange-500 {
+    color: #f97316 !important; /* Orange in light mode */
+}
+
+.dark .text-orange-400 {
+    color: #fb923c !important; /* Lighter orange in dark mode */
+}
