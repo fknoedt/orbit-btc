@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MetricResource\Pages;
 use App\Models\Metric;
-use App\Models\UserMetricAlert;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,7 +13,6 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
 
 class MetricResource extends Resource
 {
@@ -120,7 +118,6 @@ class MetricResource extends Resource
                         Tables\Actions\Action::make('manage_alerts')
                             ->modalHeading(fn ($record) => 'Manage Alerts for ' . $record->name)
                             ->modalContent(function ($record) {
-                                logger('Rendering modal for metric ID: ' . $record->id);
                                 return new \Illuminate\Support\HtmlString(\Livewire\Livewire::mount('alert-management', ['metricId' => $record->id]));
                             })
                             ->modalSubmitAction(false)
@@ -129,7 +126,6 @@ class MetricResource extends Resource
             ])
             ->recordAction('view')
             ->recordUrl(null)
-            ->filters([])
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->label('Info')
@@ -156,11 +152,6 @@ class MetricResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [];
     }
 
     public static function getPages(): array
