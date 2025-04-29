@@ -119,9 +119,12 @@ class MetricResource extends Resource
                     ->action(
                         Tables\Actions\Action::make('manage_alerts')
                             ->modalHeading(fn ($record) => 'Manage Alerts for ' . $record->name)
-                            ->modalContent(fn ($record) => view('components.alert-management-modal', ['metricId' => $record->id]))
+                            ->modalContent(function ($record) {
+                                logger('Rendering modal for metric ID: ' . $record->id);
+                                return new \Illuminate\Support\HtmlString(\Livewire\Livewire::mount('alert-management', ['metricId' => $record->id]));
+                            })
                             ->modalSubmitAction(false)
-                            ->modalCancelActionLabel('Close')
+                            ->modalCancelActionLabel('Close'),
                     ),
             ])
             ->recordAction('view')
@@ -152,45 +155,6 @@ class MetricResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->headerActions([
-                Tables\Actions\Action::make('create_alert')
-                    ->label('+')
-                    ->icon('heroicon-o-plus')
-                    ->form([
-                        Forms\Components\Select::make('metric_id')
-                            ->relationship('metric', 'name')
-                            ->required(),
-                        Forms\Components\Select::make('frequency_id')
-                            ->relationship('frequency', 'name')
-                            ->required(),
-                        Forms\Components\TextInput::make('threshold')
-                            ->numeric()
-                            ->required()
-                            ->minValue(0),
-                        Forms\Components\Select::make('operator')
-                            ->options([
-                                '+' => 'Above',
-                                '-' => 'Below',
-                                '+-' => 'Above or Below',
-                            ])
-                            ->default('+')
-                            ->required(),
-                        Forms\Components\Hidden::make('user_id')
-                            ->default(Auth::id()),
-                    ])
-                    ->action(function (array $data) {
-                        UserMetricAlert::create([
-                            'user_id' => $data['user_id'],
-                            'metric_id' => $data['metric_id'],
-                            'frequency_id' => $data['frequency_id'],
-                            'threshold' => $data['threshold'],
-                            'operator' => $data['operator'],
-                        ]);
-                    })
-                    ->modalHeading('Create Alert')
-                    ->modalSubmitActionLabel('Create')
-                    ->color('blue'),
             ]);
     }
 

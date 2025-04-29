@@ -27,6 +27,11 @@ class AlertManagement extends Component implements HasTable, HasForms
         $this->frequencies = Frequency::all();
     }
 
+    public function initialize()
+    {
+        // No-op method to trigger Livewire update and stabilize component state
+    }
+
     protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return UserMetricAlert::query()->where('metric_id', $this->metricId);
@@ -41,9 +46,9 @@ class AlertManagement extends Component implements HasTable, HasForms
                 Tables\Columns\TextColumn::make('threshold')->numeric(),
                 Tables\Columns\TextColumn::make('operator')
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        '+' => 'Above',
-                        '-' => 'Below',
-                        '+-' => 'Above or Below',
+                        '+' => 'Up',
+                        '-' => 'Down',
+                        '+-' => 'Up or Down',
                     }),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -63,9 +68,9 @@ class AlertManagement extends Component implements HasTable, HasForms
                             ->minValue(0),
                         Forms\Components\Select::make('operator')
                             ->options([
-                                '+' => 'Above',
-                                '-' => 'Below',
-                                '+-' => 'Above or Below',
+                                '+' => 'Up',
+                                '-' => 'Down',
+                                '+-' => 'Up or Down',
                             ])
                             ->default('+')
                             ->required(),
@@ -75,14 +80,10 @@ class AlertManagement extends Component implements HasTable, HasForms
                             ->default($this->metricId),
                     ])
                     ->action(function (array $data) {
-                        logger("Creating alert with data: " . json_encode($data));
                         UserMetricAlert::create($data);
-                        logger("Alert created");
                         $this->dispatch('refresh-table');
-                        logger("Dispatched refresh-table event");
                     })
-                    ->modalSubmitActionLabel('Create')
-                    ->extraAttributes(['wire:ignore.self' => true]),
+                    ->modalSubmitActionLabel('Create'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
@@ -96,9 +97,9 @@ class AlertManagement extends Component implements HasTable, HasForms
                             ->minValue(0),
                         Forms\Components\Select::make('operator')
                             ->options([
-                                '+' => 'Above',
-                                '-' => 'Below',
-                                '+-' => 'Above or Below',
+                                '+' => 'Up',
+                                '-' => 'Down',
+                                '+-' => 'Up or Down',
                             ])
                             ->required(),
                     ])
