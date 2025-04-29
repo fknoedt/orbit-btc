@@ -61,12 +61,10 @@ class MetricResource extends Resource
                             ->extraAttributes(['class' => 'text-lg leading-relaxed']),
                         TextEntry::make('dataSource.name')
                             ->label('Data Source')
-                            //->color('gray')
                             ->formatStateUsing(fn ($state) => $state)
                             ->columnSpan(1),
                         TextEntry::make('data_limited_at')
-                            ->label('Time Series Start sOn')
-                            //->color('gray')
+                            ->label('Time Series Starts On')
                             ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->toFormattedDateString() : 'N/A')
                             ->columnSpan(1),
                     ])
@@ -82,7 +80,6 @@ class MetricResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('dataSource.name')
                     ->label('Data Source')
-                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('column_name')
                     ->searchable()
@@ -102,18 +99,39 @@ class MetricResource extends Resource
                 Tables\Columns\TextColumn::make('data_limited_at')
                     ->date()
                     ->sortable(),
+                Tables\Columns\IconColumn::make('alerts')
+                    ->label('Alert')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-bell')
+                    ->falseIcon('heroicon-o-bell')
+                    ->trueColor('blue-600')
+                    ->falseColor('gray-500')
+                    ->getStateUsing(fn ($record) => $record->user_metric_alerts_count > 0)
+                    ->extraAttributes(function ($record) {
+                        $hasAlerts = $record->user_metric_alerts_count > 0;
+                        return [
+                            'class' => $hasAlerts ? 'text-blue-600 dark:text-blue-500 !text-blue-600 dark:!text-blue-500' : 'text-gray-500 dark:text-gray-400 !text-gray-500 dark:!text-gray-400',
+                            'style' => $hasAlerts ? 'color: #2563eb !important;' : 'color: #6b7280 !important;',
+                        ];
+                    })
+                    ->action(
+                        Tables\Actions\Action::make('manage_alerts')
+                            ->modalHeading(fn ($record) => 'Manage Alerts for `' . $record->name . '` Metric')
+                            ->modalContent(function ($record) {
+                                return new \Illuminate\Support\HtmlString(\Livewire\Livewire::mount('alert-management', ['metricId' => $record->id]));
+                            })
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Close'),
+                    ),
             ])
             ->recordAction('view')
             ->recordUrl(null)
-            ->filters([
-                //
-            ])
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->label('Info')
                     ->modalSubmitAction(false)
                     ->modalHeading('')
-                    ->modalCancelActionLabel('Close') // Rename the default "Cancel" to "Close"
+                    ->modalCancelActionLabel('Close')
                     ->extraModalFooterActions([
                         Tables\Actions\Action::make('chart')
                             ->label('Chart')
@@ -134,13 +152,6 @@ class MetricResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

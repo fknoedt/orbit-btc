@@ -636,3 +636,35 @@ html.dark button.bg-blue-600.text-white {
 .dark .text-orange-400 {
     color: #fb923c !important; /* Lighter orange in dark mode */
 }
+
+/* Grey for no alerts */
+.fi-ta-icon-col[data-column="alerts"][data-state="0"] svg {
+    color: #6b7280 !important; /* gray-500 */
+    stroke: #6b7280 !important;
+}
+html.dark .fi-ta-icon-col[data-column="alerts"][data-state="0"] svg {
+    color: #9ca3af !important; /* gray-400 */
+    stroke: #9ca3af !important;
+}
+
+/* Blue for alerts */
+.fi-ta-icon-col[data-column="alerts"][data-state="1"] svg {
+    color: #2563eb !important; /* blue-600 */
+    stroke: #2563eb !important;
+}
+html.dark .fi-ta-icon-col[data-column="alerts"][data-state="1"] svg {
+    color: #3b82f6 !important; /* blue-500 */
+    stroke: #3b82f6 !important;
+}
+
+/* Create Alert header action */
+.fi-ac-action[data-action="create_alert"] .fi-link-icon,
+.fi-ac-action[data-action="create_alert"] .fi-link span {
+    color: #2563eb !important;
+    stroke: #2563eb !important;
+}
+html.dark .fi-ac-action[data-action="create_alert"] .fi-link-icon,
+html.dark .fi-ac-action[data-action="create_alert"] .fi-link span {
+    color: #3b82f6 !important;
+    stroke: #3b82f6 !important;
+}

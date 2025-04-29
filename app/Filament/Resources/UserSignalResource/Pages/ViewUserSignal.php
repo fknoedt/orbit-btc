@@ -22,6 +22,11 @@ class ViewUserSignal extends ViewRecord
 
     public $threshold;
 
+    public function getTitle(): string
+    {
+        return 'Signal: ' . $this->record->name;
+    }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->threshold = $data['threshold'] ?? 0;
@@ -81,7 +86,7 @@ class ViewUserSignal extends ViewRecord
                 FilamentAction::make('view_score') // Add the custom action
                 ->label('Performance')
                     ->button()
-                    ->color('success')
+                    ->color('gray')
                     ->url(fn ($record) => "/admin/user-signal-score/{$record->id}"),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
