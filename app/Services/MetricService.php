@@ -27,6 +27,10 @@ class MetricService
      */
     public function getMetric(int $id, bool $findOrFail = false): Metric
     {
+        if (isset($this->allMetricsByKey[$id])) {
+            return $this->allMetricsByKey[$id];
+        }
+
         if (! $this->allMetricsByKey) {
             $this->allMetricsByKey = $this->getAllMetricsKeyById();
         }

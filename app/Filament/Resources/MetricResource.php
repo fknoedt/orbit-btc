@@ -116,7 +116,7 @@ class MetricResource extends Resource
                     })
                     ->action(
                         Tables\Actions\Action::make('manage_alerts')
-                            ->modalHeading(fn ($record) => 'Manage Alerts for ' . $record->name)
+                            ->modalHeading(fn ($record) => 'Manage Alerts for `' . $record->name . '` Metric')
                             ->modalContent(function ($record) {
                                 return new \Illuminate\Support\HtmlString(\Livewire\Livewire::mount('alert-management', ['metricId' => $record->id]));
                             })

@@ -24,6 +24,11 @@ class CreateUserSignal extends CreateRecord
 
     public $threshold = 0; // Default value
 
+    public function getTitle(): string
+    {
+        return 'Create Your Signal';
+    }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->threshold = $data['threshold'] ?? 0;

@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Models\Frequency;
+use App\Models\Metric;
 use App\Models\UserMetricAlert;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -39,6 +40,7 @@ class AlertManagement extends Component implements HasTable, HasForms
 
     public function table(Table $table): Table
     {
+        $metric = Metric::find($this->metricId);
         return $table
             ->query($this->getTableQuery())
             ->columns([
@@ -56,24 +58,25 @@ class AlertManagement extends Component implements HasTable, HasForms
                 Tables\Actions\Action::make('create_alert')
                     ->label('Add Alert')
                     ->color('warning')
-                    ->modalHeading('Create Alert')
+                    ->modalHeading("Create Alert for `{$metric->name}` Metric")
                     ->form([
                         Forms\Components\Select::make('frequency_id')
                             ->label('Frequency')
                             ->options($this->frequencies->pluck('name', 'id'))
                             ->required(),
-                        Forms\Components\TextInput::make('threshold')
-                            ->numeric()
-                            ->required()
-                            ->minValue(0),
                         Forms\Components\Select::make('operator')
                             ->options([
                                 '+' => 'Up',
                                 '-' => 'Down',
                                 '+-' => 'Up or Down',
                             ])
+                            ->label('Direction')
                             ->default('+')
                             ->required(),
+                        Forms\Components\TextInput::make('threshold')
+                            ->numeric()
+                            ->required()
+                            ->minValue(0),
                         Forms\Components\Hidden::make('user_id')
                             ->default(Auth::id()),
                         Forms\Components\Hidden::make('metric_id')
@@ -91,17 +94,18 @@ class AlertManagement extends Component implements HasTable, HasForms
                         Forms\Components\Select::make('frequency_id')
                             ->relationship('frequency', 'name')
                             ->required(),
-                        Forms\Components\TextInput::make('threshold')
-                            ->numeric()
-                            ->required()
-                            ->minValue(0),
                         Forms\Components\Select::make('operator')
                             ->options([
                                 '+' => 'Up',
                                 '-' => 'Down',
                                 '+-' => 'Up or Down',
                             ])
+                            ->label('Direction')
                             ->required(),
+                        Forms\Components\TextInput::make('threshold')
+                            ->numeric()
+                            ->required()
+                            ->minValue(0),
                     ])
                     ->after(function () {
                         $this->dispatch('refresh-table');

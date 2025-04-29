@@ -29,12 +29,12 @@ trait UserSignalWizardSteps
 
         return [
             Step::make('Help')
-                ->description("I'm lost")
+                ->description("How Signals Work")
                 ->schema([View::make('help.user-signal')])
                 ->icon('heroicon-o-lifebuoy')
                 ->completedIcon('heroicon-o-lifebuoy'),
             Step::make('Info')
-                ->description('Define your Signal')
+                ->description('Your Signal Properties')
                 ->schema($this->getInfoSchema())
                 ->icon('heroicon-o-identification')
                 ->completedIcon('heroicon-o-identification'),
@@ -87,25 +87,22 @@ trait UserSignalWizardSteps
                 ->required()
                 ->maxLength(255),
             Textarea::make('description')
-                ->placeholder('What is your Signal looking into?')
-                ->required()
-                ->columnSpanFull(),
+                 ->placeholder('What is your Signal looking into?')
+                 ->required()
+                 ->columnSpanFull(),
             TextInput::make('last_score')
                 ->numeric()
                 ->hidden(),
-            TextInput::make('email_to_notify')
-                ->label('Notify Email')
-                ->hint('Alerts will be sent to this email when the threshold is hit - currently disabled')
-                ->hintIcon('heroicon-o-no-symbol')
-                ->email()
-                ->maxLength(255)
-                ->disabled(),
-            TextInput::make('telegram_to_notify')
-                ->tel()
-                ->maxLength(255)
-                ->hint('currently disabled')
-                ->hintIcon('heroicon-o-no-symbol')
-                ->disabled(),
+            Toggle::make('email_notification')
+                ->label('Enable Email Notifications')
+                ->default(false),
+            ViewField::make('last_notification_at')
+                ->label('Last Notification Sent')
+                ->view('filament.components.read-only-timestamp')
+                ->dehydrated(false),
+            Toggle::make('is_paused')
+                ->label('Paused?')
+                ->default(false),
         ];
     }
 
@@ -238,10 +235,6 @@ trait UserSignalWizardSteps
         $maxThreshold = $userSignalId ? $service->getMaxThreshold($userSignalId) : 100;
 
         $schema = [
-            Toggle::make('is_paused')
-                ->label('Paused?')
-                ->default(false)
-                ->columns(1),
             View::make('components.range-slider')
                 ->viewData([
                     'name' => 'threshold',

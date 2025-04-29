@@ -74,7 +74,22 @@ class LogUserActivity
 
                 // Extract resource and action from snapshot and calls
                 $resource = $this->getResourceFromSnapshot($snapshot);
-                $actionType = $this->getActionTypeFromCalls($calls, $snapshot);
+
+                // 🤷‍♂️
+                if ($resource === 'alert-management') {
+                    if (! empty($component['updates'])) {
+                        $actionType = 'updated';
+                    } else {
+                        $actionType = match($snapshot['memo']['method'] ?? $method) {
+                            'GET' => null,
+                            'POST' => 'created',
+                            'PUT', 'patch' => 'updated',
+                            'DELETE' => 'deleted',
+                        };
+                    }
+                }
+
+                $actionType = $actionType ?? $this->getActionTypeFromCalls($calls, $snapshot);
 
                 if ($resource && $actionType) {
                     return [
@@ -114,8 +129,13 @@ class LogUserActivity
     {
         // Try to get resource from memo.name (e.g., app.filament.resources.data-source-resource.pages.edit-data-source)
         $memo = $snapshot['memo'] ?? [];
-        if (isset($memo['name']) && preg_match('/resources\.([a-z-]+)-resource/', $memo['name'], $matches)) {
-            return Str::snake(str_replace('-', '_', $matches[1]));
+        if (isset($memo['name'])) {
+            if (preg_match('/resources\.([a-z-]+)-resource/', $memo['name'], $matches)) {
+                return Str::snake(str_replace('-', '_', $matches[1]));
+            }
+            if ($memo['name'] === 'alert-management') {
+                return Str::snake('alert_management'); // data pattern
+            }
         }
 
         // Fallback to record.class (e.g., App\Models\DataSource)
