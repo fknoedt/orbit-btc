@@ -71,7 +71,7 @@ class PriceHistoryService
                 $pricesMissing[$dateFormatted] = true;
             }
             $date = $date->addDay();
-        } while ($date <= $currentDateFormatted);
+        } while ($date->format('Y-m-d') <= $currentDateFormatted);
 
         return $pricesMissing;
     }
@@ -80,7 +80,7 @@ class PriceHistoryService
     {
         $initialDay = Carbon::createFromFormat($this->systemDateFormat, $this->firstAvailableDate);
         $output->writeln(
-            'Filling princes since bitcoin first available price (' . $initialDay->diffForHumans() . ') 🎢 🚀'
+            'Filling prices since bitcoin first available price (' . $initialDay->diffForHumans() . ') 🎢 🚀'
         );
 
         return $this->fillMissingPrices(
@@ -93,7 +93,7 @@ class PriceHistoryService
     {
         $initialDay = Carbon::createFromFormat($this->systemDateFormat, $start);
         $output->writeln(
-            'Filling princes since ' . $start
+            'Filling prices since ' . $start
         );
 
         return $this->fillMissingPrices(
@@ -123,6 +123,10 @@ class PriceHistoryService
         $endDate = Carbon::createFromFormat($this->systemDateFormat, array_key_last($pricesMissing));
 
         $clientAdapter = AdapterFactory::getAdapter($client);
+
+        if ($initialDate->diffInDays($endDate) === 0) {
+            $initialDate->subDay();
+        }
 
         $apiPrices = $clientAdapter->getDailyPriceInterval($initialDate, $endDate);
 
