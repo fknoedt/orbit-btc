@@ -22,8 +22,6 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
@@ -91,46 +89,6 @@ class AdminPanelProvider extends PanelProvider
                 'panels::topbar.start',
                 fn () => view('filament.topbar-widgets', ['widgets' => $service->getTopbarWidgets()])
             );
-    }
-
-    public function boot(): void
-    {
-        // Register CRUD event listeners
-        Event::listen(RecordCreated::class, function (RecordCreated $event) {
-            if (Auth::check()) {
-                $resourceName = $this->getResourceName($event->resource);
-                UserActivityLog::create([
-                    'user_id' => Auth::id(),
-                    'action' => "created_{$resourceName}",
-                    'method' => 'POST',
-                    'date' => now(),
-                ]);
-            }
-        });
-
-        Event::listen(RecordUpdated::class, function (RecordUpdated $event) {
-            if (Auth::check()) {
-                $resourceName = $this->getResourceName($event->resource);
-                UserActivityLog::create([
-                    'user_id' => Auth::id(),
-                    'action' => "updated_{$resourceName}",
-                    'method' => 'PATCH',
-                    'date' => now(),
-                ]);
-            }
-        });
-
-        Event::listen(RecordDeleted::class, function (RecordDeleted $event) {
-            if (Auth::check()) {
-                $resourceName = $this->getResourceName($event->resource);
-                UserActivityLog::create([
-                    'user_id' => Auth::id(),
-                    'action' => "deleted_{$resourceName}",
-                    'method' => 'DELETE',
-                    'date' => now(),
-                ]);
-            }
-        });
     }
 
     /**
