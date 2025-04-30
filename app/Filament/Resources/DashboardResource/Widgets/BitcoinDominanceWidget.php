@@ -14,7 +14,7 @@ class BitcoinDominanceWidget extends BaseWidget
 {
     protected string $title = 'BTC Market Cap Dominance';
     protected string $description = 'Bitcoin x 💩coins';
-    protected static ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = '1h';
 
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 1;
@@ -24,7 +24,7 @@ class BitcoinDominanceWidget extends BaseWidget
         return 1;
     }
 
-    protected function getStats(): array
+    public function getStats(bool $compact = false): array
     {
         try {
             // get BTC change in the last day
@@ -47,13 +47,37 @@ class BitcoinDominanceWidget extends BaseWidget
                 ->iconColor('info')
                 ->descriptionColor('primary');
 
+            if ($compact) {
+                $stats = [
+                    'value' => $stat->getValue(),
+                    'color' => 'inherit',
+                    'label' => 'BTC Dominance',
+                    'label_color' => 'grey',
+                    'icon' => $stat->getIcon(), // TODO: make it nullable in the template
+                    'description' => '',
+                    'description_color' => 'grey',
+                    // polling
+                    'id' => 'btc-dominance-widget',
+                    'update_endpoint' => '/web-api/btc-dominance?hr=1',
+                    'polling_interval' => $this->getPollingInterval(),
+                    'link' => 'https://coinmarketcap.com/charts/bitcoin-dominance/'
+                ];
+            } else {
+                $stats = [
+                    $stat
+                ];
+            }
+
         } catch (\Throwable $e) {
             report($e);
-            $stat = (new WidgetService())->getErrorStat($this->title);
+            $errorMessage = 'BTC Dominance';
+            if ($compact) {
+                $stats = (new WidgetService())->getErrorArray($errorMessage);
+            } else {
+                $stats = [(new WidgetService())->getErrorStat($errorMessage)];
+            }
         }
 
-        return [
-            $stat
-        ];
+        return $stats;
     }
 }
