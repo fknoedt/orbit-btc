@@ -15,7 +15,7 @@ class StatsOverview extends BaseWidget
     protected static ?int $sort = 0;
     protected int | string | array $columnSpan = 'full'; // Full width
 
-    protected static ?string $pollingInterval = '30s';
+    protected static ?string $pollingInterval = '25s';
 
     protected const int GOOD_FEE_THRESHOLD = 3;
     protected const int COMMON_FEE_THRESHOLD = 8;
@@ -28,17 +28,9 @@ class StatsOverview extends BaseWidget
         $widgetService = new WidgetService();
 
         try {
-            $mempoolWidget = new MempoolWidget();
-            $mempoolStat = $mempoolWidget->getStats()[0];
-        } catch (\Throwable $e) {
-            report($e);
-            $mempoolStat = $widgetService->getErrorStat('Mempool');
-        }
-
-        try {
             $userStats = $signalService->getUserStats($userId);
             $totalSignalsStat = Stat::make('Total Signals', $userStats['total_signals'])
-                ->icon('heroicon-o-cube')
+                ->icon('heroicon-o-rss')
                 ->iconPosition('end')
                 ->chartColor('success')
                 ->description(
@@ -78,7 +70,6 @@ class StatsOverview extends BaseWidget
         return [
             $totalSignalsStat,
             $topSignalStat,
-            $mempoolStat,
         ];
 
     }

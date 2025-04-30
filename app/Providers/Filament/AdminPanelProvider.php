@@ -5,6 +5,8 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Auth\Register;
 use App\Filament\Pages\CustomDashboard;
 use App\Filament\Pages\PerformancePage;
+use App\Http\Middleware\LogUserActivity;
+use App\Http\Middleware\RedirectFirstLogin;
 use App\Models\UserActivityLog;
 use App\Services\WidgetService;
 use Filament\Http\Middleware\Authenticate;
@@ -62,8 +64,8 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                \App\Http\Middleware\RedirectFirstLogin::class,
-                \App\Http\Middleware\LogUserActivity::class,
+                RedirectFirstLogin::class,
+                LogUserActivity::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -84,7 +86,11 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarWidth('250')
             ->brandName(config('app.name'))
             ->favicon(asset('images/orbit-btc.ico'))
-            ->plugins([FilamentApexChartsPlugin::make()]);
+            ->plugins([FilamentApexChartsPlugin::make()])
+            ->renderHook(
+                'panels::topbar.start',
+                fn () => view('filament.topbar-widgets', ['widgets' => $service->getTopbarWidgets()])
+            );
     }
 
     public function boot(): void

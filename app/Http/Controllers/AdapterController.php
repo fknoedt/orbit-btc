@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Adapters\AdapterFactory;
 use App\Adapters\ExternalApiAdapterInterface;
 use Carbon\Carbon;
+use Illuminate\Support\Number;
 
 class AdapterController extends Controller
 {
@@ -19,9 +20,12 @@ class AdapterController extends Controller
 
     public function getCurrentPrice()
     {
-        $currency = config('btc.currency');
+        $humanReadable = request()->get('hr') ?? false;
+        $value = $humanReadable ?
+            Number::currency($this->adapter->getCurrentPrice()):
+            $this->adapter->getCurrentPrice();
 
-        return response()->json(["btc/{$currency}" => $this->adapter->getCurrentPrice()]);
+        return response()->json(["value" => $value]);
     }
 
     public function getCurrentPriceFull()

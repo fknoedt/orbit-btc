@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DailyPriceController;
+use App\Http\Controllers\MetricController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdapterController;
@@ -21,24 +22,30 @@ use App\Http\Controllers\AdapterController;
 });*/
 
 // wrapper general endpoints
-Route::middleware('auth.api-client')->controller(AdapterController::class)->group(function () {
-    Route::get(
-        '/current-price',
-        'getCurrentPrice'
-    )->name('api.currentPrice');
-    Route::get(
-        '/current-price/full',
-        'getCurrentPriceFull'
-    )->name('api.currentPriceFull');
-    Route::get(
-        '/price-history/{startDate}/{endDate}',
-        'getDailyPriceInterval'
-    )->name('api.priceHistory');
-    Route::get(
-        '/price-by-days/{days}',
-        'getBtcPriceByDays'
-    )->name('api.priceHistoryByDays');
+Route::middleware(['can:viewAny,App\Models\DailyPrice', 'auth.api-client'])
+    ->controller(AdapterController::class)->group(function () {
+
+        Route::get('/current-price', 'getCurrentPrice')
+            ->name('api.currentPrice');
+
+        Route::get('/current-price/full', 'getCurrentPriceFull')
+            ->name('api.currentPriceFull');
+
+        // Routes within the main group but outside the subgroup
+        Route::get('/price-history/{startDate}/{endDate}', 'getDailyPriceInterval')
+            ->name('api.priceHistory');
+
+        Route::get('/price-by-days/{days}', 'getBtcPriceByDays')
+            ->name('api.priceHistoryByDays');
 });
+
+Route::get('/recommended-fee', [MetricController::class, 'getRecommendedFee'])
+    ->middleware('can:viewAny,App\Models\Metric')
+    ->name('api.recommendedFee');
+
+Route::get('/btc-dominance', [MetricController::class, 'getBtcDominance'])
+    ->middleware('can:viewAny,App\Models\Metric')
+    ->name('api.btcDominance');
 
 
 Route::middleware('auth.api-client')->group(function () {

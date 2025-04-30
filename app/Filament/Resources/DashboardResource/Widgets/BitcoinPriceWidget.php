@@ -12,7 +12,7 @@ use Illuminate\Support\Number;
 class BitcoinPriceWidget extends BaseWidget
 {
     protected string $title = 'BTC/USD';
-    protected static ?string $pollingInterval = '10s';
+    protected static ?string $pollingInterval = '60s';
 
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 1;
@@ -24,38 +24,66 @@ class BitcoinPriceWidget extends BaseWidget
 
     /**
      * @todo this is using CMC's indexes and will eventually need to be standardized (CG is standardizing some fields)
-     * @return array|Stat[]
+     * @return array|Stat[] or, if $compact, array
      */
-    protected function getStats(): array
+    public function getStats(bool $compact = false): array
     {
         try {
             // get BTC change in the last day
             $service = new Btc3rdPartyService('CoinMarketCap');
-            $stats = $service->getCurrentPriceStats();
+            $priceStats = $service->getCurrentPriceStats();
 
+            $color = $priceStats['percent_change_24h'] > 0 ? 'success' : 'danger';
 
-            $color = $stats['percent_change_24h'] > 0 ? 'success' : 'danger';
-
-            $description = 'Last 24h: ' .
-                (!empty($stats['volume_change_24h']) ?
-                    'vol. ' . Number::percentage($stats['volume_change_24h'], 2) . ' | ' :
+            $description = '24h: ' .
+                (!empty($priceStats['volume_change_24h']) ?
+                    'vol. ' . Number::percentage($priceStats['volume_change_24h'], 2) . ' | ' :
                     '') .
-                'price ' . Number::percentage($stats['percent_change_24h'], 2);
+                'price ' . Number::percentage($priceStats['percent_change_24h'], 2);
 
-            $stat = [
-                Stat::make($this->title, Number::currency($stats['price']))
-                    ->description($description)
-                    ->descriptionColor($color)
-                    ->textColor('default', $color, $color)
-                    ->icon('heroicon-o-scale')
-                    ->iconColor('warning')
-                    ->descriptionIcon('heroicon-m-arrow-trending-' . ($stats['percent_change_24h'] > 0 ? 'up' : 'down'))
-            ];
+            $stat = Stat::make($this->title, Number::currency($priceStats['price']))
+                ->description($description)
+                ->descriptionColor($color)
+                ->textColor('default', $color, $color)
+                ->icon('heroicon-o-scale')
+                ->iconColor('warning')
+                ->descriptionIcon('heroicon-m-arrow-trending-' . ($priceStats['percent_change_24h'] > 0 ? 'up' : 'down'));
+
+            // used in top bar
+            if ($compact) {
+                $description = 'last 24h: ' . Number::percentage($priceStats['percent_change_24h'], 2);
+                $widgetColor = $priceStats['percent_change_24h'] > 0 ? 'green' : 'red';
+
+                $stats = [
+                    'value' => Number::currency($priceStats['price']),
+                    'color' => $widgetColor,
+                    'description' => $description,
+                    'description_color' => $widgetColor,
+                    'label' => $stat->getLabel(),
+                    'label_color' => 'grey',
+                    'icon' => $stat->getDescriptionIcon(),
+                    'icon_color' => $widgetColor,
+                    // polling
+                    'id' => 'btc-price-widget',
+                    'update_endpoint' => '/web-api/current-price?hr=1',
+                    'polling_interval' => $this->getPollingInterval(),
+                    'link' => 'https://coinmarketcap.com/currencies/bitcoin/',
+                ];
+            } else {
+                $stats = [
+                    $stat
+                ];
+            }
         } catch (\Throwable $e) {
             report($e);
-            $stat = [(new WidgetService())->getErrorStat('BTC Price')];
+            $errorMessage = 'BTC Price';
+            if ($compact) {
+                $stats = (new WidgetService())->getErrorArray($errorMessage);
+            } else {
+                $stats = [(new WidgetService())->getErrorStat($errorMessage)];
+            }
         }
 
-        return $stat;
+        return $stats;
     }
 }

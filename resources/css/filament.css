@@ -637,34 +637,116 @@ html.dark button.bg-blue-600.text-white {
     color: #fb923c !important; /* Lighter orange in dark mode */
 }
 
-/* Grey for no alerts */
-.fi-ta-icon-col[data-column="alerts"][data-state="0"] svg {
-    color: #6b7280 !important; /* gray-500 */
-    stroke: #6b7280 !important;
-}
-html.dark .fi-ta-icon-col[data-column="alerts"][data-state="0"] svg {
-    color: #9ca3af !important; /* gray-400 */
-    stroke: #9ca3af !important;
+/* Ensure the top bar container and its parent span the full width */
+.fi-header {
+    width: 100% !important; /* Ensure the parent header spans full width */
+    max-width: none !important; /* Override any max-width constraints */
 }
 
-/* Blue for alerts */
-.fi-ta-icon-col[data-column="alerts"][data-state="1"] svg {
-    color: #2563eb !important; /* blue-600 */
-    stroke: #2563eb !important;
-}
-html.dark .fi-ta-icon-col[data-column="alerts"][data-state="1"] svg {
-    color: #3b82f6 !important; /* blue-500 */
-    stroke: #3b82f6 !important;
+.fi-topbar {
+    width: 100% !important; /* Ensure top bar spans full width */
+    max-width: none !important; /* Override any max-width constraints */
+    height: 64px !important; /* Maintain Filament's default top bar height */
+    display: flex;
+    align-items: center;
 }
 
-/* Create Alert header action */
-.fi-ac-action[data-action="create_alert"] .fi-link-icon,
-.fi-ac-action[data-action="create_alert"] .fi-link span {
-    color: #2563eb !important;
-    stroke: #2563eb !important;
+/* Target the nav element inside fi-topbar */
+.fi-topbar nav {
+    width: 100% !important; /* Ensure the nav spans full width */
+    max-width: none !important; /* Override any max-width constraints */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Distribute space between logo and right section */
+    padding: 0 1rem; /* Match px-4 */
 }
-html.dark .fi-ac-action[data-action="create_alert"] .fi-link-icon,
-html.dark .fi-ac-action[data-action="create_alert"] .fi-link span {
-    color: #3b82f6 !important;
-    stroke: #3b82f6 !important;
+
+/* Container for the topbar end section (user menu) */
+.filament-topbar-end {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Space between user menu items */
+    margin-left: auto; /* Push to the far right */
+}
+
+/* Wrapper for centering the widgets */
+.topbar-widgets-wrapper {
+    flex: 1; /* Take up available space between logo and user menu */
+    width: 100%; /* Ensure it spans the full width of the parent */
+    display: flex;
+    align-items: center;
+    overflow: hidden; /* Prevent wrapper from introducing its own scrolling */
+}
+
+/* Topbar widgets container */
+.topbar-widgets {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Align widgets to the right */
+    gap: 100px; /* Fixed 60px space between widgets */
+    padding-right: 60px; /* 60px space after the last widget on the right */
+    height: 100%; /* Match the top bar's height */
+    width: 100%; /* Ensure it takes the full width of the wrapper */
+    min-width: fit-content; /* Ensure it doesn't shrink smaller than its content */
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent widgets from wrapping to the next line */
+    scrollbar-width: thin; /* For Firefox: make scrollbar thinner */
+}
+
+/* Custom scrollbar for Webkit browsers (Chrome, Safari) */
+.topbar-widgets::-webkit-scrollbar {
+    height: 6px; /* Thin scrollbar */
+}
+
+.topbar-widgets::-webkit-scrollbar-thumb {
+    background-color: #4b5563; /* Gray-600 for the scrollbar thumb */
+    border-radius: 3px;
+}
+
+.topbar-widgets::-webkit-scrollbar-track {
+    /* Let Filament's default top bar background apply, remove hardcoded color */
+}
+
+/* Individual widget styling */
+.topbar-widget {
+    position: relative; /* Contain absolutely positioned children */
+    min-width: 150px; /* Minimum width of 150px */
+    width: 160px; /* Preferred width, but can grow if needed */
+    height: 50px; /* Fixed height as requested, matches top bar height */
+    background-blend-mode: overlay;
+    padding: 0.5rem; /* Slightly increased padding to 8px for better spacing */
+    flex-shrink: 0; /* Prevent widgets from shrinking below min-width */
+}
+
+/* Value (top-left) */
+.topbar-widget .absolute.top-0.left-0 {
+    top: 0;
+    left: 0;
+}
+
+/* Label (bottom-left) */
+.topbar-widget .absolute.bottom-0.left-0 {
+    bottom: 0;
+    left: 0;
+}
+
+/* Icon (top-right) */
+.topbar-widget .absolute.top-0.right-0 {
+    top: 0;
+    right: 0;
+    line-height: 0; /* Prevent extra space from affecting alignment */
+}
+
+/* Description (bottom-right) */
+.topbar-widget .absolute.bottom-0.right-0 {
+    bottom: 0;
+    right: 0;
+    max-width: 150px; /* Allow description to flow left if needed */
+    word-break: break-word;
+    text-align: right;
+}
+
+/* Ensure the user menu stays on the far right */
+.fi-topbar .fi-user-menu {
+    order: 1; /* Ensure user menu is last in the flex order */
 }

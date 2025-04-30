@@ -366,6 +366,6 @@ class UserSignalService
      */
     public function getUserTopSignal(int $userId)
     {
-        return UserSignal::where('user_id', $userId)->orderBy('total_signal_value', 'desc')->first();
+        return UserSignal::where('user_id', $userId)->whereNotNull('total_signal_value')->orderBy('total_signal_value', 'desc')->first();
     }
 }
