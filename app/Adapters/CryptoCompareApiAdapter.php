@@ -159,6 +159,7 @@ class CryptoCompareApiAdapter extends BaseClient implements ExternalApiAdapterIn
 
     /**
      * On-chain daily data
+     * This endpoint can take more than 24h to return the latest day (e.g. on 5/2 3AM UTC it still returned 4/30 data)
      * @see https://developers.coindesk.com/documentation/legacy/Blockchain/blockchainDay
      * @throws AdapterException
      * @throws ConnectionException
@@ -174,7 +175,7 @@ class CryptoCompareApiAdapter extends BaseClient implements ExternalApiAdapterIn
             'get',
             'blockchain/histo/day',
             [
-                'toTs' => time(),
+                'toTs' => Carbon::now()->addDay()->getTimestamp(),
                 'limit' => $daysAgo
             ]
         );
@@ -206,7 +207,8 @@ class CryptoCompareApiAdapter extends BaseClient implements ExternalApiAdapterIn
             'get',
             'exchange/histoday',
             [
-                'toTs' => time(),
+                // this endpoint returns partial data for the current day, which we don't want
+                'toTs' => Carbon::yesterday('UTC')->timestamp,
                 'limit' => $daysAgo
             ]
         );
