@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\Register;
 use App\Filament\Pages\CustomDashboard;
 use App\Filament\Pages\PerformancePage;
@@ -35,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
             ->registration(Register::class)
             ->brandLogo(fn() => view('filament.components.header-left'))
             ->sidebarCollapsibleOnDesktop()

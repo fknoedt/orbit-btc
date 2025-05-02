@@ -28,18 +28,18 @@
 
 /* Styles for the login page logo */
 .orbit-btc-logo-wrapper.login-page {
-    width: 250px !important;
+    width: 220px !important;
     height: auto !important;
-    margin: 0 0 0 1.5rem !important; /* Ensure margin is applied on login page */
+    margin: -1rem 0 0 1.5rem !important; /* Ensure margin is applied on login page */
 }
 
 .orbit-btc-logo-wrapper.login-page .orbit-btc-logo {
-    width: 250px !important;
+    width: 220px !important;
     height: auto !important;
 }
 
 .fi-simple-page .fi-logo {
-    width: 250px !important;
+    width: 220px !important;
     height: auto !important;
 }
 
