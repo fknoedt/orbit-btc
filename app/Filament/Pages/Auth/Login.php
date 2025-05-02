@@ -17,7 +17,7 @@ class Login extends BaseLogin
                 Section::make()
                     ->schema([
                         Placeholder::make('')
-                            ->content('This is a demo version. Any feedback is appreciated 🙏')
+                            ->content('Demo version. Give us a shout at hey@orbitbtc.space')
                             ->extraAttributes(['class' => 'text-sm text-gray-500 mb-1']),
                     ])
                     ->collapsible(false),
