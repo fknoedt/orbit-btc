@@ -51,7 +51,7 @@ Route::middleware('auth')
 /**
  * @see https://developer.bitcoin.org/reference/rpc/index.html
  */
-if (config('app.env') === 'local' && auth()->user() && auth()->user()->role_id === 3) {
+if (config('app.env') === 'local' && auth()->user() && auth()->user()->role_id === config('data.role_id.super_admin')) {
     Route::controller(BtcRpcController::class)->prefix('rpc')->group(function () {
         Route::get('/help', 'help');
         Route::get('/command/{command}', 'runCommand')->name('rpc-command.run');

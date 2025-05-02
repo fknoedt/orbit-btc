@@ -8,7 +8,7 @@ class SandboxController
 {
     public function index(): void
     {
-        if (config('app.env') !== 'local' || auth()->user()->role_id < 3) {
+        if (config('app.env') !== 'local' || auth()->user()->role_id < config('data.role_id.super_admin')) {
             throw new AuthorizationException('Access denied and reported');
         }
 

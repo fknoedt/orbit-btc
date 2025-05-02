@@ -80,7 +80,7 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-inbox')
                     ->group('Dev')
                     ->sort(5)
-                    ->visible(fn () => auth()->user()?->role_id === 3 && app()->environment('local')),
+                    ->visible(fn () => auth()->user()?->role_id === config('data.role_id.super_admin') && app()->environment('local')),
             ])
             ->sidebarWidth('250')
             ->brandName(config('app.name'))
