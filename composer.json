@@ -28,7 +28,9 @@
         "nunomaduro/termwind": "^2.0",
         "php-ai/php-ml": "^0.10.0",
         "rawilk/filament-password-input": "^2.0",
-        "sentry/sentry-laravel": "^4.1"
+        "sentry/sentry-laravel": "^4.1",
+        "spatie/laravel-backup": "^9.3",
+        "ext-zip": "*"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.9",
