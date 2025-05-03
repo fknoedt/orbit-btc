@@ -23,4 +23,13 @@ class Btc3rdPartyService
     {
         return $this->adapter->getCurrentPriceStats();
     }
+
+    public function getInfo(): array
+    {
+        return [
+            'name' => $this->adapter->getClientName(),
+            'url' => $this->adapter->getUrl(),
+            'data_source_id' => $this->adapter->getDataSourceId(),
+        ];
+    }
 }

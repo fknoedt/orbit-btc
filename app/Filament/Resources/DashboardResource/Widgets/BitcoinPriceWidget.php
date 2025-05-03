@@ -75,7 +75,7 @@ class BitcoinPriceWidget extends BaseWidget
                 ];
             }
         } catch (\Throwable $e) {
-            report($e);
+            report(new \RuntimeException($e->getMessage() . ' - ' . (isset($service) ? json_encode($service->getInfo()) : 'no $service instantiated')));
             $errorMessage = 'BTC Price';
             if ($compact) {
                 $stats = (new WidgetService())->getErrorArray($errorMessage);
