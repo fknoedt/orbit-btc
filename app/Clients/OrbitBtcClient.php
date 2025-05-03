@@ -36,9 +36,10 @@ class OrbitBtcClient extends BaseClient
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function updateRemotePrices(string $since): int
+    public function updateRemotePrices(string $since, string $to): int
     {
         $data = DailyPrice::where('date', '>=', $since)
+            ->where('date', '<=', $to)
             ->orderBy('date', 'asc')
             ->get()
             ->keyBy('date')
