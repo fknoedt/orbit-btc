@@ -72,6 +72,11 @@ class CryptoCompareDailyStatsCommand extends Command
             foreach ($response as $day) {
                 $dateTime = Carbon::createFromTimestamp($day['time'])->format('Y-m-d');
                 if (! isset($newData[$dateTime])) {
+                    if ($dateTime < array_key_first($newData)) {
+                        // if we have an element with just exchanges_volume at the beginning of the array, it will
+                        // prevent fillStats() to update properly
+                        continue;
+                    }
                     $newData[$dateTime] = ['date' => $dateTime];
                 }
                 $newData[$dateTime]['exchanges_volume'] = $day['volume'];
