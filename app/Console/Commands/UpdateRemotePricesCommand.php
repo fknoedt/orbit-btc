@@ -3,8 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Clients\OrbitBtcClient;
+use App\Exceptions\AdapterException;
+use App\Exceptions\ExternalApiException;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 
 class UpdateRemotePricesCommand extends Command
 {
@@ -15,7 +19,7 @@ class UpdateRemotePricesCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:update-remote-prices {--since=}';
+    protected $signature = 'btc:update-remote-prices {--since=} {--to=}';
 
     /**
      * The console command description.
@@ -26,10 +30,15 @@ class UpdateRemotePricesCommand extends Command
 
     /**
      * Execute the console command.
+     * @throws AdapterException
+     * @throws ExternalApiException
+     * @throws ConnectionException
+     * @throws RequestException
      */
     public function handle(OrbitBtcClient $client): void
     {
         $since = $this->option('since') ?? null;
+        $to = $this->option('to') ?? null;
 
         if (! $since) {
             $since = Carbon::now()->subDays(self::DEFAULT_NUMBER_OF_DAYS_AGO)->format('Y-m-d');
@@ -41,9 +50,19 @@ class UpdateRemotePricesCommand extends Command
             $since = $sinceDate->format('Y-m-d');
         }
 
-        $this->output->writeln("Updating remote daily_prices since {$since}");
+        if (! $to) {
+            $to = Carbon::now()->format('Y-m-d');
+        } else {
+            $toDate = Carbon::parse($to);
+            if (! $toDate) {
+                throw new \InvalidArgumentException('Invalid --to value. use YYYY-MM-DD.');
+            }
+            $to = $toDate->format('Y-m-d');
+        }
 
-        $pricesUpdated = $client->updateRemotePrices($since);
+        $this->output->writeln("Updating remote daily_prices since {$since} to {$to}");
+
+        $pricesUpdated = $client->updateRemotePrices($since, $to);
 
         $message = $pricesUpdated ? "{$pricesUpdated} Price(s) updated ✅" : 'No prices updated';
 
