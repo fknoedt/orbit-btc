@@ -88,6 +88,8 @@ class Kernel extends ConsoleKernel
             ->everyThirtyMinutes()->when($this->shouldUpdateUserSignals())
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
+
+        $schedule->command('backup:run')->daily()->at('03:00');
     }
 
     /**
