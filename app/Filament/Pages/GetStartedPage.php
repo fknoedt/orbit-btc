@@ -15,6 +15,20 @@ class GetStartedPage extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-rocket-launch';
 
+    public static function getNavigationBadge(): ?string {
+        // count how many incomplete tasks are there
+        $incompleteTasks = 0;
+
+        foreach ((new self())->getChecklistStatus() as $status) {
+            if (!$status) {
+                $incompleteTasks++;
+            }
+        }
+
+        return $incompleteTasks ?: null;
+    }
+
+
     public function getChecklistStatus(): array
     {
         $userId = auth()->id();
@@ -26,8 +40,17 @@ class GetStartedPage extends Page
             'metrics' => UserActivityLog::where('user_id', $userId)
                 ->where('action', 'visited_metrics')
                 ->exists(),
+            'alerts' => UserActivityLog::where('user_id', $userId)
+                ->where('action', 'upsertted_alert_management')
+                ->exists(),
             'time-series' => UserActivityLog::where('user_id', $userId)
                 ->where('action', 'visited_time_series_page')
+                ->exists(),
+            'search-by-similarity' => UserActivityLog::where('user_id', $userId)
+                ->where('action', 'searched_ts_by_similarity')
+                ->exists(),
+            'daily-signal' => UserActivityLog::where('user_id', $userId)
+                ->where('action', 'visited_daily_signal')
                 ->exists(),
             'user-signals' => UserActivityLog::where('user_id', $userId)
                 ->where('action', 'created_user_signal')

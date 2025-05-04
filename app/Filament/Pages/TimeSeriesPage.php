@@ -3,10 +3,12 @@
 namespace App\Filament\Pages;
 
 use App\Models\Metric;
+use App\Models\UserActivityLog;
 use App\Services\DailyPriceService;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 
 class TimeSeriesPage extends Page
 {
@@ -118,13 +120,12 @@ class TimeSeriesPage extends Page
 
         if (count($this->selectedMetrics) === 1) {
             $metric = $this->selectedMetrics[0];
-            $this->metricDescriptionLabel = $metrics[$metric]->description ?? 'Select up to two metrics to compare. Choose a time range to search for similar patterns.';
         } else {
             // If two metrics, prefer the non-'close' metric's description
             $nonCloseMetric = array_diff($this->selectedMetrics, ['close']);
             $metric = reset($nonCloseMetric) ?: $this->selectedMetrics[0];
-            $this->metricDescriptionLabel = $metrics[$metric]->description ?? 'Select up to two metrics to compare. Choose a time range to search for similar patterns.';
         }
+        $this->metricDescriptionLabel = $metrics[$metric]->description ?? 'Select up to two metrics to compare. Choose a time range to search for similar patterns.';
     }
 
     protected function dispatchChartUpdate(array $extra = []): void
@@ -403,6 +404,13 @@ class TimeSeriesPage extends Page
             $additionalChartData['endDate'] = $seriesEnd;
             $this->additionalCharts[] = $additionalChartData;
         }
+
+        UserActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'searched_ts_by_similarity',
+            'method' => 'GET',
+            'date' => now(),
+        ]);
 
         $this->dispatch('additional-chart-added');
     }

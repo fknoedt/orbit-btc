@@ -407,12 +407,12 @@ html.dark .fi-infolist-action[data-action="chart"] .fi-infolist-action-label.dar
     justify-content: center;
     padding: 0.5rem 1rem; /* Reduced vertical padding from 0.25rem to 0.5rem for consistency, adjust as needed */
     position: relative;
-    margin: 0.5rem 0; /* Add small margin to control spacing, adjust as needed */
+    margin: 2rem 0; /* Add small margin to control spacing, adjust as needed */
 }
 
 .section-background-container {
     position: relative;
-    padding: 2rem !important;
+    padding: 3.5rem !important;
     border-radius: 0.5rem !important;
     transition: background 0.5s ease;
     width: 90% !important;
@@ -481,7 +481,7 @@ html.dark #dashboard-section .section-background-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 1.5rem;
     flex-wrap: wrap;
 }
 
@@ -551,8 +551,10 @@ html.dark .get-started-section .checklist-container {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 1rem;
+    font-size: 18px;
     color: #1f2937;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 html.dark .get-started-section .checklist-item {

@@ -76,9 +76,9 @@ class LogUserActivity
                 $resource = $this->getResourceFromSnapshot($snapshot);
 
                 // 🤷‍♂️
-                if ($resource === 'alert-management') {
+                if ($resource === 'alert_management') {
                     if (! empty($component['updates'])) {
-                        $actionType = 'updated';
+                        $actionType = 'upsertted'; // create or update will fall here
                     } else {
                         $actionType = match($snapshot['memo']['method'] ?? $method) {
                             'GET' => null,
