@@ -5,11 +5,13 @@ namespace App\Filament\Pages;
 use App\Filament\Charts\UserSignalChart;
 use App\Filament\Resources\UserSignalResource;
 use App\Models\DailyPrice;
+use App\Models\UserActivityLog;
 use App\Models\UserSignal;
 use App\Models\UserSignalDailyScore;
 use App\Services\UserSignalService;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Number;
 use Livewire\Attributes\Computed;
@@ -175,6 +177,13 @@ class PerformancePage extends Page
                 'options' => $this->getChartOptions($this->selectedUserSignalId, 5)
             ];
             $this->dispatch('refresh-chart', $dispatchData);
+
+            UserActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'visited_daily_signal',
+                'method' => 'GET',
+                'date' => now(),
+            ]);
         }
     }
 

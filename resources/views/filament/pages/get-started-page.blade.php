@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <meta http-equiv="refresh" content="60">
+    <meta http-equiv="refresh" content="300">
     <div class="get-started-container">
         <!-- Section 1: Welcome to Orbit -->
         <section class="get-started-section" id="welcome-section">
@@ -43,12 +43,16 @@
                         </svg>
                     </div>
                     <p class="text-gray-700 dark:text-gray-300 mt-4">
-                        Metrics are at the core of Orbit. Think of them as indicators that can potentially impact the subject you're trying to monitor. Just like a physician monitors heart rate, blood pressure, temperature and white blood cells, we are looking at bitcoin historical and real time data like market sentiment, hashrate, exchanges reserve, and many others. In the menu you’ll find detailed information and charts about each Metric. Hang tight!
+                        Metrics are at the core of Orbit. Think of them as indicators that can potentially impact the subject you're trying to monitor. Just like a physician monitors heart rate, blood pressure, temperature and white blood cells, we are looking at bitcoin historical and real time data like market sentiment, hashrate, exchanges reserve, and many others. In the menu you’ll find detailed information and charts about each Metric.
                     </p>
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['metrics'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['metrics'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Learn about different </span><a target="_blank" href="/admin/metrics">Metrics</a><span class="checklist-text"> indicators</span>
+                            <span class="checklist-text">Learn about different </span><a target="_blank" href="/admin/metrics">Metrics / Indicators</a>
+                        </div>
+                        <div class="checklist-item {{ $this->getChecklistStatus()['alerts'] ? 'checked' : '' }}">
+                            <input type="checkbox" {{ $this->getChecklistStatus()['alerts'] ? 'checked' : '' }} disabled>
+                            <span class="checklist-text">Create <strong>Alerts</strong> for a Metric</span>
                         </div>
                     </div>
                 </div>
@@ -75,7 +79,11 @@
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['time-series'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['time-series'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Compare </span><a target="_blank" href="/admin/time-series-page">Time Series</a><span class="checklist-text"> patterns across years</span>
+                            <span class="checklist-text">Dig into Metrics' </span><a target="_blank" href="/admin/time-series-page">Time Series</a><span class="checklist-text"> History</span>
+                        </div>
+                        <div class="checklist-item {{ $this->getChecklistStatus()['search-by-similarity'] ? 'checked' : '' }}">
+                            <input type="checkbox" {{ $this->getChecklistStatus()['search-by-similarity'] ? 'checked' : '' }} disabled>
+                            <span class="checklist-text">Search by <strong>similar time-bound variation</strong> of any Metrics</span>
                         </div>
                     </div>
                 </div>
@@ -129,7 +137,11 @@
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['performance-page'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['performance-page'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Analyze your Signal’s </span><a target="_blank" href="/admin/performance-page">Performance</a><span class="checklist-text"> trends over time</span>
+                            <span class="checklist-text">Analyze your Signal’s trends over time in the <a target="_blank" href="/admin/performance-page">Performance Page</a></span>
+                        </div>
+                        <div class="checklist-item {{ $this->getChecklistStatus()['daily-signal'] ? 'checked' : '' }}">
+                            <input type="checkbox" {{ $this->getChecklistStatus()['daily-signal'] ? 'checked' : '' }} disabled>
+                            <span class="checklist-text">Check daily signals by clicking on each day on your </span><a target="_blank" href="/admin/performance-page">Signal’s chart</a></span>
                         </div>
                     </div>
                 </div>
