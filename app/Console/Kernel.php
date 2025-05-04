@@ -57,15 +57,16 @@ class Kernel extends ConsoleKernel
 
         $cqMetrics = array_keys(CurlCryptoQuantClient::METRICS_TO_ENDPOINT);
 
-        $schedule->command(
-            'btc:crypto-quant-daily-stats ' . implode(',', $cqMetrics) . ' --ignore-errors'
+        // CQ needs a high tier subscription
+        /*$schedule->command(
+            'btc:crypto-quant-daily-stats ' . implode(',', $cqMetrics) . ' --ignore-errors --from-file'
         )
             ->everyThirtyMinutes()->when($this->shouldUpdateCryptoQuantStats($cqMetrics))
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo)
             ->onFailure(function (\Throwable $e) {
                 \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
-            });
+            });*/
 
         $schedule->command(
             'btc:cryptocompare-daily-stats --ignore-errors'
@@ -89,7 +90,9 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 
-        $schedule->command('backup:run')->daily()->at('03:00');
+        if (app()->environment('local')) {
+            $schedule->command('backup:run')->daily()->at('03:00');
+        }
     }
 
     /**

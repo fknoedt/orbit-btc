@@ -87,7 +87,7 @@ trait UserSignalChart
         return [
             'series' => [
                 [
-                    'name' => 'Model Score',
+                    'name' => 'Daily Signal',
                     'type' => 'column',
                     'data' => $scores,
                 ],
@@ -119,7 +119,7 @@ trait UserSignalChart
                 'width' => [0, 2]
             ],
             'title' => [
-                'text' => 'BTC Price x Model Score per day since ' . Carbon::now()->subMonths($monthsBack)->format('d M Y'),
+                'text' => 'BTC Price x Signal Score per day since ' . Carbon::now()->subMonths($monthsBack)->format('d M Y'),
             ],
             'dataLabels' => [
                 'enabled' => false,
@@ -141,7 +141,7 @@ trait UserSignalChart
             'yaxis' => [
                 [
                     'title' => [
-                        'text' => 'Model Score',
+                        'text' => 'Daily Signal',
                     ],
                     'decimalsInFloat' => 0,
                     'tickAmount' => 10,
@@ -234,8 +234,8 @@ trait UserSignalChart
         return [
             Action::make('chartDetailModal')
                 ->label(isset($this->record) ?
-                    $this->record->name . ' Daily Signal' :
-                    'Model Daily Signal'
+                    '`' . $this->record->name . '` Daily Signal' :
+                    'Daily Signal'
                 )
                 ->modalContent(function () {
                     $cacheKey = 'first_daily_price_by_date_' . $this->selectedDate;

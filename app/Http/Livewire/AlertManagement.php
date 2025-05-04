@@ -44,14 +44,14 @@ class AlertManagement extends Component implements HasTable, HasForms
         return $table
             ->query($this->getTableQuery())
             ->columns([
-                Tables\Columns\TextColumn::make('frequency.name')->label('Frequency'),
-                Tables\Columns\TextColumn::make('threshold')->numeric(),
-                Tables\Columns\TextColumn::make('operator')
+                Tables\Columns\TextColumn::make('frequency.name')->label('Interval'),
+                Tables\Columns\TextColumn::make('operator')->label('Direction')
                     ->formatStateUsing(fn ($state) => match ($state) {
                         '+' => 'Up',
                         '-' => 'Down',
                         '+-' => 'Up or Down',
                     }),
+                Tables\Columns\TextColumn::make('threshold')->numeric()->label('% Threshold'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([

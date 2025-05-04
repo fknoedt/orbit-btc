@@ -17,7 +17,7 @@ class UserSignalService
     public const int MAX_DAYS_BACK = 1096;
 
     /** used to calculate max threshold */
-    public const int MAX_OSCILLATION_PER_METRIC = 20;
+    public const int MAX_OSCILLATION_PER_METRIC = 50;
 
     /** to calculate each day's signal_value, we need to simulate a trade weighted against the threshold */
     public const int TRADE_SIZE_IN_USD = 1000;

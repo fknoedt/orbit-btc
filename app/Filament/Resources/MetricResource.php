@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\MetricResource\Pages;
+use App\Filament\Resources\MetricResource\Pages\ListMetrics;
 use App\Models\Metric;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -11,8 +11,15 @@ use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
+use Livewire\Livewire;
 
 class MetricResource extends Resource
 {
@@ -76,30 +83,30 @@ class MetricResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('dataSource.name')
+                TextColumn::make('dataSource.name')
                     ->label('Data Source')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('column_name')
+                TextColumn::make('column_name')
                     ->searchable()
                     ->hidden(),
-                Tables\Columns\TextColumn::make('widget_class')
+                TextColumn::make('widget_class')
                     ->searchable()
                     ->hidden(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->hidden(),
-                Tables\Columns\TextColumn::make('data_limited_at')
+                TextColumn::make('data_limited_at')
                     ->date()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('alerts')
+                IconColumn::make('alerts')
                     ->label('Alert')
                     ->boolean()
                     ->trueIcon('heroicon-o-bell')
@@ -115,10 +122,10 @@ class MetricResource extends Resource
                         ];
                     })
                     ->action(
-                        Tables\Actions\Action::make('manage_alerts')
+                        Action::make('manage_alerts')
                             ->modalHeading(fn ($record) => 'Manage Alerts for `' . $record->name . '` Metric')
                             ->modalContent(function ($record) {
-                                return new \Illuminate\Support\HtmlString(\Livewire\Livewire::mount('alert-management', ['metricId' => $record->id]));
+                                return new HtmlString(Livewire::mount('alert-management', ['metricId' => $record->id]));
                             })
                             ->modalSubmitAction(false)
                             ->modalCancelActionLabel('Close'),
@@ -127,20 +134,20 @@ class MetricResource extends Resource
             ->recordAction('view')
             ->recordUrl(null)
             ->actions([
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->label('Info')
                     ->modalSubmitAction(false)
                     ->modalHeading('')
                     ->modalCancelActionLabel('Close')
                     ->extraModalFooterActions([
-                        Tables\Actions\Action::make('chart')
+                        Action::make('chart')
                             ->label('Chart')
                             ->icon('heroicon-o-presentation-chart-line')
                             ->url(fn ($record) => '/admin/time-series-page?selectedMetrics=' . $record->id)
                             ->color('blue')
                             ->extraAttributes(['style' => 'color: #3D68CC']),
                     ]),
-                Tables\Actions\Action::make('chart')
+                Action::make('chart')
                     ->label('Chart')
                     ->icon('heroicon-o-presentation-chart-line')
                     ->color('blue')
@@ -148,8 +155,8 @@ class MetricResource extends Resource
                     ->extraAttributes(['style' => 'color: #3D68CC']),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -157,7 +164,7 @@ class MetricResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMetrics::route('/'),
+            'index' => ListMetrics::route('/'),
         ];
     }
 }
