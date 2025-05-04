@@ -11,7 +11,7 @@
         </p>
         <p class="mt-2 text-sm">
             <span class="text-gray-600 dark:text-gray-400">
-                Model Score:
+                Daily Score:
             </span>
             <span class="text-base font-semibold !text-white">{{ number_format($dailyScore->score, 2) }}</span>
         </p>

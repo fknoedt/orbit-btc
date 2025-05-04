@@ -139,8 +139,8 @@ trait UserSignalWizardSteps
             Section::make()
                 ->schema([
                     Repeater::make('userSignalMetrics')
-                        ->label('Metrics')
-                        ->hint('Daily Score will be the sum of each metric\'s frequency variation x weight with optional threshold')
+                        ->label('')
+                        ->hint('Each day, the selected Metric(s) are compared to their value {Interval} ago. The % Change is calculated, filtered by Direction, and scaled by Weight (1-10) to compute a Daily Score, thresholded in the next step.')
                         ->relationship()
                         ->lazy()
                         ->defaultItems(1)
@@ -150,16 +150,6 @@ trait UserSignalWizardSteps
                         )
                         ->extraItemActions($extraActions)
                         ->schema([
-                            Select::make('frequency_id')
-                                ->label('Frequency')
-                                ->options(
-                                    $frequencies->mapWithKeys(function ($frequency) {
-                                        return [$frequency->id => $frequency->name];
-                                    })->toArray()
-                                )
-                                ->default(1)
-                                ->columns(1)
-                                ->required(),
                             Select::make('metric_id')
                                 ->label('Metric')
                                 ->hint('% change')
@@ -168,6 +158,16 @@ trait UserSignalWizardSteps
                                         return [$metric->id => sprintf('%s (%s)', $metric->name, $metric->dataSource->name)];
                                     })
                                 )
+                                ->columns(1)
+                                ->required(),
+                            Select::make('frequency_id')
+                                ->label('Interval')
+                                ->options(
+                                    $frequencies->mapWithKeys(function ($frequency) {
+                                        return [$frequency->id => $frequency->name];
+                                    })->toArray()
+                                )
+                                ->default(1)
                                 ->columns(1)
                                 ->required(),
                             ViewField::make('operator')
@@ -245,7 +245,7 @@ trait UserSignalWizardSteps
                     'label' => "Threshold (0-{$maxThreshold}): ",
                     'disabled' => ($operation === 'view'),
                     'hint' => 'Maximum threshold is the weight of each Metric x ' .
-                        UserSignalService::MAX_OSCILLATION_PER_METRIC . ' (fixed daily change percentage)'
+                        UserSignalService::MAX_OSCILLATION_PER_METRIC . ' (% change)'
                 ]),
             Radio::make('buy_or_sell')
                 ->label('Signal')
@@ -264,7 +264,7 @@ trait UserSignalWizardSteps
         if ($operation !== 'create') {
             $schema[] = View::make('filament.components.user-signal-chart')
                 ->viewData([
-                    'label' => 'Daily Signal',
+                    'label' => '',
                     'name' => 'daily-score',
                     'hint' => $operation === 'edit' ? 'Save your Signal to see the updated chart' : '',
                     'options' => isset($this->record->id) ? $this->getChartOptions($this->record->id) : [],

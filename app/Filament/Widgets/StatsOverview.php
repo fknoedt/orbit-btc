@@ -49,19 +49,31 @@ class StatsOverview extends BaseWidget
 
         try {
             $topSignal = $signalService->getUserTopSignal($userId);
-            $topSignalStat = Stat::make('Top Performing Signal', Str::limit($topSignal->name, 15, '.'))
-                ->icon('heroicon-o-trophy')
-                ->iconPosition('end')
-                ->chartColor('success')
-                ->description(
-                    sprintf(
-                        'score: %s | rank: %s',
-                        Number::format($topSignal->total_signal_value, 1),
-                        rand(1, 50000),
+            if ($topSignal) {
+                $topSignalStat = Stat::make('Top Performing Signal', Str::limit($topSignal->name, 15, '.'))
+                    ->icon('heroicon-o-trophy')
+                    ->iconPosition('end')
+                    ->chartColor('success')
+                    ->description(
+                        sprintf(
+                            'score: %s | rank: %s',
+                            Number::format($topSignal->total_signal_value, 1),
+                            rand(1, 50000),
+                        )
                     )
-                )
-                ->descriptionColor('success')
-                ->iconColor('success');
+                    ->descriptionColor('success')
+                    ->iconColor('success');
+            } else {
+                $topSignalStat = Stat::make('Top Performing Signal', '-')
+                    ->icon('heroicon-o-trophy')
+                    ->iconPosition('end')
+                    ->chartColor('gray')
+                    ->description(
+                        'Create your first Signal on `Your Signals`'
+                    )
+                    ->descriptionColor('gray')
+                    ->iconColor('gray');
+            }
         } catch (\Throwable $e) {
             report($e);
             $topSignalStat = $widgetService->getErrorStat('Top Signal');
