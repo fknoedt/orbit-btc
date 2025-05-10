@@ -1,4 +1,3 @@
-<!-- powered by grok 🤖 -->
 <div class="filament-view-field">
     <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
         {{ $label ?? 'Chart' }}

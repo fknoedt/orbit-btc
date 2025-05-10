@@ -74,6 +74,9 @@ trait UserSignalChart
         $maxPrice = !empty($prices) ? round(max($prices), -3) : 1000;
         $minPrice = $maxPrice / 2;
 
+        $maxSignal = !empty($scores) ? round(max($scores), 1) : 0;
+        $minSignal = !empty($scores) ? round(min($scores), 1) : 0;
+
         $firstPrice = $prices[0] ?? 0;
         $lastPrice = $prices[count($prices) - 1] ?? 0;
         $areaColor = $firstPrice > $lastPrice ?
@@ -145,6 +148,8 @@ trait UserSignalChart
                     ],
                     'decimalsInFloat' => 0,
                     'tickAmount' => 10,
+                    'min' => $minSignal,
+                    'max' => $maxSignal,
                 ],
                 [
                     'opposite' => true,

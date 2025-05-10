@@ -115,6 +115,7 @@ class CryptoQuantDailyStatsCommand extends Command
                         $newData[$dateTime->format('Y-m-d')][$metric] = $day[1];
                     }
                 }
+
                 $this->output->writeln('<info>Running upsertStats for ' . count($newData) . ' days</info>');
                 $recordsSaved = $service->fillStats($newData, $this->option('force'));
                 $this->output->writeln('<info>' . $recordsSaved . ' record(s) saved</info>');
