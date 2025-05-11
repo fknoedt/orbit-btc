@@ -99,7 +99,7 @@
                     if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';                      // Billion (10^9)
                     if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';                              // Million (10^6)
                     if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';                                      // Kilo (10^3)
-                    return value.toFixed(0);                                                                          // Raw value (no suffix)
+                    return value.toFixed(2);                                                                          // Raw value (no suffix)
                 };
             });
         } else {
@@ -112,7 +112,7 @@
                 if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';                      // Billion (10^9)
                 if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';                              // Million (10^6)
                 if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';                                      // Kilo (10^3)
-                return value.toFixed(0);                                                                          // Raw value (no suffix)
+                return value.toFixed(2);                                                                          // Raw value (no suffix)
             };
         }
 
@@ -253,7 +253,7 @@
                         if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';                      // Billion (10^9)
                         if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';                              // Million (10^6)
                         if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';                                      // Kilo (10^3)
-                        return value.toFixed(0);                                                                          // Raw value (no suffix)
+                        return value.toFixed(2);                                                                          // Raw value (no suffix)
                     };
                 });
             } else {
@@ -266,7 +266,7 @@
                     if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + 'B';                      // Billion (10^9)
                     if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';                              // Million (10^6)
                     if (value >= 1_000) return (value / 1_000).toFixed(1) + 'k';                                      // Kilo (10^3)
-                    return value.toFixed(0);                                                                          // Raw value (no suffix)
+                    return value.toFixed(2);                                                                          // Raw value (no suffix)
                 };
             }
 
