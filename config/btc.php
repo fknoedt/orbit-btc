@@ -59,6 +59,9 @@ return [
         'cryptocompare' => [
             'url' => env('CRYPTOCOMPARE_URL'),
             'key' => env('CRYPTOCOMPARE_KEY'),
-        ]
+        ],
+        'bgeometrics' => [
+            'url' => env('BGEOMETRICS_URL'),
+        ],
     ]
 ];

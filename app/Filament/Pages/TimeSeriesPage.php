@@ -37,10 +37,15 @@ class TimeSeriesPage extends Page
     public array $chartData = [];
     public array $additionalCharts = [];
 
+    protected array $decimalsOnYAxis = [
+        'mayer_multiple',
+        'nupl'
+    ];
+
     public function mount(): void
     {
         // Load all metrics from the Metric model
-        $this->metrics = Metric::all()->map(fn($metric) => [
+        $this->metrics = Metric::orderBy('name')->get()->map(fn($metric) => [
             'id' => $metric->id,
             'column_name' => $metric->column_name,
             'name' => $metric->name,

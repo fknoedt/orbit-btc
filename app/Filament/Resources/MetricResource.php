@@ -154,6 +154,7 @@ class MetricResource extends Resource
                     ->url(fn ($record) => '/admin/time-series-page?selectedMetrics=' . $record->id)
                     ->extraAttributes(['style' => 'color: #3D68CC']),
             ])
+            ->defaultSort('name')
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

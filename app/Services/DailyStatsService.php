@@ -66,9 +66,7 @@ class DailyStatsService
         $pricesSaved = 0;
         foreach ($query->get() as $dailyPrice) {
             if (empty($data[$dailyPrice->date])) {
-                throw new DailyPriceStatsException(
-                    "Missing \$fillingData[{$dailyPrice->date}] when filling daily_prices"
-                );
+                continue;
             }
             foreach ($columnsToUpdate as $column) {
                 // not forcing and column is not null: don't update

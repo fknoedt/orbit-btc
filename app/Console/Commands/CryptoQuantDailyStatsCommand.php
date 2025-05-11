@@ -61,7 +61,7 @@ class CryptoQuantDailyStatsCommand extends Command
                     $this->output->info('Importing CQ daily stats data from cq-btc-average-fee-live.json into daily_prices...');
                     $averageFeeData = json_decode(
                         file_get_contents(
-                            database_path() . DIRECTORY_SEPARATOR . 'raw-data' . DIRECTORY_SEPARATOR .
+                            database_path() . DIRECTORY_SEPARATOR . 'local-data' . DIRECTORY_SEPARATOR .
                             'cq-btc-average-fee-live.json' // in .gitignore
                         ),
                         true
@@ -84,7 +84,7 @@ class CryptoQuantDailyStatsCommand extends Command
                     $this->output->info('Importing CQ daily stats data from cq-btc-exchanges-balance-live.json into daily_prices...');
                     $exchangesReserveData = json_decode(
                         file_get_contents(
-                            database_path() . DIRECTORY_SEPARATOR . 'raw-data' . DIRECTORY_SEPARATOR .
+                            database_path() . DIRECTORY_SEPARATOR . 'local-data' . DIRECTORY_SEPARATOR .
                             'cq-btc-exchanges-balance-live.json' // in .gitignore
                         ),
                         true

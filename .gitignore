@@ -18,5 +18,4 @@ yarn-error.log
 /.idea
 /.vscode
 admin.macaroon
-/database/raw-data/cq-btc-average-fee-live.json
-/database/raw-data/cq-btc-exchanges-balance-live.json
+/database/local-data

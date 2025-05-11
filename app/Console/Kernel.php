@@ -2,7 +2,9 @@
 
 namespace App\Console;
 
+use App\Clients\BgeometricsClient;
 use App\Clients\CurlCryptoQuantClient;
+use App\Console\Commands\BgeometricsDailyStatsCommand;
 use App\Console\Commands\CryptoCompareDailyStatsCommand;
 use App\Models\DailyPrice;
 use App\Models\UserSignalDailyScore;
@@ -85,6 +87,21 @@ class Kernel extends ConsoleKernel
                 \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
             });
 
+        $schedule->command(
+            'btc:bgeometrics-daily-stats-command'
+        )
+            ->everyThirtyMinutes()
+            ->when(
+                $this->shouldUpdateBgeometricsStats(
+                    BgeometricsClient::getEndpointsAsColumnNames()
+                )
+            )
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo)
+            ->onFailure(function (\Throwable $e) {
+                \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
+            });
+
         $schedule->command('btc:update-all-user-signal-scores')
             ->everyThirtyMinutes()->when($this->shouldUpdateUserSignals())
             ->appendOutputTo($logPath)
@@ -144,6 +161,24 @@ class Kernel extends ConsoleKernel
             })->count();
         if ($pricesMissingStats) {
             Log::info('Running CC stats update');
+            return true;
+        }
+
+        return false;
+    }
+
+    private function shouldUpdateBgeometricsStats(array $columnsToUpdate): bool
+    {
+        $since = Carbon::now()->subDays(BgeometricsDailyStatsCommand::SINCE_DAYS_AGO)->format('Y-m-d');
+        $pricesMissingStats = DailyPrice::where('date', '>', $since)
+            ->where('date', '<=', Carbon::now()->format('Y-m-d'))
+            ->where(function ($q) use ($columnsToUpdate) {
+                foreach ($columnsToUpdate as $column) {
+                    $q->orWhereNull($column);
+                }
+            })->count();
+        if ($pricesMissingStats) {
+            Log::info('Running BG stats update');
             return true;
         }
 
