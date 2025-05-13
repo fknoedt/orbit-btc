@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Exceptions\ErrorMessages;
 use App\Filament\Resources\DashboardResource\Widgets\BitcoinDominanceWidget;
 use App\Filament\Resources\DashboardResource\Widgets\BitcoinPriceWidget;
-use App\Filament\Resources\DashboardResource\Widgets\BtcPriceChartWidget;
 use App\Filament\Resources\DashboardResource\Widgets\MempoolWidget;
+use App\Filament\Resources\DashboardResource\Widgets\MetricsWidget;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
 
 class WidgetService
@@ -15,9 +15,8 @@ class WidgetService
 
     public function getUserWidgets(): array
     {
-        // TODO: persist and make it configurable
         return [
-            // TODO: improve and re-add BtcPriceChartWidget::class
+            MetricsWidget::class,
         ];
     }
 

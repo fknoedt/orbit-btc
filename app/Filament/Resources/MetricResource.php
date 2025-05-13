@@ -138,15 +138,7 @@ class MetricResource extends Resource
                     ->label('Info')
                     ->modalSubmitAction(false)
                     ->modalHeading('')
-                    ->modalCancelActionLabel('Close')
-                    ->extraModalFooterActions([
-                        Action::make('chart')
-                            ->label('Chart')
-                            ->icon('heroicon-o-presentation-chart-line')
-                            ->url(fn ($record) => '/admin/time-series-page?selectedMetrics=' . $record->id)
-                            ->color('blue')
-                            ->extraAttributes(['style' => 'color: #3D68CC']),
-                    ]),
+                    ->modalCancelActionLabel('Close'),
                 Action::make('chart')
                     ->label('Chart')
                     ->icon('heroicon-o-presentation-chart-line')
