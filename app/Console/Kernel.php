@@ -57,6 +57,11 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 
+        $schedule->command('btc:update-rsi')
+            ->everyThirtyMinutes()->when($this->shouldUpdateRsi())
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo);
+
         $cqMetrics = array_keys(CurlCryptoQuantClient::METRICS_TO_ENDPOINT);
 
         // CQ needs a high tier subscription
@@ -222,6 +227,16 @@ class Kernel extends ConsoleKernel
     {
         if (DailyPrice::getLastEmptyMayerMultipleDay()) {
             Log::info('Running Mayer Multiple stats update');
+            return true;
+        }
+
+        return false;
+    }
+
+    private function shouldUpdateRsi(): bool
+    {
+        if (DailyPrice::getLastEmptyRsiDay()) {
+            Log::info('Running RSI stats update');
             return true;
         }
 
