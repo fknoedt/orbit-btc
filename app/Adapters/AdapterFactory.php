@@ -16,15 +16,14 @@ class AdapterFactory
      */
     public static function getAdapter(string $adapterName = null): ExternalApiAdapterInterface
     {
-        Log::info("adapter: {$adapterName}");
+        $logMessage = "adapter: {$adapterName} => ";
         $adapterName = $adapterName ?? self::DEFAULT_ADAPTER;
         $adapterName = ucfirst($adapterName);
 
-        Log::info("adapter: {$adapterName}");
+        Log::info($logMessage . $adapterName);
 
         if (! isset(self::$adapters[$adapterName])) {
             $adapterClassName = '\App\Adapters\\' . $adapterName . 'ApiAdapter';
-            Log::info("adapterClassName: {$adapterClassName}");
 
             if (class_exists($adapterClassName)) {
                 $adapter = new $adapterClassName();
