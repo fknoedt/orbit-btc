@@ -703,14 +703,19 @@ html.dark button.bg-blue-600.text-white {
     display: flex;
     align-items: center;
     justify-content: flex-end; /* Align widgets to the right */
-    gap: 100px; /* Fixed 60px space between widgets */
-    padding-right: 60px; /* 60px space after the last widget on the right */
+    gap: 30px; /* Fixed 30px space between widgets */
+    padding-right: 40px; /* Base spacing after the last widget */
     height: 100%; /* Match the top bar's height */
     width: 100%; /* Ensure it takes the full width of the wrapper */
     min-width: fit-content; /* Ensure it doesn't shrink smaller than its content */
     overflow-x: auto; /* Enable horizontal scrolling */
     white-space: nowrap; /* Prevent widgets from wrapping to the next line */
     scrollbar-width: thin; /* For Firefox: make scrollbar thinner */
+}
+
+/* Add extra margin-right to the last topbar widget */
+.topbar-widgets .topbar-widget:last-child {
+    margin-right: 100px; /* Adds 100px more, total 160px spacing (60px padding + 100px margin) */
 }
 
 /* Custom scrollbar for Webkit browsers (Chrome, Safari) */
