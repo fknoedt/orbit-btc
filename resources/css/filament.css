@@ -1,3 +1,7 @@
+.fi-sidebar {
+    z-index: 1001 !important;
+}
+
 /* Sidebar header (minimal layout for button positioning) */
 .fi-sidebar-header {
     position: relative !important; /* Positioning context for buttons */
