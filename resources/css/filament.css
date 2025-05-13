@@ -711,6 +711,8 @@ html.dark button.bg-blue-600.text-white {
     overflow-x: auto; /* Enable horizontal scrolling */
     white-space: nowrap; /* Prevent widgets from wrapping to the next line */
     scrollbar-width: thin; /* For Firefox: make scrollbar thinner */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scroll-behavior: smooth; /* Smooth scrolling behavior */
 }
 
 /* Add extra margin-right to the last topbar widget */
@@ -730,6 +732,29 @@ html.dark button.bg-blue-600.text-white {
 
 .topbar-widgets::-webkit-scrollbar-track {
     /* Let Filament's default top bar background apply, remove hardcoded color */
+}
+
+/* Mobile adjustments for better scrolling */
+@media (max-width: 640px) {
+    .topbar-widgets {
+        -ms-overflow-style: auto; /* Ensure scrollbar is visible on IE/Edge */
+        scrollbar-width: auto; /* Visible scrollbar on Firefox */
+        overscroll-behavior-x: contain; /* Prevent overscroll bounce on mobile */
+    }
+
+    .topbar-widgets::-webkit-scrollbar {
+        height: 8px; /* Slightly thicker scrollbar on mobile for touch */
+    }
+
+    .topbar-widgets::-webkit-scrollbar-thumb {
+        background-color: #6b7280; /* Gray-500 for better visibility */
+        border-radius: 4px;
+    }
+
+    .topbar-widget {
+        min-width: 120px; /* Reduce min-width on mobile for better fit */
+        width: 130px; /* Slightly smaller width on mobile */
+    }
 }
 
 /* Individual widget styling */
