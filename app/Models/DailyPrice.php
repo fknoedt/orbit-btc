@@ -13,6 +13,7 @@ class DailyPrice extends Model
 
     public const int FUTURE_PRICE_MAX_DAYS_AGO = 365;
     public const string START_OF_MAYER_MULTIPLE = '2012-01-01';
+    public const string START_OF_RSI = '2012-01-01';
 
     protected $guarded = ['id'];
 
@@ -25,6 +26,15 @@ class DailyPrice extends Model
     {
         return self::whereNull('mayer_multiple')
             ->where('date', '>=', self::START_OF_MAYER_MULTIPLE)
+            ->orderBy('date', 'asc')
+            ->pluck('date')
+            ->first();
+    }
+
+    public static function getLastEmptyRsiDay(): ?string
+    {
+        return self::whereNull('rsi')
+            ->where('date', '>=', self::START_OF_RSI)
             ->orderBy('date', 'asc')
             ->pluck('date')
             ->first();

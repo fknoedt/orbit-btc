@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Adapters\AdapterFactory;
+use App\Exceptions\DailyPriceStatsException;
 use App\Models\DailyPrice;
 use Carbon\Carbon;
 use Illuminate\Console\OutputStyle;
@@ -211,6 +212,75 @@ class PriceHistoryService
             array_shift($last200prices);
             $last200prices[$nextDay['date']] = $nextDay;
         } while (! empty($prices));
+
+        return (new DailyStatsService())->fillStats($fillStats);
+    }
+
+    public function updateRsi(string $since = null, int $period = 14): int
+    {
+        // Determine the starting date for RSI calculation
+        if (! $since) {
+            $since = DailyPrice::getLastEmptyRSIDay();
+
+            if (! $since) {
+                throw new DailyPriceStatsException("Could not fetch DailyPrices on " . __METHOD__);
+            }
+        }
+
+        // Need at least period + 1 days to calculate price changes
+        $startDate = Carbon::createFromFormat($this->systemDateFormat, $since)
+            ->subDays($period + 1)
+            ->format($this->systemDateFormat);
+
+        // Fetch price data
+        $prices = DailyPrice::where('date', '>=', $startDate)
+            ->select(['date', 'close'])
+            ->orderBy('date', 'asc')
+            ->get()
+            ->keyBy('date')
+            ->toArray();
+
+        // Ensure we have enough data
+        if (count($prices) < $period + 1) {
+            throw new DailyPriceStatsException("Not enough data to calculate RSI");
+        }
+
+        $fillStats = [];
+        $gains = [];
+        $losses = [];
+
+        // Calculate price changes
+        $dates = array_keys($prices);
+        for ($i = 1; $i < count($dates); $i++) {
+            $currentDate = $dates[$i];
+            $prevDate = $dates[$i - 1];
+            $change = $prices[$currentDate]['close'] - $prices[$prevDate]['close'];
+            $gains[$currentDate] = $change > 0 ? $change : 0;
+            $losses[$currentDate] = $change < 0 ? abs($change) : 0;
+        }
+
+        // Process RSI for each day after the initial period
+        for ($i = $period; $i < count($dates); $i++) {
+            $currentDate = $dates[$i];
+
+            // Get the last $period price changes
+            $periodGains = array_slice($gains, $i - $period, $period, true);
+            $periodLosses = array_slice($losses, $i - $period, $period, true);
+
+            // Calculate average gain and loss
+            $avgGain = array_sum($periodGains) / $period;
+            $avgLoss = array_sum($periodLosses) / $period;
+
+            // Avoid division by zero
+            if ($avgLoss == 0) {
+                $rsi = $avgGain == 0 ? 50 : 100; // If no losses, RSI is 100; if no gains/losses, use neutral 50
+            } else {
+                $rs = $avgGain / $avgLoss;
+                $rsi = 100 - (100 / (1 + $rs));
+            }
+
+            $fillStats[$currentDate]['rsi'] = round($rsi, 2); // Round to 2 decimal places
+        }
 
         return (new DailyStatsService())->fillStats($fillStats);
     }
