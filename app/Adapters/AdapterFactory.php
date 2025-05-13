@@ -7,7 +7,7 @@ class AdapterFactory
     public const string DEFAULT_ADAPTER = 'CoinGecko';
 
     /** singleton */
-    private static array $adapters;
+    public static array $adapters;
 
     /**
      * Look for a class named "{$adapterName}ApiClientAdapter" and return its singleton instance

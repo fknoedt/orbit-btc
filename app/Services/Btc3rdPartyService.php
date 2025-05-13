@@ -30,6 +30,7 @@ class Btc3rdPartyService
             'name' => $this->adapter->getClientName(),
             'url' => $this->adapter->getUrl(),
             'data_source_id' => $this->adapter->getDataSourceId(),
+            'pool' => AdapterFactory::$adapters
         ];
     }
 }
