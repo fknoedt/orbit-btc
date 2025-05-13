@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Clients\BgeometricsClient;
 use App\Clients\CurlCryptoQuantClient;
+use App\Clients\FmpClient;
 use App\Console\Commands\BgeometricsDailyStatsCommand;
 use App\Console\Commands\CryptoCompareDailyStatsCommand;
 use App\Models\DailyPrice;
@@ -47,6 +48,11 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 
+        $schedule->command('btc:fmp-daily-stats')
+            ->everyThirtyMinutes()->when($this->shouldUpdateStats(array_keys(FmpClient::METRICS)))
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo);
+
         $schedule->command('btc:update-future-price-change')
             ->everyThirtyMinutes()->when($this->shouldUpdateFuturePriceChange())
             ->appendOutputTo($logPath)
@@ -62,13 +68,13 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 
-        $cqMetrics = array_keys(CurlCryptoQuantClient::METRICS_TO_ENDPOINT);
-
         // CQ needs a high tier subscription
-        /*$schedule->command(
+        /*
+        $cqMetrics = array_keys(CurlCryptoQuantClient::METRICS_TO_ENDPOINT);
+        $schedule->command(
             'btc:crypto-quant-daily-stats ' . implode(',', $cqMetrics) . ' --ignore-errors --from-file'
         )
-            ->everyThirtyMinutes()->when($this->shouldUpdateCryptoQuantStats($cqMetrics))
+            ->everyThirtyMinutes()->when($this->shouldUpdateStats($cqMetrics))
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo)
             ->onFailure(function (\Throwable $e) {
@@ -93,7 +99,7 @@ class Kernel extends ConsoleKernel
             });
 
         $schedule->command(
-            'btc:bgeometrics-daily-stats-command'
+            'btc:bgeometrics-daily-stats'
         )
             ->everyThirtyMinutes()
             ->when(
@@ -137,17 +143,17 @@ class Kernel extends ConsoleKernel
         return false; // Skip execution
     }
 
-    private function shouldUpdateCryptoQuantStats(array $columnsToUpdate): bool
+    private function shouldUpdateStats(array $columnsToUpdate): bool
     {
         $pricesMissingStats = DailyPrice::where('date', '>', self::STATS_START_DATE)
-            ->where('date', '<', Carbon::now()->format('Y-m-d'))
+            ->where('date', '<=', Carbon::now()->format('Y-m-d'))
             ->where(function ($q) use ($columnsToUpdate) {
                 foreach ($columnsToUpdate as $column) {
                     $q->orWhereNull($column);
                 }
             })->count();
         if ($pricesMissingStats) {
-            Log::info('Running CQ stats update');
+            Log::info('Running stats update');
             return true;
         }
 

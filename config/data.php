@@ -16,6 +16,7 @@ return [
         'glassnode_id' => 8,
         'blockchain_com_id' => 9,
         'bgeometrics_id' => 10,
+        'fmp_id' => 11,
     ],
     'role_id' => [
         'user' => 1,

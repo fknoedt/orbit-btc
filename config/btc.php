@@ -63,5 +63,9 @@ return [
         'bgeometrics' => [
             'url' => env('BGEOMETRICS_URL'),
         ],
+        'fmp' => [
+            'url' => env('FMP_URL'),
+            'key' => env('FMP_KEY'),
+        ],
     ]
 ];

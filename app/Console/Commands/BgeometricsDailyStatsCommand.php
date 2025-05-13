@@ -16,7 +16,7 @@ class BgeometricsDailyStatsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:bgeometrics-daily-stats-command {--from-start} {--from-file} {metrics?}';
+    protected $signature = 'btc:bgeometrics-daily-stats {--from-start} {--from-file} {metrics?}';
 
     /**
      * The console command description.
