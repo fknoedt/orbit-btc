@@ -78,7 +78,7 @@
     right: 1rem !important; /* Align to the right with some spacing */
     top: auto !important; /* Override any top positioning */
     z-index: 20 !important; /* Ensure it’s above other elements */
-    padding: 0.5rem !important; /* Match Filament's default padding (p-2) */
+    padding: 0.25rem !important; /* Match Filament's default padding (p-2) */
     border-radius: 9999px !important; /* Make it circular (rounded-full) */
     background-color: transparent !important; /* Transparent background to match sidebar */
     color: #f97316 !important; /* Use your primary color (orange, equivalent to text-primary-600) */
@@ -216,7 +216,7 @@ html.dark .bg-gray-900 h2.text-orange-500 {
     list-style-position: outside !important;
 }
 
-/* NEW: Style the model details container for light/dark mode */
+/* NEW: Style the modal details container for light/dark mode */
 div[style*="background-color: #161617"] {
     background-color: #ffffff !important; /* White in light mode */
 }
@@ -250,6 +250,24 @@ select#selectedUserSignalId {
 
 html.dark select#selectedUserSignalId {
     color: #ffffff !important; /* White in dark mode */
+}
+
+/* NEW: Style metric details modal for light/dark mode */
+.metric-details-modal {
+    padding: 1rem !important; /* Consistent padding */
+    color: #000000 !important; /* Black text in light mode */
+}
+
+html.dark .metric-details-modal {
+    color: #ffffff !important; /* White text in dark mode */
+}
+
+.metric-details-modal .heroicon {
+    color: #f97316 !important; /* Primary orange in light mode */
+}
+
+html.dark .metric-details-modal .heroicon {
+    color: #fb923c !important; /* Lighter orange in dark mode */
 }
 
 /* Base styles for all steps: grey for uncompleted */
@@ -315,7 +333,7 @@ html.dark .fi-fo-wizard-step--active .fi-fo-wizard-header-step-icon-ctn svg.text
 }
 
 /* Match label colors to step state */
-.fiフォ-wizard-header-step-label {
+.fi-fo-wizard-header-step-label {
     color: #6b7280 !important; /* Grey-500 for uncompleted (light mode) */
 }
 
@@ -751,4 +769,154 @@ html.dark button.bg-blue-600.text-white {
 /* Ensure the user menu stays on the far right */
 .fi-topbar .fi-user-menu {
     order: 1; /* Ensure user menu is last in the flex order */
+}
+
+/* Widget container: set a fixed height and prevent internal overflow */
+.fi-wi-widget.metrics-widget {
+    height: 320px !important;
+    overflow: hidden !important;
+    border-radius: 0.75rem !important;
+}
+
+/* Card: fills the widget height and uses flexbox for layout */
+.fi-wi-widget.metrics-widget .fi-card {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+    margin: 0 !important; /* Ensure no margin around card */
+}
+
+/* Table container: enables vertical scrolling and takes remaining space */
+.fi-wi-widget.metrics-widget .metrics-table-container {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    position: relative !important;
+    background-color: #ffffff; /* Solid background for the container */
+    padding-top: 0 !important; /* Remove any top padding */
+    margin-top: 0 !important; /* Remove any top margin */
+}
+
+/* Table: full width and clean styling */
+.fi-wi-widget.metrics-widget .metrics-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 0.975rem !important;
+    line-height: 1.5 !important;
+}
+
+/* Header row: solid background */
+.fi-wi-widget.metrics-widget .metrics-table thead tr {
+    background-color: #f9fafb !important;
+}
+
+/* Header cells: sticky, on top, and opaque */
+.fi-wi-widget.metrics-widget .metrics-table th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important; /* High z-index to stay above rows */
+    background-color: #f9fafb !important; /* Solid background */
+    color: inherit !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 1rem !important; /* Reduced vertical padding */
+    text-align: left;
+}
+
+/* Table cells: transparent background */
+.fi-wi-widget.metrics-widget .metrics-table td {
+    background-color: transparent !important;
+    color: inherit !important;
+    padding: 0.5rem 1rem !important; /* Reduced vertical padding */
+}
+
+/* Table rows: transparent by default */
+.fi-wi-widget.metrics-widget .metrics-table tr {
+    background-color: transparent !important;
+}
+
+/* Hover effect for rows */
+.fi-wi-widget.metrics-widget .metrics-table tr:hover {
+    background-color: #f9fafb !important;
+}
+
+/* Dark mode adjustments */
+html.dark .fi-wi-widget.metrics-widget .metrics-table-container {
+    background-color: inherit !important;
+}
+
+html.dark .fi-wi-widget.metrics-widget .metrics-table thead tr {
+    background-color: inherit !important;
+}
+
+html.dark .fi-wi-widget.metrics-widget .metrics-table th {
+    background-color: #242427 !important;
+    color: #ffffff !important;
+}
+
+html.dark .fi-wi-widget.metrics-widget .metrics-table td {
+    color: #ffffff !important;
+}
+
+html.dark .fi-wi-widget.metrics-widget .metrics-table tr:hover {
+    background-color: inherit !important;
+}
+
+/* Chart link: blue color and bold */
+.fi-wi-widget.metrics-widget .metrics-table .chart-link {
+    color: #2563eb !important; /* Tailwind blue-600 */
+    text-decoration: none !important; /* Ensure link is visually distinct */
+    font-weight: 800 !important; /* Bold text */
+}
+
+/* Dark mode: same blue color and bold */
+html.dark .fi-wi-widget.metrics-widget .metrics-table .chart-link {
+    color: #2563eb !important; /* Tailwind blue-600, same as light mode */
+    font-weight: 600 !important; /* Bold text in dark mode */
+}
+
+/* Hover effect for chart link */
+.fi-wi-widget.metrics-widget .metrics-table .chart-link:hover {
+    color: #1d4ed8 !important; /* Tailwind blue-700 for hover */
+}
+
+/* Dark mode hover: slightly lighter blue */
+html.dark .fi-wi-widget.metrics-widget .metrics-table .chart-link:hover {
+    color: #1d4ed8 !important; /* Tailwind blue-700 for dark mode hover */
+}
+
+/* Ensure Filament modal appears above table header */
+.fi-modal {
+    z-index: 100 !important; /* Higher than table th z-index: 100 */
+}
+
+/* Style metric details modal for width and light/dark mode */
+.metric-details-modal {
+    max-width: 1344px !important; /* Double the default 2xl (672px) */
+    width: 100% !important; /* Ensure responsiveness */
+    z-index: 1000 !important; /* Keep above table header */
+}
+
+.metric-details-modal .fi-modal-content {
+    max-width: 100% !important; /* Ensure content fills modal width */
+}
+
+/* Style chart link in modal to match table */
+.metric-details-modal .chart-link {
+    color: #2563eb !important; /* Match table chart-link blue-600 */
+    text-decoration: none !important;
+    font-weight: 800 !important;
+}
+
+html.dark .metric-details-modal .chart-link {
+    color: #2563eb !important; /* Same blue-600 in dark mode */
+    font-weight: 600 !important;
+}
+
+.metric-details-modal .chart-link:hover {
+    color: #1d4ed8 !important; /* Match table chart-link hover blue-700 */
+}
+
+html.dark .metric-details-modal .chart-link:hover {
+    color: #1d4ed8 !important; /* Match table hover */
 }
