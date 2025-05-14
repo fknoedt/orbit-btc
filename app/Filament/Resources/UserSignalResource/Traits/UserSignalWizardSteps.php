@@ -242,10 +242,10 @@ trait UserSignalWizardSteps
                     'max' => $maxThreshold,
                     'step' => 0.1,
                     'value' => $this->record->threshold ?? 0,
-                    'label' => "Threshold (0-{$maxThreshold}): ",
+                    'label' => "Daily Threshold (0-{$maxThreshold}): ",
                     'disabled' => ($operation === 'view'),
                     'hint' => 'Maximum threshold is the weight of each Metric x ' .
-                        UserSignalService::MAX_OSCILLATION_PER_METRIC . ' (% change)'
+                        UserSignalService::MAX_OSCILLATION_PER_METRIC
                 ]),
             Radio::make('buy_or_sell')
                 ->label('Signal')
