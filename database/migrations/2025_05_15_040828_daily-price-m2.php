@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::table('daily_prices', function (Blueprint $table) {
             $table->decimal('price_change_14d', 8, 2)->nullable()->after('price_change_10d');
             $table->decimal('price_change_30d', 8, 2)->nullable()->after('price_change_14d');
-            $table->decimal('m2', 8, 2)->nullable();
+            $table->decimal('m2', 14, 2)->nullable();
         });
 
         Metric::create([
