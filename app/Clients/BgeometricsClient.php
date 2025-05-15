@@ -31,7 +31,8 @@ class BgeometricsClient extends BaseClient
         'cap-real-usd' => 'capRealUSD',
         'reserve-risk' => 'reserveRisk',
         'true-market-mean' => 'trueMarketMean',
-        'm2' => 1,
+        // @see https://charts.bgeometrics.com/m2_btc.html
+        'm2' => 1, // columns are 0 for date and 1 for value
     ];
 
     public function __construct()

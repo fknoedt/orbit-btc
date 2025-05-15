@@ -33,7 +33,6 @@ class BitcoinPriceWidget extends BaseWidget
             $service = new Btc3rdPartyService('CoinMarketCap');
             $priceStats = $service->getCurrentPriceStats();
 
-            $priceStats['percent_change_24h'] = 3.73;
             $color = $priceStats['percent_change_24h'] > 0 ? 'success' : 'danger';
 
             $description = '24h: ' .
