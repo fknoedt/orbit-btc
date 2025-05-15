@@ -19,7 +19,7 @@ class FuturePriceChangeCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Calculate and update daily_prices.price_change_[1,3,5,10]d';
+    protected $description = 'Calculate and update daily_prices.price_change_[1,3,5,10,14,30]d';
 
     /**
      * Execute the console command.

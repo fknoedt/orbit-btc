@@ -4,6 +4,7 @@ namespace App\Clients;
 
 use App\Exceptions\AdapterException;
 use App\Exceptions\ExternalApiException;
+use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 
@@ -30,6 +31,7 @@ class BgeometricsClient extends BaseClient
         'cap-real-usd' => 'capRealUSD',
         'reserve-risk' => 'reserveRisk',
         'true-market-mean' => 'trueMarketMean',
+        'm2' => 1,
     ];
 
     public function __construct()
@@ -91,7 +93,11 @@ class BgeometricsClient extends BaseClient
         foreach ($response as $entry) {
             $date = $entry['d'] ?? $entry['theDay'] ?? null;
             if (! $date) {
-                throw new \RuntimeException("Invalid date on " . json_encode($entry));
+                if (isset($entry[0])) {
+                    $date = Carbon::createFromTimestampMs($entry[0])->format('Y-m-d');
+                } else {
+                    throw new \RuntimeException("Invalid date on " . json_encode($entry));
+                }
             }
             if (! array_key_exists($resultField, $entry)) {
                 throw new \RuntimeException("Invalid result_field: {$resultField} - " . json_encode($entry));

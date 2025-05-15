@@ -48,7 +48,9 @@ class DailyPrice extends Model
                 return $query->where('price_change_1d', 0)
                     ->orWhere('price_change_3d', 0)
                     ->orWhere('price_change_5d', 0)
-                    ->orWhere('price_change_10d', 0);
+                    ->orWhere('price_change_10d', 0)
+                    ->orWhere('price_change_14d', 0)
+                    ->orWhere('price_change_30d', 0);
             })
             ->orderBy('date', 'asc')
             ->pluck('date')
