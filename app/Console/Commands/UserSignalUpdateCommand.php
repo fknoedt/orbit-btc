@@ -13,7 +13,7 @@ class UserSignalUpdateCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:update-all-user-signal-scores';
+    protected $signature = 'btc:update-all-user-signal-scores {--user-signal-id=}';
 
     /**
      * The console command description.
@@ -27,11 +27,16 @@ class UserSignalUpdateCommand extends Command
      */
     public function handle(UserSignalService $userSignalService)
     {
-        $this->output->info('Recalculating and updating all UserSignals and UserSignalMetrics');
+        if ($userSignalId = $this->option('user-signal-id')) {
+            $message = "Recalculating and updating User Signal #{$userSignalId}";
+        } else {
+            $message = 'Recalculating and updating all UserSignals and UserSignalMetrics';
+        }
+        $this->output->info($message);
         $since = Carbon::now()->subDays(UserSignalService::MAX_DAYS_BACK)->format('Y-m-d');
         $this->output->info('UserSignalDailyScore will be refreshed for every User Signal with data since ' . $since);
 
-        $stats = $userSignalService->updateDailyScores();
+        $stats = $userSignalService->updateDailyScores($userSignalId);
 
         $this->output->success(print_r($stats, true));
     }

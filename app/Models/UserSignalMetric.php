@@ -35,9 +35,7 @@ class UserSignalMetric extends Model
             (! $referenceValue = $referenceDay->{$columnName}) ||
             (! $currentValue = $currentDay->{$columnName})
         ) {
-            throw new UserSignalException(
-                "TODO: maybe this can be expected, if tested before, and we can just return 0 or NULL"
-            );
+            return 0;
         }
 
         $oscillation = $currentValue / $referenceValue;
