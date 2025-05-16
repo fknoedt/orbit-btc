@@ -4,10 +4,14 @@ namespace App\Services;
 
 use App\Exceptions\DailyPriceStatsException;
 use App\Models\DailyPrice;
-use Carbon\Carbon;
 
 class DailyStatsService
 {
+    public const array FILL_FORWARD_ALLOWED_COLUMNS = [
+        'open_interest_futures',
+        'm2',
+    ];
+
     /**
      * Receives $data dataset in the following format (has to be ordered by date ASC):
      * [$date][$columnName] => $value -- where $date is in Y-m-d format and $columnName matches daily_prices.column_name
@@ -87,7 +91,7 @@ class DailyStatsService
 
     /**
      * Fill intermittent null values based on the last (ordered chronologically asc) value found
-     * Created for `difficulty` (every two weeks)
+     * Examples: `difficulty` (every two weeks), Global M2 (monthly), etc
      * @param string $column
      * @param string|null $since
      * @return int
