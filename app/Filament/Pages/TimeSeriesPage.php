@@ -18,6 +18,12 @@ class TimeSeriesPage extends Page
     /** how many extra-days (not highlighted) on each side of a similar pattern chart */
     protected const int MATCHED_TIME_SERIES_MARGIN = 60;
 
+    /** percentage to increase y-axis' $maxValue range (up) */
+    protected const int YAXIS_MARGIN_TOP = 5;
+
+    /** percentage to decrease y-axis' $minValue range (down) */
+    protected const int YAXIS_MARGIN_BOTTOM = 5;
+
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
 
     protected static ?int $navigationSort = 2;
@@ -182,10 +188,33 @@ class TimeSeriesPage extends Page
                 $areaColor = $metricOptions[$metric]['color'] ?? '#2196F3';
             }
 
+            $data = [];
+            $minValue = null;
+            $maxValue = null;
+            foreach ($dailyPrices as $date => $dailyPrice) {
+                $value = $dailyPrice[$metric];
+                $data[] = [$date, $value];
+                if (! is_null($value) && (is_null($minValue) || $value < $minValue)) {
+                    $minValue = $value;
+                }
+                if (! is_null($value) && (is_null($maxValue) || $value > $maxValue)) {
+                    $maxValue = $value;
+                }
+            }
+
+
+            // Calculate margin of minValue and maxValue
+            $minPercentage = $minValue * (self::YAXIS_MARGIN_BOTTOM / 100);
+            $maxPercentage = $maxValue * (self::YAXIS_MARGIN_TOP / 100);
+
+            $minValueAdjusted = $minValue - $minPercentage;
+            $maxValueAdjusted = $maxValue + $maxPercentage;
+
             $series[] = [
                 'name' => $metricOptions[$metric]['name'] ?? 'BTC Price (USD)',
-                'data' => array_map(fn($date, $item) => [$date, $item[$metric]], array_keys($dailyPrices), $dailyPrices),
+                'data' => $data,
             ];
+
             $colors[] = $areaColor;
 
             $yaxis[] = [
@@ -196,6 +225,8 @@ class TimeSeriesPage extends Page
                 ],
                 'decimalsInFloat' => $metric === 'mayer_multiple' ? 2 : 0,
                 'tickAmount' => 10,
+                'min' => round($minValueAdjusted, -3),
+                'max' => round($maxValueAdjusted, -3),
             ];
         }
 
@@ -225,7 +256,7 @@ class TimeSeriesPage extends Page
             'series' => $series,
             'colors' => $colors,
             'stroke' => [
-                'curve' => 'straight',
+                'curve' => ['straight', 'smooth'],
                 'lineCap' => 'butt',
                 'width' => 2,
             ],
