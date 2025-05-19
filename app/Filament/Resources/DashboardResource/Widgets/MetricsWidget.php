@@ -93,7 +93,7 @@ class MetricsWidget extends Widget
                 while (true) {
                     $referenceDailyPrice = $service->getDailyPrice($referenceDate->format('Y-m-d'));
                     // metric was set for the day: use it
-                    if ($referenceDailyPrice[$column]) {
+                    if (! empty($referenceDailyPrice[$column])) {
                         break;
                     }
                     $attempts++;
