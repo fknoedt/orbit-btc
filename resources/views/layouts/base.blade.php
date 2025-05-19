@@ -26,5 +26,14 @@
 
     <body>
         @yield('body')
+
+        <!-- Add Livewire session expiration handler -->
+        <script>
+            document.addEventListener('livewire:initialized', () => {
+                Livewire.onPageExpired((response, message) => {
+                    location.reload();
+                });
+            });
+        </script>
     </body>
 </html>
