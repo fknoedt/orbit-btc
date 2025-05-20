@@ -5,6 +5,8 @@
  */
 
 return [
+    // used on auto generated signals
+    'system_user_id' => 1000000,
     'data_source' => [
         'new_liberty_id' => 1,
         'coindesk_id' => 2,

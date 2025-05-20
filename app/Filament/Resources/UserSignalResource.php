@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserSignalResource\Pages;
 use App\Models\UserSignal;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
@@ -35,22 +36,26 @@ class UserSignalResource extends Resource
                     ->sortable()
                     ->hidden(),
                 TextColumn::make('name')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('total_signal_value')
                     ->label('Signal Value')
                     ->numeric()
+                    ->weight(FontWeight::Bold)
+                    ->color(fn ($record) => $record->total_signal_value > 0 ? 'success' : 'danger')
                     ->sortable(),
                 TextColumn::make('buy_or_sell')
-                    ->label('Signal')
-                    ->sortable(),
-                TextColumn::make('threshold')
-                    ->numeric()
+                    ->label('Action')
                     ->sortable(),
                 TextColumn::make('time_horizon')
                     ->label('Time Horizon')
                     ->numeric()
                     ->sortable(),
-                IconColumn::make('warning')
+                TextColumn::make('total_simulated_trades')
+                    ->label('Simulated Trades')
+                    ->numeric()
+                    ->sortable(),
+                /*IconColumn::make('warning')
                     ->boolean()
                     ->trueIcon('heroicon-o-exclamation-triangle')
                     ->falseIcon('')
@@ -59,22 +64,16 @@ class UserSignalResource extends Resource
                     ->boolean()
                     ->trueIcon('heroicon-o-exclamation-circle')
                     ->falseIcon('')
-                    ->trueColor('danger'),
-                TextColumn::make('email_to_notify')
-                    ->label('Email')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
-                TextColumn::make('telegram_to_notify')
-                    ->label('Telegram')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
-                IconColumn::make('is_paused')
-                    ->boolean()
-                    ->label('Active')
-                    ->trueIcon('heroicon-o-pause')
-                    ->falseIcon('heroicon-o-play')
-                    ->falseColor('success')
-                    ->trueColor('danger'),
+                    ->trueColor('danger'),*/
+                TextColumn::make('first_date_calculated')
+                    ->label('Start Date')
+                    ->date('d M Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('scores_last_updated_at')
+                    ->date('d M Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -83,6 +82,13 @@ class UserSignalResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                IconColumn::make('is_paused')
+                    ->boolean()
+                    ->label('Active')
+                    ->trueIcon('heroicon-o-pause')
+                    ->falseIcon('heroicon-o-play')
+                    ->falseColor('success')
+                    ->trueColor('danger'),
             ])
             ->filters([
                 //
@@ -119,6 +125,14 @@ class UserSignalResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        return $query->where('user_id', auth()->id())->orderByDesc('total_signal_value');
+        if (auth()->user()->role_id === config('data.role_id.super_admin')) {
+            $query->where('user_id', auth()->id())
+                ->orWhere('user_id', config('data.system_user_id'))
+                ->orderByDesc('total_signal_value');
+        } else {
+            $query->where('user_id', auth()->id())->orderByDesc('total_signal_value');
+        }
+
+        return $query;
     }
 }

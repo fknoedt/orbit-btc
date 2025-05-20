@@ -64,8 +64,13 @@ class PerformancePage extends Page
     #[Computed]
     public function userSignals()
     {
-        return UserSignal::where('user_id', auth()->id())
-            ->pluck('name', 'id')
+        $query = UserSignal::where('user_id', auth()->id());
+
+        if (auth()->user()->role_id === config('data.role_id.super_admin')) {
+            $query->orWhere('user_id', config('data.system_user_id'));
+        }
+
+        return $query->pluck('name', 'id')
             ->toArray();
     }
 
