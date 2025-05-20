@@ -15,7 +15,7 @@ class SignalGeneratorService
 {
     protected const int UPDATE_METRICS_SINCE_DAYS_AGO = 720;
 
-    protected const int TESTS_PER_METRIC = 128; // 4 frequencies * 2 operators * 4 time_horizons * 2 buy_sell * 2 thresholds
+    protected const int TESTS_PER_METRIC = 96; // 4 frequencies * 2 operators * 3 time_horizons * 2 buy_sell * 2 thresholds
 
     protected DailyPriceService $dailyPriceService;
     protected MetricService $metricService;
@@ -192,7 +192,7 @@ class SignalGeneratorService
         $frequencies = Frequency::whereNotIn('number_of_days', [3, 7])->pluck('id')->toArray();
         $operators = ['+', '-'];
         $buySellTypes = ['buy', 'sell'];
-        $timeHorizons = [1, 5, 15, 30];
+        $timeHorizons = [1, 5, 15];
 
         // Reset counters for this run
         $this->createdSignals = [];
