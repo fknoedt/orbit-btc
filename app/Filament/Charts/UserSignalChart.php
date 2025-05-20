@@ -239,7 +239,7 @@ trait UserSignalChart
         return [
             Action::make('chartDetailModal')
                 ->label(isset($this->record) ?
-                    '`' . $this->record->name . '` Daily Signal' :
+                    'Daily Signal: ' . $this->record->name :
                     'Daily Signal'
                 )
                 ->modalContent(function () {

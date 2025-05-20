@@ -125,13 +125,13 @@ class UserSignalResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
+        $query->where('user_id', auth()->id());
+
         if (auth()->user()->role_id === config('data.role_id.super_admin')) {
-            $query->where('user_id', auth()->id())
-                ->orWhere('user_id', config('data.system_user_id'))
-                ->orderByDesc('total_signal_value');
-        } else {
-            $query->where('user_id', auth()->id())->orderByDesc('total_signal_value');
+            $query->orWhere('user_id', config('data.system_user_id'));
         }
+
+        $query->orderByDesc('total_signal_value');
 
         return $query;
     }

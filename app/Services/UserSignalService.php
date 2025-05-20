@@ -250,7 +250,6 @@ class UserSignalService
                             $tradeValue = null;
                             $dailySignalValue = null;
                             if ($this->quarantine > 0) {
-
                                 $quarantined = true;
                                 $this->quarantine--;
                             } else {
@@ -284,7 +283,7 @@ class UserSignalService
                                     $this->totalSimulatedTrades++;
 
                                     // until time horizon is hit, no simulations will be made
-                                    $this->quarantine = $userSignal->time_horizon;
+                                    $this->quarantine = (int) $userSignal->time_horizon;
                                 }
 
                                 $userSignal->last_score = $userSignalDailyScore;
