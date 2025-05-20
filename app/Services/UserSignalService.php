@@ -25,6 +25,8 @@ class UserSignalService
     protected int $totalDailyScoresCreated = 0;
     protected int $totalSimulatedTrades = 0;
     protected int $totalErrors = 0;
+    protected int $quarantine = 0;
+    protected float $lastTotalSignalValue = 0;
 
     /** [file:line => ['message' => $message, 'count' => $count]] */
     protected array $errors = [];
@@ -54,6 +56,7 @@ class UserSignalService
         return [
             'totalDailyScoresCreated' => $this->totalDailyScoresCreated,
             'totalSimulatedTrades' => $this->totalSimulatedTrades,
+            'lastTotalSignalValue' => $this->lastTotalSignalValue,
             'totalErrors' => $this->totalErrors,
             'errors' => $this->errors,
         ];
@@ -246,39 +249,48 @@ class UserSignalService
                             $conviction = null;
                             $tradeValue = null;
                             $dailySignalValue = null;
-                            if ($userSignalDailyScore >= $userSignal->threshold) {
-                                // TODO: user_signal.conviction_trade bool to make it proportional to how past threshold
-                                if (! empty($userSignal->conviction_trade)) {
-                                    // how strong - above the threshold - the model is today
-                                    $tradeStrength =
-                                        ($userSignalDailyScore - $userSignal->threshold) /
-                                        $userSignal->threshold;
-                                    // amount bought or sold depends on conviction (cap to full value)
-                                    $conviction = min($tradeStrength, 1);
-                                } else {
-                                    $conviction = 1;
+                            if ($this->quarantine > 0) {
+                                $quarantined = true;
+                                $this->quarantine--;
+                            } else {
+                                if ($userSignalDailyScore >= $userSignal->threshold) {
+                                    // TODO: user_signal.conviction_trade bool to make it proportional to how past threshold
+                                    if (! empty($userSignal->conviction_trade)) {
+                                        // how strong - above the threshold - the model is today
+                                        $tradeStrength =
+                                            ($userSignalDailyScore - $userSignal->threshold) /
+                                            $userSignal->threshold;
+                                        // amount bought or sold depends on conviction (cap to full value)
+                                        $conviction = min($tradeStrength, 1);
+                                    } else {
+                                        $conviction = 1;
+                                    }
+                                    $tradeValue = $conviction * self::TRADE_SIZE_IN_USD;
+
+                                    // get the future price change
+                                    $futurePriceColumnName = 'price_change_' . $userSignal->time_horizon . 'd';
+                                    // and normalize it (maybe it should be stored like that in the first place?)
+                                    $futureTradeValueChange = ($dailyPrice->{$futurePriceColumnName} / 100);
+                                    // total gained or saved this day
+                                    $futureValueDelta = $tradeValue * $futureTradeValueChange;
+                                    // if signal was to sell, invert value (price going up is bad while down is good)
+                                    $dailySignalValue = ($userSignal->buy_or_sell === 'buy') ?
+                                        $futureValueDelta : (-1 * $futureValueDelta);
+                                    // sum to the model's grand signal score
+                                    $totalSignalValue += $dailySignalValue;
+
+                                    $userSignalSimulatedTrades++;
+                                    $this->totalSimulatedTrades++;
+
+                                    // until time horizon is hit, no simulations will be made
+                                    $this->quarantine = (int) $userSignal->time_horizon;
                                 }
-                                $tradeValue = $conviction * self::TRADE_SIZE_IN_USD;
 
-                                // get the future price change
-                                $futurePriceColumnName = 'price_change_' . $userSignal->time_horizon . 'd';
-                                // and normalize it (maybe it should be stored like that in the first place?)
-                                $futureTradeValueChange = ($dailyPrice->{$futurePriceColumnName} / 100);
-                                // total gained or saved this day
-                                $futureValueDelta = $tradeValue * $futureTradeValueChange;
-                                // if signal was to sell, invert value (price going up is bad while down is good)
-                                $dailySignalValue = ($userSignal->buy_or_sell === 'buy') ?
-                                    $futureValueDelta : (-1 * $futureValueDelta);
-                                // sum to the model's grand signal score
-                                $totalSignalValue += $dailySignalValue;
-
-                                $userSignalSimulatedTrades++;
-                                $this->totalSimulatedTrades++;
+                                $userSignal->last_score = $userSignalDailyScore;
+                                $userSignal->last_date_calculated = $date->format('Y-m-d');
+                                $userSignal->last_signal_value = $dailySignalValue;
+                                $quarantined = false;
                             }
-
-                            $userSignal->last_score = $userSignalDailyScore;
-                            $userSignal->last_date_calculated = $date->format('Y-m-d');
-                            $userSignal->last_signal_value = $dailySignalValue;
 
                             // save day in user_signal_daily_scores
                             UserSignalDailyScore::create([
@@ -288,12 +300,12 @@ class UserSignalService
                                 'signal_value' => $dailySignalValue,
                                 'conviction' => $conviction,
                                 'stake' => $tradeValue,
+                                'quarantined' => $quarantined,
                             ]);
 
                             $userSignalDaysCalculated++;
                             $userSignalDailyScoresCreated++;
                             $this->totalDailyScoresCreated++;
-                            $referenceDailyPrice = $dailyPrice;
                         }
 
                         // if not necessary to have detailed information on user_signal_metrics, remove this ASAP
@@ -320,6 +332,8 @@ class UserSignalService
                         $userSignal->error = ($userSignalDailyScoresCreated === 0);
 
                         $userSignal->save();
+
+                        $this->lastTotalSignalValue = $totalSignalValue;
                     }
                 );
             } catch (\Throwable $e) {

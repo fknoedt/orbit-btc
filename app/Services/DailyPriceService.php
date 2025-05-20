@@ -91,7 +91,7 @@ class DailyPriceService
     public function getAllDailyPricesKeyByDate(
         Carbon $startDate = null,
         Carbon $endDate = null,
-        bool   $singleton = true
+        bool $singleton = true
     ): Collection
     {
         if (! $startDate) {
@@ -102,17 +102,25 @@ class DailyPriceService
             $startDate->format('Y-m-d') .
             ($endDate ? $endDate->format('Y-m-d') : '')
         );
-        $data = Cache::remember($cacheKey, (new Carbon())->endOfDay(), function () use ($startDate, $endDate) {
-            $query = DailyPrice::query();
-            if ($startDate) {
-                $query->where('date', '>=', $startDate);
-            }
+
+        $data = Cache::get($cacheKey);
+
+        if ($data === null) {
+            $query = DailyPrice::where('date', '>=', $startDate);
+
             if ($endDate) {
                 $query->where('date', '<=', $endDate);
             }
-            return $query->orderBy('date')->get()->keyBy('date');
-        });
+            $data = $query->orderBy('date')->get()->keyBy('date');
+            Cache::put($cacheKey, $data, (new Carbon())->endOfDay());
 
+            // no need to overwrite it
+            if (! empty($this->dailyPricesByDate) && count($this->dailyPricesByDate) === count($data)) {
+                $singleton = false;
+            }
+        }
+
+        // singleton can be empty even when data is retrieved from cache (first call)
         if ($singleton) {
             $this->dailyPricesByDate = $this->dailyPricesByDate->union($data);
         }

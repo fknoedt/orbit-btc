@@ -26,6 +26,11 @@
                     <x-heroicon-o-arrow-right class="inline w-5 h-5" />
                     {{ ucfirst($userSignal->buy_or_sell) }}
                     {{ $userSignal->buy_or_sell === 'buy' ? '📈' : '📉' }}
+                    @if ($dailyScore->quarantined)
+                        <x-filament::badge style="display: inline-block; width: auto; vertical-align: middle; color: red;">
+                        Quarantine
+                    </x-filament::badge>
+                    @endif
                 @else
                     {{ $userSignal->threshold }}
                     <x-heroicon-o-x-circle class="inline w-5 h-5 text-red-300" style="color: indianred"/>
