@@ -176,6 +176,7 @@ trait UserSignalWizardSteps
                                 ->viewData([
                                     'operators' => Operators::cases(),
                                 ])
+                                ->default(Operators::PLUS->value) // Set default to '+' for new repeater items
                                 ->required()
                                 ->columns(1)
                                 ->live() // Ensure real-time updates
