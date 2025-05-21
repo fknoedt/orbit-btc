@@ -6,6 +6,7 @@ use App\Models\UserActivityLog;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -14,9 +15,9 @@ class LogUserActivity
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @param  \Closure  $next
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -38,7 +39,7 @@ class LogUserActivity
     /**
      * Determine the action to log based on the request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @return array|null
      */
     private function determineAction(Request $request): ?array
@@ -98,6 +99,9 @@ class LogUserActivity
                     ];
                 }
             }
+
+            Session::put('last_activity', now()->timestamp);
+            Session::save(); // Ensure the session is saved
         }
 
         return null; // Skip logging if no relevant action
