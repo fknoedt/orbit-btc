@@ -149,12 +149,9 @@
                                         @foreach ($this->signalData['metrics'] as $metric)
                                             <div
                                                 style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0.25rem 0;">
-                                                <span class="!text-white">📐 {{ $metric['metric_name'] }}</span>
-                                                <span class="!text-white">⚖️ {{ $metric['weight'] }}</span>
-                                                @if ($metric['oscillation_threshold_enabled'] ?? false)
-                                                    <span
-                                                        class="!text-white">⚠️  ignored until <strong>{{ $metric['operator'] }} {{ $metric['oscillation_threshold'] }}%</strong></span>
-                                                @endif
+                                                <span class="!text-white">💡 {{ $metric['metric_name'] }} ({{ $metric['frequency'] }})</span>
+                                                <span class="!text-white">{{ $metric['operator'] == '+' ? '↑ up variations only' : ($metric['operator'] === '-' ? '↓ down variations only' : '↑↓ up or down variations') }}</span>
+                                                <span class="!text-white">⚖️ x{{ $metric['weight'] }}</span>
                                             </div>
                                         @endforeach
                                     @else

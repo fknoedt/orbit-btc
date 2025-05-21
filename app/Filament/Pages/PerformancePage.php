@@ -135,6 +135,7 @@ class PerformancePage extends Page
                     'oscillation_threshold' => $userSignalMetric->oscillation_threshold,
                     'oscillation_threshold_enabled' => $userSignalMetric->oscillation_threshold_enabled,
                     'metric_name' => $userSignalMetric->metric->name,
+                    'frequency' => $userSignalMetric->frequency->name,
                 ];
             })->toArray(),
             'threshold' => $userSignal->threshold ?? 0,
