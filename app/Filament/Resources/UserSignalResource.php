@@ -101,7 +101,16 @@ class UserSignalResource extends Resource
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->modifyQueryUsing(function (Builder $query) {
+                if (auth()->user()->role_id === config('data.role_id.super_admin')) {
+                    $query->where('user_id', auth()->id())
+                        ->orWhere('user_id', config('data.system_user_id'));
+                } else {
+                    $query->where('user_id', auth()->id());
+                }
+                $query->orderByDesc('total_signal_value');
+            });
     }
 
     public static function getRelations(): array
@@ -119,19 +128,5 @@ class UserSignalResource extends Resource
             'view' => Pages\ViewUserSignal::route('/{record}'),
             'edit' => Pages\EditUserSignal::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
-
-        if (auth()->user()->role_id === config('data.role_id.super_admin')) {
-            $query->where('user_id', auth()->id())
-                ->orWhere('user_id', config('data.system_user_id'));
-        } else {
-            $query->where('user_id', auth()->id());
-        }
-
-        return $query;
     }
 }
