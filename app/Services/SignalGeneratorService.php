@@ -296,7 +296,7 @@ class SignalGeneratorService
         string $buySell,
         int $timeHorizon
     ): array {
-        $name = "🤖 {$metric->name}: {$frequency}|{$operator}|{$threshold}|{$buySell}|{$timeHorizon}";
+        $name = "🤖 {$metric->name}: " . ucfirst($buySell) . " +{$timeHorizon}d";
         if (isset($this->createdSignals[$name])) {
             return $this->createdSignals[$name];
         }
