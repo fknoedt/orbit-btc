@@ -27,6 +27,11 @@ class EditUserSignal extends EditRecord
 
     public $threshold;
 
+    public function getTitle(): string
+    {
+        return 'Signal: ' . $this->record->name;
+    }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->threshold = $data['threshold'] ?? 0;
