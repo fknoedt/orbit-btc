@@ -243,12 +243,12 @@ trait UserSignalChart
                     'Daily Signal'
                 )
                 ->modalContent(function () {
-                    $cacheKey = 'first_daily_price_by_date_' . $this->selectedDate;
+                    $cacheKey = "first_daily_price_by_date_{$this->record->id}_{$this->selectedDate}";
                     $dailyPrice = Cache::remember($cacheKey, now()->endOfDay(), function() {
                         return DailyPrice::where('date', $this->selectedDate)->first();
                     });
 
-                    $cacheKey = 'first_signal_score_by_date_' . $this->selectedDate;
+                    $cacheKey = "first_signal_score_by_date_{$this->record->id}_{$this->selectedDate}";
                     $dailyScore = Cache::remember($cacheKey, now()->endOfDay(), function() {
                         return UserSignalDailyScore::where('date', $this->selectedDate)
                             ->where('user_signal_id', $this->selectedUserSignalId ?? $this->record->id)

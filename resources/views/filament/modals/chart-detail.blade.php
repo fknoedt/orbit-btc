@@ -20,19 +20,13 @@
                 Threshold:
             </span>
             <span class="text-base font-semibold !text-white">
+                {{ $userSignal->threshold }}
                 @if ($dailyScore->score > $userSignal->threshold)
-                    {{ $userSignal->threshold }}
                     🎯
                     <x-heroicon-o-arrow-right class="inline w-5 h-5" />
                     {{ ucfirst($userSignal->buy_or_sell) }}
                     {{ $userSignal->buy_or_sell === 'buy' ? '📈' : '📉' }}
-                    @if ($dailyScore->quarantined)
-                        <x-filament::badge style="display: inline-block; width: auto; vertical-align: middle; color: red;">
-                        Quarantine
-                    </x-filament::badge>
-                    @endif
                 @else
-                    {{ $userSignal->threshold }}
                     <x-heroicon-o-x-circle class="inline w-5 h-5 text-red-300" style="color: indianred"/>
                     <x-heroicon-o-arrow-right class="inline w-5 h-5" style="color: grey" />
                     Don't {{ ucfirst($userSignal->buy_or_sell) }}
@@ -60,7 +54,7 @@
                 {{ number_format($futureChange, 2) }}%
             </span>
         </p>
-        @if($dailyScore->score > $userSignal->threshold)
+        @if($dailyScore->score > $userSignal->threshold && ! $dailyScore->quarantined)
             <p class="mt-2 text-sm">
             <span class="text-gray-600 dark:text-gray-400">
                 Stake:
@@ -79,9 +73,15 @@
             </p>
         @else
             <p class="mt-4 text-sm col-span-2 text-center" style="margin-top: 20px; margin-bottom: 20px;">
-                <span class="text-base font-semibold !text-white">
-                    Threshold not hit - no stake in this day
-                </span>
+                @if ($dailyScore->quarantined)
+                    <x-filament::badge style="display: inline-block; width: auto; vertical-align: middle; color: red;">
+                        Quarantined since last purchase
+                    </x-filament::badge>
+                @else
+                    <span class="text-base font-semibold !text-white">
+                        Threshold not hit - no stake in this day
+                    </span>
+                @endif
             </p>
         @endif
     @endif
