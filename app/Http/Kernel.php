@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\TrackPageViews;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -38,6 +39,7 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\LogUserActivity::class,
             \App\Http\Middleware\RedirectFirstLogin::class,
+            TrackPageViews::class,
         ],
 
         'api' => [

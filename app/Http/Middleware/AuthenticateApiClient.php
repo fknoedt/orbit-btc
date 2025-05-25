@@ -2,11 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Clients\OrbitBtcClient;
 use App\Models\ApiClient;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthenticateApiClient

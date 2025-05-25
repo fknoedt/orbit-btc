@@ -1,8 +1,11 @@
 <?php
 
+use App\Filament\Pages\AngelsAndPartnersPage;
 use App\Filament\Pages\PerformancePage;
+use App\Filament\Pages\SponsorshipAndPartnership;
 use App\Http\Controllers\AdapterController;
 use App\Http\Controllers\BtcRpcController;
+use App\Http\Controllers\InvestorInquiryController;
 use App\Http\Controllers\MetricController;
 use App\Http\Controllers\SandboxController;
 use Illuminate\Support\Facades\Route;
@@ -20,11 +23,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin');
 
-Route::redirect('/business-card', '/admin');
+Route::redirect('/business-card', '/angels-and-partners?ref=bc');
 
 if (config('app.env') === 'local') {
     Route::get('/sandbox', [SandboxController::class, 'index']);
 }
+
+Route::get('/angels-and-partners', [AngelsAndPartnersPage::class, 'render'])
+    ->name('angels-and-partners');
+
+Route::post('/investor-inquiry', [InvestorInquiryController::class, 'store'])->name('investor-inquiry.store');
 
 Route::get('/admin/user-signal-score/{id}', PerformancePage::class)
     ->middleware('auth')
