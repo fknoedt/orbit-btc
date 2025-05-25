@@ -338,10 +338,7 @@
                 </h2>
                 <div class="prose prose-gray dark:prose-invert text-left">
                     <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
-                        If you’re skilled in finance, data visualization, product development, or web development, understand the significance of 1971, and are interested in partnering on this project, reach out.
-                    </p>
-                    <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
-                        I’m eager to explore collaboration opportunities and potentially find a co-founder for this venture.
+                        If you’re skilled in finance, data visualization, product development, or web development, knows WTF happened in 1971, and are interested in partnering on this project, reach out. I’m eager to explore collaboration opportunities and potentially find a co-founder for this venture.
                     </p>
                 </div>
             </section>
@@ -350,6 +347,24 @@
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     Get in Touch
                 </h2>
+                <div class="prose prose-gray dark:prose-invert text-left">
+                    <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
+                        Reach out to discuss investment or partnership opportunities.
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
+                        Please share this page with potential angel investors, VCs, or experienced bitcoiners—your support is greatly appreciated.
+                    </p>
+                </div>
+                <div class="mt-4 flex gap-4 pb-4">
+                    <button onclick="copyUrl()" class="tooltip inline-flex items-center bg-primary-500 text-white px-4 py-2 rounded hover:bg-primary-600 transition">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                        </svg>
+                        <span>Share This Page</span>
+                        <span class="tooltip-text">Copied!</span>
+                    </button>
+                    <a href="mailto:hey@orbitbtc.space" class="inline-flex items-center bg-primary-500 text-white px-4 py-2 rounded hover:bg-primary-600 transition">Email Me</a>
+                </div>
                 <div class="mt-6">
                     <h3 class="text-lg font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                         Contact Form
@@ -392,6 +407,9 @@
                 <div class="prose prose-gray dark:prose-invert text-left">
                     <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
                         Create a user to explore Orbit's demo website here: <a href="/admin" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">https://orbitbtc.space</a>
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
+                        <em>This website is being periodically updated so there could be some hiccups</em>
                     </p>
                 </div>
             </section>
