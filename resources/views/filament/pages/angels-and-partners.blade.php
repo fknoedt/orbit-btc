@@ -211,7 +211,7 @@
                     See it in Action
                 </h2>
                 <div class="mt-4 space-y-6">
-                    <div class="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg max-w-4xl">
+                    <div class="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg max-w-6xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Simple and friendly approach</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Beyond hardcore enthusiasts, few enjoy sifting through countless Glassnode charts. Orbit makes them concise and ready to use in your formulas.
@@ -224,32 +224,32 @@
                         @endphp
                         @include('filament.widgets.metrics-pre-login', $data)
                     </div>
-                    <div class="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg max-w-4xl">
+                    <div class="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg max-w-6xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Level up your analysis</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Combine multiple metrics in your signals for a high-level overview with minimal effort.
                         </p>
                     </div>
-                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg max-w-6xl">
-                        <p class="text-gray-600 dark:text-gray-400">[section for a performance-page I'm going to embed here]</p>
+                    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg max-w-6xl">
+                        <img src="{{ asset('images/angels-and-partnerships/performance-page.png') }}" alt="Infra Structure" class="max-w-6xl h-auto rounded-lg mt-4">
                     </div>
-                    <div class="bg-pink-50 dark:bg-pink-900/10 p-4 rounded-lg max-w-4xl">
-                        <p class="text-gray-700 dark:text-gray-300 font-semibold">Playground area</p>
-                        <p class="text-gray-600 dark:text-gray-400 mt-2">
-                            Explore, combine, and search metric time-series by pattern using Dynamic Time Warping Distance.
-                        </p>
-                    </div>
-                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg max-w-6xl">
-                        <p class="text-gray-600 dark:text-gray-400">[section for time-series-page]</p>
-                    </div>
-                    <div class="bg-yellow-50 dark:bg-yellow-900/10 p-4 rounded-lg max-w-4xl">
+                    <div class="bg-yellow-50 dark:bg-yellow-900/10 p-4 rounded-lg max-w-6xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Avoid the noise</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Orbit BTC lets you know when your signals trigger and how simulated stakes perform over time.
                         </p>
                     </div>
                     <img src="{{ asset('images/angels-and-partnerships/daily-performance.png') }}" alt="Daily Performance" class="max-w-lg h-auto rounded-lg">
-                    <div class="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-lg max-w-4xl">
+                    <div class="bg-pink-50 dark:bg-pink-900/10 p-4 rounded-lg max-w-6xl">
+                        <p class="text-gray-700 dark:text-gray-300 font-semibold">Playground area</p>
+                        <p class="text-gray-600 dark:text-gray-400 mt-2">
+                            Explore, combine, and search metric time-series by pattern using Dynamic Time Warping Distance.
+                        </p>
+                    </div>
+                    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg max-w-6xl m-0">
+                        <img src="{{ asset('images/angels-and-partnerships/time-series.png') }}" alt="Infra Structure" class="max-w-6xl h-auto rounded-lg p-0">
+                    </div>
+                    <div class="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-lg max-w-6xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Bitcoin-only</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Because there’s no second best.
@@ -314,7 +314,7 @@
                         My name is Filipe Knoedt, a Systems Architect based in North Carolina, USA. Data structures have been my passion since college, and for over two decades, I’ve built and optimized solutions for corporate, e-commerce, marketing, ads, GIS, logistics, and education sectors.
                     </p>
                     <p class="text-gray-700 dark:text-gray-300 mt-2 py-0.5">
-                        Around 2005, I started reading about money, inflation, and the dynamics of gold versus fiat standards. In 2009 I launched my first startup, a subscription-based CRM and ERP SaaS. By 2013, I first experienced bitcoin, but it still took me years of curiosity, skepticism, study, and getting wrecked with 💩coins before really understanding it.
+                        Around 2005, I started reading about money, inflation, and the dynamics of gold versus fiat standards. In 2009 I launched my first startup, a subscription-based CRM and ERP SaaS. By 2013, I first experienced bitcoin, but it still took me years of curiosity, skepticism, study, and getting wrecked with 💩coins before becoming a maxi myself.
                     </p>
                     <p class="text-gray-700 dark:text-gray-300 mt-2 py-0.5">
                         This year, I left a rewarding career to apply my expertise and passion to building products for the best money ever invented during its once-in-history monetization phase. Orbit is a project I started a few years ago and now I have it up, running and close to a release version, so here we are.

@@ -19,7 +19,7 @@ class MetricsWidget extends Widget
 
     protected int | string | array $columnSpan = 'full';
 
-    protected static string $view = '';
+    protected static string $view = 'filament.widgets.metrics';
 
     public function getView(): string
     {
@@ -27,11 +27,11 @@ class MetricsWidget extends Widget
 
         // Return pre-login view for guests or standalone page referrer
         if ($referrer && str_contains($referrer, 'angels-and-partners')) {
-            return 'filament.widgets.metrics.pre-login';
+            return 'filament.widgets.metrics-pre-login';
         }
 
         // Default to authenticated view
-        return 'filament.widgets.metrics';
+        return self::$view;
     }
 
     public function getWidgetClasses(): array
