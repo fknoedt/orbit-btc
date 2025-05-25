@@ -105,6 +105,36 @@
             background-color: #ef4444;
             color: #ffffff;
         }
+        .error-message {
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
+        input:invalid,
+        textarea:invalid,
+        select:invalid {
+            border-color: #ef4444;
+        }
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .notification.success {
+            background-color: #10b981;
+            color: #ffffff;
+        }
+        .notification.error {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
     </style>
     <script>
         (function() {
@@ -148,7 +178,7 @@
         }
     </script>
 </head>
-<body class="fi-body fi-panel-admin min-h-screen font-normal antialiased">
+<body class="fi-body fi-panel-admin min-h-screen bg-gray-50 font-normal text-gray-950 antialiased dark:bg-gray-950 dark:text-white">
 <main class="fi-main mx-auto h-full w-full px-4 md:px-6 lg:px-8 max-w-full">
     <div class="fi-page">
         <section class="flex flex-col gap-y-8 py-8">
@@ -280,10 +310,10 @@
                         My name is Filipe Knoedt, a Systems Architect based in North Carolina, USA. Data structures have been my passion since college, and for over two decades, I’ve built and optimized solutions for corporate, e-commerce, marketing, ads, GIS, logistics, and education sectors.
                     </p>
                     <p class="text-gray-700 dark:text-gray-300 mt-2 py-0.5">
-                        Around 2005, I began studying economics, reading articles and books on inflation, gold vs. fiat standards, and free markets, and watching Peter Schiff predict the 2008 crash on YouTube. A few years later, I launched my first startup, a subscription-based CRM and ERP SaaS. This foundation fueled my enthusiasm for bitcoin, which I first explored in 2013, though I still had to get wrecked with 💩coins before becoming a maxi.
+                        Around 2005, I started reading about money, inflation, and the dynamics of gold versus fiat standards. In 2009 I launched my first startup, a subscription-based CRM and ERP SaaS. By 2013, I first experienced bitcoin, but it still took me years of curiosity, skepticism, study, and getting wrecked with 💩coins before really understanding it.
                     </p>
                     <p class="text-gray-700 dark:text-gray-300 mt-2 py-0.5">
-                        This year, I left a rewarding career to focus on building bitcoin and Lightning Network products. My mission is to apply my skills, expertise, and passion to bitcoin, the best money ever invented, during its historic monetization phase. Fix the Money, Fix the World.
+                        This year, I left a rewarding career to apply my expertise and passion to building products for the best money ever invented during its once-in-history monetization phase. Orbit is a project I started a few years ago and now I have it up, running and close to a release version, so here we are.
                     </p>
                 </div>
             </section>
@@ -320,33 +350,36 @@
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     Get in Touch
                 </h2>
-                <!-- Other content -->
                 <div class="mt-6">
                     <h3 class="text-lg font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                         Contact Form
                     </h3>
-                    <form id="investor-inquiry-form" method="POST" action="/investor-inquiry" class="space-y-4">
+                    <form id="investor-inquiry-form" method="POST" action="/investor-inquiry" class="space-y-4 max-w-2xl">
                         @csrf
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                            <input type="text" name="name" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="name" name="name" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-primary-500 focus:border-primary-500">
+                            <p class="mt-1 text-sm text-red-500 hidden error-message" data-error="name">Please enter your name.</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                            <input type="email" name="email" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email <span class="text-red-500">*</span></label>
+                            <input type="email" id="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-primary-500 focus:border-primary-500">
+                            <p class="mt-1 text-sm text-red-500 hidden error-message" data-error="email">Please enter a valid email address.</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Interest</label>
-                            <select name="interest" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                            <label for="interest" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Interest <span class="text-red-500">*</span></label>
+                            <select id="interest" name="interest" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-primary-500 focus:border-primary-500">
                                 <option value="invest">Angel Investment</option>
                                 <option value="partner">Partnership</option>
                             </select>
+                            <p class="mt-1 text-sm text-red-500 hidden error-message" data-error="interest">Please select an interest.</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
-                            <textarea name="message" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300" rows="4"></textarea>
+                            <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Message <span class="text-red-500">*</span></label>
+                            <textarea id="message" name="message" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-primary-500 focus:border-primary-500" rows="4"></textarea>
+                            <p class="mt-1 text-sm text-red-500 hidden error-message" data-error="message">Please enter a message.</p>
                         </div>
-                        <button type="submit" class="bg-primary-500 text-white px-4 py-2 rounded hover:bg-primary-600">Submit</button>
+                        <button type="submit" class="bg-primary-500 text-white px-4 py-2 rounded hover:bg-primary-600 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Submit</button>
                     </form>
                 </div>
             </section>
@@ -365,7 +398,7 @@
         </section>
         <!-- Footer with Page View Counter -->
         <footer class="mt-8 py-4 text-center text-gray-600 dark:text-gray-400">
-            <p>This page has been viewed by <span class="blockclock">{{ \App\Models\PageView::where('page_url', 'angels-and-partners')->count() }}</span> different IPs</p>
+            <p>This page has been viewed by <span class="blockclock">{{ \App\Models\PageView::where('page_url', 'angels-and-partners')->count() }}</span> different visitors</p>
         </footer>
     </div>
 </main>
@@ -374,42 +407,120 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const form = document.getElementById('investor-inquiry-form');
-            if (form) {
-                form.addEventListener('submit', async function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const formData = new FormData(form);
-                    const notificationContainer = document.createElement('div');
-                    document.body.appendChild(notificationContainer);
+            const submitButton = form.querySelector('button[type="submit"]');
+            const nameInput = form.querySelector('#name');
+            const emailInput = form.querySelector('#email');
+            const interestSelect = form.querySelector('#interest');
+            const messageTextarea = form.querySelector('#message');
+            const notificationContainer = document.createElement('div');
+            document.body.appendChild(notificationContainer);
 
-                    try {
-                        const response = await fetch('/investor-inquiry', {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                'Accept': 'application/json',
-                            },
-                        });
-
-                        const data = await response.json();
-
-                        if (response.ok && data.status === 'success') {
-                            notificationContainer.innerHTML = `<div class="notification success">${data.message}</div>`;
-                            form.reset();
-                        } else {
-                            notificationContainer.innerHTML = `<div class="notification error">${data.message || 'Submission failed. Please try again.'}</div>`;
-                        }
-                    } catch (error) {
-                        console.error('Form submission error:', error);
-                        notificationContainer.innerHTML = `<div class="notification error">An error occurred. Please try again.</div>`;
-                    }
-
-                    setTimeout(() => notificationContainer.remove(), 5000);
+            // Enable/disable submit button based on form validity
+            function updateSubmitButton() {
+                const isValid =
+                    nameInput.value.trim() !== '' &&
+                    emailInput.value.trim() !== '' &&
+                    interestSelect.value !== '' &&
+                    messageTextarea.value.trim() !== '';
+                submitButton.disabled = !isValid;
+                // Debugging: Log field values (remove in production)
+                console.log('Form valid:', isValid, {
+                    name: nameInput.value,
+                    email: emailInput.value,
+                    interest: interestSelect.value,
+                    message: messageTextarea.value
                 });
             }
+
+            // Initial check
+            updateSubmitButton();
+
+            // Update button state on input or change events
+            [nameInput, emailInput, interestSelect, messageTextarea].forEach(field => {
+                field.addEventListener('input', updateSubmitButton);
+                field.addEventListener('change', updateSubmitButton);
+            });
+
+            // Client-side validation
+            function validateForm() {
+                let isValid = true;
+                form.querySelectorAll('.error-message').forEach(error => error.classList.remove('show'));
+
+                const name = nameInput.value.trim();
+                const email = emailInput.value.trim();
+                const interest = interestSelect.value;
+                const message = messageTextarea.value.trim();
+
+                if (!name) {
+                    form.querySelector('[data-error="name"]').classList.add('show');
+                    isValid = false;
+                }
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    form.querySelector('[data-error="email"]').classList.add('show');
+                    isValid = false;
+                }
+                if (!interest) {
+                    form.querySelector('[data-error="interest"]').classList.add('show');
+                    isValid = false;
+                }
+                if (!message) {
+                    form.querySelector('[data-error="message"]').classList.add('show');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Store current scroll position
+                const scrollY = window.scrollY;
+
+                // Validate form
+                if (!validateForm()) {
+                    return;
+                }
+
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch('/investor-inquiry', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    // Restore scroll position
+                    window.scrollTo(0, scrollY);
+
+                    if (response.ok && data.status === 'success') {
+                        notificationContainer.innerHTML = `<div class="notification success">${data.message || 'Thank you! Your inquiry has been submitted.'}</div>`;
+                        form.reset();
+                        submitButton.disabled = true;
+                    } else {
+                        notificationContainer.innerHTML = `<div class="notification error">${data.message || 'Submission failed. Please try again.'}</div>`;
+                    }
+                } catch (error) {
+                    console.error('Form submission error:', error);
+                    window.scrollTo(0, scrollY);
+                    notificationContainer.innerHTML = `<div class="notification error">An error occurred. Please try again.</div>`;
+                }
+
+                // Remove notification after 5 seconds
+                setTimeout(() => {
+                    notificationContainer.innerHTML = '';
+                }, 5000);
+            });
         });
     </script>
 @endpush
+@stack('scripts')
 </body>
 </html>

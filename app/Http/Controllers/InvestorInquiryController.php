@@ -3,16 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\InvestorInquiryRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Validator;
 
 class InvestorInquiryController extends Controller
 {
-    public function store(InvestorInquiryRequest $request): JsonResponse|RedirectResponse
+    public function store(Request $request)
     {
-        // Get validated form data
-        $data = $request->validated();
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'interest' => 'required|in:invest,partner',
+            'message' => 'required|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $data = $request->all();
 
         // Define the system administrator's email
         $adminEmail = config('btc.system_admin_email');
@@ -33,15 +48,9 @@ class InvestorInquiryController extends Controller
                 ->subject($subject);
         });
 
-        if ($request->expectsJson()) {
-            // AJAX response
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Inquiry Submitted: Thank you for your interest! We will get back to you soon.',
-            ]);
-        }
-
-        // Fallback for non-AJAX (unlikely with updated form)
-        return redirect()->back()->with('success', 'Inquiry Submitted: Thank you for your interest! We will get back to you soon.');
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Thank you! Your inquiry has been submitted successfully.',
+        ], 200);
     }
 }
