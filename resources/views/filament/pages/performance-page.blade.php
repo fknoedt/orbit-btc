@@ -184,7 +184,7 @@
             <div class="fixed inset-0 z-50 flex items-center justify-center">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Model Daily Signal</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Daily Signal</h2>
                         <button wire:click="closeChartModal"
                                 class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">×
                         </button>
