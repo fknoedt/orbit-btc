@@ -7,7 +7,6 @@ use App\Services\DailyPriceService;
 use Carbon\Carbon;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\DB;
-
 class MetricsWidget extends Widget
 {
     protected const int END_DAY_ATTEMPTS = 3;
@@ -20,7 +19,20 @@ class MetricsWidget extends Widget
 
     protected int | string | array $columnSpan = 'full';
 
-    protected static string $view = 'filament.widgets.metrics';
+    protected static string $view = '';
+
+    public function getView(): string
+    {
+        $referrer = request()->header('referer');
+
+        // Return pre-login view for guests or standalone page referrer
+        if ($referrer && str_contains($referrer, 'angels-and-partners')) {
+            return 'filament.widgets.metrics.pre-login';
+        }
+
+        // Default to authenticated view
+        return 'filament.widgets.metrics';
+    }
 
     public function getWidgetClasses(): array
     {
@@ -29,7 +41,7 @@ class MetricsWidget extends Widget
 
     public function getData(): array
     {
-        $metrics = DB::table('metrics as m')
+        $query = DB::table('metrics as m')
             ->join('frequencies as f', 'm.suggested_frequency_id', '=', 'f.id')
             ->leftJoin('user_signal_metrics as usm', 'usm.metric_id', '=', 'm.id')
             ->leftJoin('user_signals as us', 'usm.user_signal_id', '=', 'us.id')
@@ -40,9 +52,16 @@ class MetricsWidget extends Widget
                 'm.description',
                 'f.number_of_days',
                 DB::raw('count(usm.id) as times_used'),
-                DB::raw('count(us.user_id = ' . auth()->id() . ') as times_used_by_user')
-            ])
-            ->groupBy('m.id', 'm.name', 'm.column_name', 'm.description', 'f.number_of_days')
+            ]);
+
+        // Handle times_used_by_user for authenticated and non-authenticated users
+        if (auth()->check()) {
+            $query->addSelect(DB::raw('COUNT(CASE WHEN us.user_id = ' . auth()->id() . ' THEN 1 END) as times_used_by_user'));
+        } else {
+            $query->addSelect(DB::raw('0 as times_used_by_user'));
+        }
+
+        $metrics = $query->groupBy('m.id', 'm.name', 'm.column_name', 'm.description', 'f.number_of_days')
             ->orderBy('times_used_by_user', 'desc')
             ->orderBy('times_used', 'desc')
             ->get()

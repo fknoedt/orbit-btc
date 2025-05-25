@@ -211,41 +211,45 @@
                     See it in Action
                 </h2>
                 <div class="mt-4 space-y-6">
-                    <div class="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg">
+                    <div class="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Simple and friendly approach</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Beyond hardcore enthusiasts, few enjoy sifting through countless Glassnode charts. Orbit makes them concise and ready to use in your formulas.
                         </p>
                     </div>
-                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                        <p class="text-gray-600 dark:text-gray-400">[section for a dashboard-widget I'm going to add]</p>
+                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg max-w-6xl h-auto">
+                        @php
+                            $widget = new \App\Filament\Resources\DashboardResource\Widgets\MetricsWidget();
+                            $data = $widget->getData();
+                        @endphp
+                        @include('filament.widgets.metrics-pre-login', $data)
                     </div>
-                    <div class="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg">
+                    <div class="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Level up your analysis</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Combine multiple metrics in your signals for a high-level overview with minimal effort.
                         </p>
                     </div>
-                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg max-w-6xl">
                         <p class="text-gray-600 dark:text-gray-400">[section for a performance-page I'm going to embed here]</p>
                     </div>
-                    <div class="bg-pink-50 dark:bg-pink-900/10 p-4 rounded-lg">
+                    <div class="bg-pink-50 dark:bg-pink-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Playground area</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Explore, combine, and search metric time-series by pattern using Dynamic Time Warping Distance.
                         </p>
                     </div>
-                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg max-w-6xl">
                         <p class="text-gray-600 dark:text-gray-400">[section for time-series-page]</p>
                     </div>
-                    <div class="bg-yellow-50 dark:bg-yellow-900/10 p-4 rounded-lg">
+                    <div class="bg-yellow-50 dark:bg-yellow-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Avoid the noise</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Orbit BTC lets you know when your signals trigger and how simulated stakes perform over time.
                         </p>
                     </div>
                     <img src="{{ asset('images/angels-and-partnerships/daily-performance.png') }}" alt="Daily Performance" class="max-w-lg h-auto rounded-lg">
-                    <div class="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-lg">
+                    <div class="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Bitcoin-only</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Because there’s no second best.
