@@ -280,7 +280,7 @@
                 <div class="prose prose-gray dark:prose-invert text-left">
                     <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-2">AI Plug-Ins</h3>
                     <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
-                        Orbit BTC can integrate AI tools to elevate user experience and analytics precision. AI-driven contextual help and smart walk-throughs guide users through signal creation and metric exploration, making the platform intuitive for newbies and hodlers alike. On-chain and market AI advisors/assistants can provide real-time insights, recommending optimal metrics and thresholds based on historical and live data.
+                        Orbit BTC can integrate AI tools to elevate user experience and analytics precision. AI-driven contextual help and smart walk-throughs could guide users through signal creation and metric exploration, making the platform even more intuitive and powerful. On-chain and market AI advisors/assistants can provide real-time insights, recommending optimal metrics and thresholds based on historical and live data.
                     </p>
                     <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300 mt-4 mb-2">Bet on your Signals</h3>
                     <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
@@ -311,7 +311,7 @@
                         </div>
                     </div>
                     <p class="text-gray-700 dark:text-gray-300 mt-2 py-0.5">
-                        My name is Filipe Knoedt, a Systems Architect based in North Carolina, USA. Data structures have been my passion since college, and for over two decades, I’ve built and optimized solutions for corporate, e-commerce, marketing, ads, GIS, logistics, and education sectors.
+                        My name is Filipe Knoedt, a so-called Systems Architect based in North Carolina, USA. Data structures have been my passion since college, and for over two decades, I’ve built and optimized solutions for corporate, e-commerce, marketing, ads, GIS, logistics, and education sectors.
                     </p>
                     <p class="text-gray-700 dark:text-gray-300 mt-2 py-0.5">
                         Around 2005, I started reading about money, inflation, and the dynamics of gold versus fiat standards. In 2009 I launched my first startup, a subscription-based CRM and ERP SaaS. By 2013, I first experienced bitcoin, but it still took me years of curiosity, skepticism, study, and getting wrecked with 💩coins before becoming a maxi myself.
