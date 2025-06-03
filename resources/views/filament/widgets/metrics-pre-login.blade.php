@@ -2,10 +2,10 @@
     use Carbon\Carbon;
     use App\Helpers\NumberHelper;
 @endphp
-<div class="metrics-widget">
+<div class="metrics-widget max-w-4xl mx-auto">
     <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
         <div class="metrics-table-container" style="height: 260px !important; overflow-y: auto !important;">
-            <table class="metrics-table w-full text-left border-collapse">
+            <table class="metrics-table max-w-full text-left border-collapse">
                 <thead>
                 <tr class="bg-gray-100 dark:bg-gray-700">
                     <th class="p-2">Metric</th>
@@ -35,11 +35,6 @@
                                 {{ $metric->number_of_days }}d
                             </span>
                         </td>
-                        {{--<td class="p-2">
-                            <span class="text-gray-500">
-                                {{ Carbon::createFromFormat('Y-m-d', $metric->current_date)->format('M d y') }}
-                            </span>
-                        </td>--}}
                         <td class="p-2">
                             <span class="text-gray-500">
                                 {{ Carbon::createFromFormat('Y-m-d', $metric->reference_date)->format('M d y') }}
@@ -68,7 +63,7 @@
         <div id="metric-details-{{ $metric->id }}" class="modal hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
             <div class="p-4 bg-gray-800 rounded-lg max-w-lg w-full">
                 <div class="mb-4">
-                    <p class="text-white">{{ $metric->name }}</p>
+                    <p class="text-white">{{ $metric->id }}</p>
                 </div>
                 <div class="mb-4">
                     <p class="text-white">{{ $metric->description }}</p>

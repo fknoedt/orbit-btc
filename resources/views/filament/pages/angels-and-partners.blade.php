@@ -135,6 +135,20 @@
             background-color: #ef4444;
             color: #ffffff;
         }
+        /* Modal styles for fallback */
+        #fallback-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.75);
+            justify-content: center;
+            align-items: center;
+        }
+        #fallback-modal img {
+            max-width: 90%;
+            max-height: 90%;
+        }
     </style>
     <script>
         (function() {
@@ -179,11 +193,11 @@
     </script>
 </head>
 <body class="fi-body fi-panel-admin min-h-screen bg-gray-50 font-normal text-gray-950 antialiased dark:bg-gray-950 dark:text-white">
-<main class="fi-main mx-auto h-full w-full px-4 md:px-6 lg:px-8 max-w-full">
-    <div class="fi-page">
+<main class="fi-main mx-auto h-full w-full px-4 md:px-6 lg:px-8">
+    <div class="fi-page" x-data="{ modalOpen: false, modalImage: '' }">
         <section class="flex flex-col gap-y-8 py-8">
             <!-- Logo and Title -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 max-w-4xl">
                 <img src="{{ asset('images/orbit-btc-large.png') }}" alt="Orbit BTC Logo" class="h-24 md:h-30">
                 <h1 class="fi-header-heading text-2xl font-bold tracking-tight text-primary-600 dark:text-primary-400 sm:text-3xl">
                     {{ $heading }}
@@ -191,7 +205,7 @@
             </div>
 
             <!-- What is Orbit BTC? -->
-            <section class="fi-section">
+            <section class="fi-section max-w-4xl">
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     What is Orbit BTC?
                 </h2>
@@ -206,61 +220,65 @@
             </section>
 
             <!-- See it in Action -->
-            <section class="fi-section">
+            <section class="fi-section max-w-4xl">
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     See it in Action
                 </h2>
                 <div class="mt-4 space-y-6">
-                    <div class="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg max-w-6xl">
+                    <div class="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Simple and friendly approach</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Beyond hardcore enthusiasts, few enjoy sifting through countless Glassnode charts. Orbit makes them concise and ready to use in your formulas.
                         </p>
                     </div>
-                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg max-w-6xl h-auto">
+                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg max-w-4xl">
                         @php
                             $widget = new \App\Filament\Resources\DashboardResource\Widgets\MetricsWidget();
                             $data = $widget->getData();
                         @endphp
                         @include('filament.widgets.metrics-pre-login', $data)
                     </div>
-                    <div class="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg max-w-6xl">
+                    <div class="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Level up your analysis</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Combine multiple metrics in your signals for a high-level overview with minimal effort.
                         </p>
                     </div>
-                    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg max-w-6xl">
-                        <img src="{{ asset('images/angels-and-partnerships/performance-page.png') }}" alt="Infra Structure" class="max-w-6xl h-auto rounded-lg mt-4">
+                    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg max-w-4xl">
+                        <img src="{{ asset('images/angels-and-partnerships/performance-page.png') }}" alt="Performance Page" class="w-full max-w-4xl h-auto rounded-lg cursor-pointer" @click="console.log('Image clicked:', $event.target.src); modalImage = $event.target.src; modalOpen = true" data-fallback-click="openFallbackModal(this.src)">
                     </div>
-                    <div class="bg-yellow-50 dark:bg-yellow-900/10 p-4 rounded-lg max-w-6xl">
+                    <div class="bg-yellow-50 dark:bg-yellow-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Avoid the noise</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Orbit BTC lets you know when your signals trigger and how simulated stakes perform over time.
                         </p>
                     </div>
-                    <img src="{{ asset('images/angels-and-partnerships/daily-performance.png') }}" alt="Daily Performance" class="max-w-lg h-auto rounded-lg">
-                    <div class="bg-pink-50 dark:bg-pink-900/10 p-4 rounded-lg max-w-6xl">
+                    <div class="max-w-md">
+                        <img src="{{ asset('images/angels-and-partnerships/daily-performance.png') }}" alt="Daily Performance" class="w-full max-w-md h-auto rounded-lg cursor-pointer" @click="console.log('Image clicked:', $event.target.src); modalImage = $event.target.src; modalOpen = true" data-fallback-click="openFallbackModal(this.src)">
+                    </div>
+                    <div class="bg-pink-50 dark:bg-pink-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Playground area</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Explore, combine, and search metric time-series by pattern using Dynamic Time Warping Distance.
                         </p>
                     </div>
-                    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg max-w-6xl m-0">
-                        <img src="{{ asset('images/angels-and-partnerships/time-series.png') }}" alt="Infra Structure" class="max-w-6xl h-auto rounded-lg p-0">
+                    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg max-w-4xl">
+                        <img src="{{ asset('images/angels-and-partnerships/time-series.png') }}" alt="Time Series" class="w-full max-w-4xl h-auto rounded-lg cursor-pointer" @click="console.log('Image clicked:', $event.target.src); modalImage = $event.target.src; modalOpen = true" data-fallback-click="openFallbackModal(this.src)">
                     </div>
-                    <div class="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-lg max-w-6xl">
+                    <div class="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-lg max-w-4xl">
                         <p class="text-gray-700 dark:text-gray-300 font-semibold">Bitcoin-only</p>
                         <p class="text-gray-600 dark:text-gray-400 mt-2">
                             Because there’s no second best.
                         </p>
                     </div>
-                    <img src="{{ asset('images/angels-and-partnerships/bitcoin-only.png') }}" alt="Bitcoin Only" class="max-w-lg h-auto rounded-lg">
+                    <div class="max-w-md">
+                        <img src="{{ asset('images/angels-and-partnerships/bitcoin-only.png') }}" alt="Bitcoin Only" class="w-full max-w-md h-auto rounded-lg cursor-pointer" @click="console.log('Image clicked:', $event.target.src); modalImage = $event.target.src; modalOpen = true" data-fallback-click="openFallbackModal(this.src)">
+                    </div>
                 </div>
             </section>
 
             <!-- Infra and Data Structures -->
-            <section class="fi-section">
+            <section class="fi-section max-w-4xl">
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     Infra and Data Structures
                 </h2>
@@ -268,12 +286,12 @@
                     <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
                         Designed to fetch and standardize data from any API, structure and process them efficiently, Orbit can orchestrate a wide range of complex operations between multiple data sources. Built on top of a reputable, robust and popular framework, hosted at a tailored ready-to-scale service, Orbit is committed to dev-ops and development best-practices to make the path to a successful start-up a little smoother.
                     </p>
-                    <img src="{{ asset('images/angels-and-partnerships/infra-structure.png') }}" alt="Infra Structure" class="max-w-2xl h-auto rounded-lg mt-4">
+                    <img src="{{ asset('images/angels-and-partnerships/infra-structure.png') }}" alt="Infra Structure" class="w-full max-w-xl h-auto rounded-lg mt-4 cursor-pointer" @click="console.log('Image clicked:', $event.target.src); modalImage = $event.target.src; modalOpen = true" data-fallback-click="openFallbackModal(this.src)">
                 </div>
             </section>
 
             <!-- Potential Power-Ups -->
-            <section class="fi-section">
+            <section class="fi-section max-w-4xl">
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     Potential Power-Ups
                 </h2>
@@ -290,7 +308,7 @@
             </section>
 
             <!-- Meet the Founder -->
-            <section class="fi-section">
+            <section class="fi-section max-w-4xl">
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     Meet the Founder
                 </h2>
@@ -323,20 +341,26 @@
             </section>
 
             <!-- Angel Investment -->
-            <section class="fi-section">
+            <section class="fi-section max-w-4xl">
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     Angel Investment
                 </h2>
                 <div class="prose prose-gray dark:prose-invert text-left">
                     <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
-                        Bitcoin’s recent and potential growth in adoption, price, and popularity creates an ideal moment to launch a bitcoin-only tool with unique features. I’m confident that a small, product-focused team, which I’m prepared to lead, combined with outsourced services, can transform Orbit into a successful startup quickly.
+                        In analysis, even if we want simple answers, insights usually don't come from the observation of a single factor but multiple ones. Composite Metrics are a natural evolution of single-metric models as they allow an automated analysis eliminating the mental overload of periodically juggling complex charts and data. This method is proven across industries like <a href="https://www.liebertpub.com/doi/10.1089/dia.2019.0434" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">Medicine</a>, <a href="https://documentation.solarwinds.com/en/success_center/observability/content/telemetry/composite-metrics.htm" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">Networks</a>, <a href="https://engineering.indeedblog.com/blog/2024/01/composite-web-performance-metric/" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">Software Engineering</a>, and <a href="https://library.fiveable.me/key-terms/sports-journalism/composite-metrics" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">Sports</a> among others.
                     </p>
-                    <img src="{{ asset('images/angels-and-partnerships/trello-dashboard.png') }}" alt="Trello Dashboard" class="max-w-2xl h-auto rounded-lg mt-4">
+                    <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
+                        Partner with me and let's build a tool for leveling up bitcoin's analysis ecosystem. By leveraging the most interesting metrics from the top market APIs and straight from bitcoin's blockchain in a seamless interface, we can provide a freemium and technically accessible experience not only for traders and advanced users but also for a broader audience who's interest in BTC's health signals.
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
+                        I’m confident that a small, product-focused team, which I’m prepared to lead, combined with key outsourced services, can transform Orbit into a successful startup quickly. Everything is on its way to take-off.
+                    </p>
+                    <img src="{{ asset('images/angels-and-partnerships/trello-dashboard.png') }}" alt="Trello Dashboard" class="w-full max-w-xl h-auto rounded-lg mt-4 cursor-pointer" @click="console.log('Image clicked:', $event.target.src); modalImage = $event.target.src; modalOpen = true" data-fallback-click="openFallbackModal(this.src)">
                 </div>
             </section>
 
             <!-- Partnerships -->
-            <section class="fi-section">
+            <section class="fi-section max-w-4xl">
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     Partnerships
                 </h2>
@@ -347,7 +371,7 @@
                 </div>
             </section>
 
-            <section class="fi-section">
+            <section class="fi-section max-w-4xl">
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     Get in Touch
                 </h2>
@@ -404,7 +428,7 @@
             </section>
 
             <!-- Explore More -->
-            <section class="fi-section">
+            <section class="fi-section max-w-4xl">
                 <h2 class="text-xl font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 pb-2 mb-4">
                     Explore More
                 </h2>
@@ -419,15 +443,29 @@
             </section>
         </section>
         <!-- Footer with Page View Counter -->
-        <footer class="mt-8 py-4 text-center text-gray-600 dark:text-gray-400">
+        <footer class="mt-8 py-4 text-center text-gray-600 dark:text-gray-400 max-w-4xl">
             <p>This page has been viewed by <span class="blockclock">{{ \App\Models\PageView::where('page_url', 'angels-and-partners')->count() }}</span> different visitors</p>
         </footer>
+
+        <!-- Alpine.js Modal -->
+        <div x-show="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75" @click="console.log('Modal background clicked'); modalOpen = false" x-cloak>
+            <img :src="modalImage" class="max-w-[90%] max-h-[90%]" @click.stop="console.log('Modal image clicked')">
+        </div>
+
+        <!-- Fallback Modal -->
+        <div id="fallback-modal">
+            <img id="fallback-modal-image" src="" alt="Modal Image">
+        </div>
     </div>
 </main>
 
 @push('scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Test Alpine.js
+            console.log('Alpine.js test:', typeof Alpine !== 'undefined' ? 'Loaded' : 'Not loaded');
+
+            // Form handling
             const form = document.getElementById('investor-inquiry-form');
             const submitButton = form.querySelector('button[type="submit"]');
             const nameInput = form.querySelector('#name');
@@ -437,7 +475,6 @@
             const notificationContainer = document.createElement('div');
             document.body.appendChild(notificationContainer);
 
-            // Enable/disable submit button based on form validity
             function updateSubmitButton() {
                 const isValid =
                     nameInput.value.trim() !== '' &&
@@ -445,25 +482,15 @@
                     interestSelect.value !== '' &&
                     messageTextarea.value.trim() !== '';
                 submitButton.disabled = !isValid;
-                // Debugging: Log field values (remove in production)
-                console.log('Form valid:', isValid, {
-                    name: nameInput.value,
-                    email: emailInput.value,
-                    interest: interestSelect.value,
-                    message: messageTextarea.value
-                });
             }
 
-            // Initial check
             updateSubmitButton();
 
-            // Update button state on input or change events
             [nameInput, emailInput, interestSelect, messageTextarea].forEach(field => {
                 field.addEventListener('input', updateSubmitButton);
                 field.addEventListener('change', updateSubmitButton);
             });
 
-            // Client-side validation
             function validateForm() {
                 let isValid = true;
                 form.querySelectorAll('.error-message').forEach(error => error.classList.remove('show'));
@@ -497,10 +524,8 @@
                 event.preventDefault();
                 event.stopPropagation();
 
-                // Store current scroll position
                 const scrollY = window.scrollY;
 
-                // Validate form
                 if (!validateForm()) {
                     return;
                 }
@@ -519,7 +544,6 @@
 
                     const data = await response.json();
 
-                    // Restore scroll position
                     window.scrollTo(0, scrollY);
 
                     if (response.ok && data.status === 'success') {
@@ -535,10 +559,35 @@
                     notificationContainer.innerHTML = `<div class="notification error">An error occurred. Please try again.</div>`;
                 }
 
-                // Remove notification after 5 seconds
                 setTimeout(() => {
                     notificationContainer.innerHTML = '';
                 }, 5000);
+            });
+
+            // Fallback modal JavaScript
+            window.openFallbackModal = function(src) {
+                console.log('Fallback modal opened with src:', src);
+                const modal = document.getElementById('fallback-modal');
+                const modalImage = document.getElementById('fallback-modal-image');
+                modalImage.src = src;
+                modal.style.display = 'flex';
+            };
+
+            document.getElementById('fallback-modal').addEventListener('click', function(e) {
+                if (e.target !== document.getElementById('fallback-modal-image')) {
+                    console.log('Fallback modal closed');
+                    this.style.display = 'none';
+                }
+            });
+
+            // Attach fallback click handlers
+            document.querySelectorAll('[data-fallback-click]').forEach(img => {
+                img.addEventListener('click', function() {
+                    if (typeof Alpine === 'undefined') {
+                        console.log('Alpine.js not loaded, using fallback');
+                        window.openFallbackModal(this.src);
+                    }
+                });
             });
         });
     </script>
