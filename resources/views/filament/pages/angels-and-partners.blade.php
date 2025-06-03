@@ -444,7 +444,7 @@
         </section>
         <!-- Footer with Page View Counter -->
         <footer class="mt-8 py-4 text-center text-gray-600 dark:text-gray-400 max-w-4xl">
-            <p>This page has been viewed by <span class="blockclock">{{ \App\Models\PageView::where('page_url', 'angels-and-partners')->count() }}</span> different visitors</p>
+            <p>Viewed by <span class="blockclock">{{ \App\Models\PageView::where('page_url', 'angels-and-partners')->count() }}</span> different visitors</p>
         </footer>
 
         <!-- Alpine.js Modal -->
