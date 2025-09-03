@@ -34,7 +34,7 @@ class DailyStatsService
                 throw new \InvalidArgumentException("DailyPrices has to be indexed by dates");
             }
             if ($previousDay && $day < $previousDay) {
-                throw new \InvalidArgumentException("DailyPrices has changed previous date");
+                throw new \InvalidArgumentException("DailyPrices non-sequential dates");
             }
             // clean up values that should never be changed
             unset(
