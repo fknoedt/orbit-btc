@@ -21,6 +21,9 @@ class TimeSeriesPage extends Page
     /** percentage to increase y-axis' $maxValue range (up) */
     protected const int YAXIS_MARGIN_TOP = 5;
 
+    /** when Y axis magnitude is below this value, use auto magnitude/scaling */
+    protected const int YAXIS_MIN_MAGNITUDE = 5;
+
     /** percentage to decrease y-axis' $minValue range (down) */
     protected const int YAXIS_MARGIN_BOTTOM = 5;
 
@@ -216,7 +219,6 @@ class TimeSeriesPage extends Page
             ];
 
             $colors[] = $areaColor;
-
             $yaxis[] = [
                 'seriesName' => $metricOptions[$metric]['name'] ?? 'BTC Price (USD)',
                 'opposite' => $index === 1,
@@ -225,9 +227,11 @@ class TimeSeriesPage extends Page
                 ],
                 'decimalsInFloat' => $metric === 'mayer_multiple' ? 2 : 0,
                 'tickAmount' => 10,
-                'min' => round($minValueAdjusted, -3),
-                'max' => round($maxValueAdjusted, -3),
             ];
+            if ($maxValueAdjusted - $minValueAdjusted > self::YAXIS_MIN_MAGNITUDE) {
+                $yaxis['min'] = round($minValueAdjusted, -3);
+                $yaxis['max'] = round($maxValueAdjusted, -3);
+            }
         }
 
         $options = [
