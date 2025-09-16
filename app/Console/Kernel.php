@@ -140,6 +140,8 @@ class Kernel extends ConsoleKernel
             return true;
         }
 
+        Log::info('Not necessary to run prices update');
+
         return false; // Skip execution
     }
 
@@ -156,6 +158,8 @@ class Kernel extends ConsoleKernel
             Log::info('Running stats update');
             return true;
         }
+
+        Log::info('Not necessary to run stats update');
 
         return false;
     }
@@ -175,6 +179,8 @@ class Kernel extends ConsoleKernel
             return true;
         }
 
+        Log::info('Not necessary to run CC stats update');
+
         return false;
     }
 
@@ -193,6 +199,8 @@ class Kernel extends ConsoleKernel
             return true;
         }
 
+        Log::info('Not necessary to run BG stats update');
+
         return false;
     }
 
@@ -203,6 +211,8 @@ class Kernel extends ConsoleKernel
             return true;
         }
 
+        Log::info('Not necessary to run CMC stats update');
+
         return false;
     }
 
@@ -212,6 +222,8 @@ class Kernel extends ConsoleKernel
             Log::info('Running Mempool stats update');
             return true;
         }
+
+        Log::info('Not necessary to run Mempool stats update');
 
         return false;
     }
@@ -226,6 +238,8 @@ class Kernel extends ConsoleKernel
             return true;
         }
 
+        Log::info('Not necessary to run UserSignals update all scores');
+
         return false;
     }
 
@@ -235,6 +249,8 @@ class Kernel extends ConsoleKernel
             Log::info('Running Mayer Multiple stats update');
             return true;
         }
+
+        Log::info('Not necessary to run Mayer Multiple stats update');
 
         return false;
     }
@@ -246,6 +262,8 @@ class Kernel extends ConsoleKernel
             return true;
         }
 
+        Log::info('Not necessary to run RSI stats update');
+
         return false;
     }
 
@@ -255,6 +273,8 @@ class Kernel extends ConsoleKernel
             Log::info('Running Future Price Change update');
             return true;
         }
+
+        Log::info('Not necessary to run Future Price Change update');
 
         return false;
     }
