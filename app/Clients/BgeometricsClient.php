@@ -17,6 +17,9 @@ class BgeometricsClient extends BaseClient
 {
     private string $version = 'v1';
 
+    /** For throttling -- @see https://bitcoin-data.com/bguser/pricing */
+    public const int MAX_REQUESTS_PER_HOUR = 3;
+
     /** /v1/{endpoint} => result_field */
     public const array ENDPOINTS = [
         'etf-flow-btc' => 'etfFlow',
@@ -49,7 +52,7 @@ class BgeometricsClient extends BaseClient
     {
         $columnNames = [];
         foreach (array_keys(self::ENDPOINTS) as $endpoint) {
-            $columnNames[] = str_replace('-', '_', $endpoint);
+            $columnNames[$endpoint] = str_replace('-', '_', $endpoint);
         }
 
         return $columnNames;

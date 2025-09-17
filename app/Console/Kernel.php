@@ -98,20 +98,23 @@ class Kernel extends ConsoleKernel
                 \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
             });
 
-        $schedule->command(
-            'btc:bgeometrics-daily-stats'
-        )
-            ->everyThirtyMinutes()
-            ->when(
-                $this->shouldUpdateBgeometricsStats(
-                    BgeometricsClient::getEndpointsAsColumnNames()
+        $bgEndpoints = BgeometricsClient::getEndpointsAsColumnNames();
+
+        // bgeometrics limits the free plan at 4 requests/hour
+        foreach (array_chunk($bgEndpoints, BgeometricsClient::MAX_REQUESTS_PER_HOUR, true) as $endpoints) {
+            if ($this->shouldUpdateBgeometricsStats(array_values($endpoints))) {
+                $schedule->command(
+                    'btc:bgeometrics-daily-stats',
+                    [implode(',', array_keys($endpoints))]
                 )
-            )
-            ->appendOutputTo($logPath)
-            ->emailOutputOnFailure($emailErrorsTo)
-            ->onFailure(function (\Throwable $e) {
-                \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
-            });
+                    ->hourly()
+                    ->appendOutputTo($logPath)
+                    ->emailOutputOnFailure($emailErrorsTo)
+                    ->onFailure(function (\Throwable $e) {
+                        \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
+                    });
+            }
+        }
 
         $schedule->command('btc:update-all-user-signal-scores')
             ->everyThirtyMinutes()->when($this->shouldUpdateUserSignals())
