@@ -4,10 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RequestResource\Pages;
 use App\Models\Request;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Symfony\Component\HttpFoundation\Response;
 
 class RequestResource extends Resource
 {
@@ -63,7 +68,39 @@ class RequestResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('dataSource.name')
+                    ->relationship('dataSource', 'name')
+                    ->attribute('data_source_id'),
+                SelectFilter::make('Status Code')
+                    ->options(
+                        array_combine(
+                            array_keys(Response::$statusTexts),
+                            array_map(
+                                fn($code, $text) => "$code $text",
+                                array_keys(Response::$statusTexts),
+                                Response::$statusTexts
+                            )
+                        )
+                    )
+                    ->attribute('http_status_code'),
+                //Tables\Filters\Filter::make('date')->label('Since')
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('start'),
+                        DatePicker::make('end'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['start'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['end'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->label('Date Range')
             ])
             ->defaultSort('created_at', 'desc');
     }
