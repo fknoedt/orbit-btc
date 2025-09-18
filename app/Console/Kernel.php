@@ -113,6 +113,8 @@ class Kernel extends ConsoleKernel
                     ->onFailure(function (\Throwable $e) {
                         \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
                     });
+                // limit reached
+                break;
             }
         }
 
