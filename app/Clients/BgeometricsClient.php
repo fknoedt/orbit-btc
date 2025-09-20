@@ -24,7 +24,7 @@ class BgeometricsClient extends BaseClient
     public const array ENDPOINTS = [
         'etf-flow-btc' => 'etfFlow',
         'etf-btc-total' => 'etfBtcTotal',
-        'miner-reserves' => 'reserves',
+        'miner-balances' => 'minerBalances',
         'mvrv' => 'mvrv',
         'nrpl-usd' => 'nrplUsd',
         'nupl' => 'nupl',
@@ -35,7 +35,8 @@ class BgeometricsClient extends BaseClient
         'reserve-risk' => 'reserveRisk',
         'true-market-mean' => 'trueMarketMean',
         // @see https://charts.bgeometrics.com/m2_btc.html
-        'm2' => 1, // columns are 0 for date and 1 for value
+        // went 404 around mid 2025
+        // 'm2' => 1, // columns are 0 for date and 1 for value
     ];
 
     public function __construct()
