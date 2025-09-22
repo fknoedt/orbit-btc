@@ -29,7 +29,8 @@ class BgeometricsClient extends BaseClient
         'nrpl-usd' => 'nrplUsd',
         'nupl' => 'nupl',
         'nvt-ratio' => 'nvtRatio',
-        'open-interest-futures' => 'openInterestFutures',
+        // disabled on 9/22/25 as it's coming back as null
+        // 'open-interest-futures' => 'openInterestFutures',
         'puell-multiple' => 'puellMultiple',
         'cap-real-usd' => 'capRealUSD',
         'reserve-risk' => 'reserveRisk',
