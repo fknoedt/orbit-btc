@@ -12,7 +12,7 @@ class FuturePriceChangeCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:update-future-price-change {--since=}';
+    protected $signature = 'btc:update-future-price-change {--since=} {--dry-run}';
 
     /**
      * The console command description.
@@ -28,10 +28,11 @@ class FuturePriceChangeCommand extends Command
     {
         ini_set('memory_limit', '4096M');
         $since = $this->option('since') ?? null;
+        $dryRun = $this->option('dry-run');
 
         $this->output->info('Updating Future Price Changes since ' . ($since ?? 'last available day'));
 
-        $pricesUpdated = $service->updateFuturePriceChange($since, $this->output);
+        $pricesUpdated = $service->updateFuturePriceChange($since, $this->output, $dryRun);
 
         $this->output->success(
             $pricesUpdated ? "{$pricesUpdated} daily_prices updated ✅" : 'No daily_prices updated'
