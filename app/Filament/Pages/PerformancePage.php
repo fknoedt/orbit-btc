@@ -21,6 +21,8 @@ class PerformancePage extends Page
 {
     use UserSignalChart;
 
+    protected const int CHART_MONTHS_BACK = 18;
+
     protected static string $view = 'filament.pages.performance-page';
 
     protected static ?string $title = 'Performance';
@@ -162,7 +164,7 @@ class PerformancePage extends Page
 
         // Update chart data based on the selected Signal, overriding default behavior
         $this->userSignalId = $this->selectedUserSignalId; // Set for trait methods if needed
-        $options = $this->getChartOptions($this->selectedUserSignalId, 5);
+        $options = $this->getChartOptions($this->selectedUserSignalId, self::CHART_MONTHS_BACK);
         $this->chartData = [
             'options' => $options,
             'extraJsOptions' => $this->getExtraJsOptions(),
@@ -180,7 +182,7 @@ class PerformancePage extends Page
 
             $dispatchData = [
                 'chartId' => 'chart-daily-score', // Match DOM ID
-                'options' => $this->getChartOptions($this->selectedUserSignalId, 5)
+                'options' => $this->getChartOptions($this->selectedUserSignalId, self::CHART_MONTHS_BACK)
             ];
             $this->dispatch('refresh-chart', $dispatchData);
 
@@ -238,7 +240,7 @@ class PerformancePage extends Page
     {
         $userSignal = UserSignal::find($this->selectedUserSignalId);
         $this->userSignalId = $userSignal?->id;
-        $options = $this->getChartOptions($userSignal?->id, 5);
+        $options = $this->getChartOptions($userSignal?->id, self::CHART_MONTHS_BACK);
 
         return [
             'options' => $options,

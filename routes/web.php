@@ -2,7 +2,6 @@
 
 use App\Filament\Pages\AngelsAndPartnersPage;
 use App\Filament\Pages\PerformancePage;
-use App\Filament\Pages\SponsorshipAndPartnership;
 use App\Http\Controllers\AdapterController;
 use App\Http\Controllers\BtcRpcController;
 use App\Http\Controllers\InvestorInquiryController;
