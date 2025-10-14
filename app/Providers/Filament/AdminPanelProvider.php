@@ -34,8 +34,8 @@ class AdminPanelProvider extends PanelProvider
         $service = new WidgetService();
         return $panel
             ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('app')
+            ->path('app')
             ->login(Login::class)
             ->registration(Register::class)
             ->brandLogo(fn() => view('filament.components.header-left'))

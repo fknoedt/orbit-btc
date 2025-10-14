@@ -22,8 +22,8 @@ class RedirectFirstLogin
         if (Auth::check()) {
             $hasActivity = UserActivityLog::where('user_id', Auth::id())->exists();
 
-            if (!$hasActivity && !$request->is('admin/get-started-page')) {
-                return redirect()->to('/admin/get-started-page?first-visit=1');
+            if (!$hasActivity && !$request->is('app/get-started-page')) {
+                return redirect()->to('/app/get-started-page?first-visit=1');
             }
         }
 

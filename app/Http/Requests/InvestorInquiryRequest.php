@@ -16,7 +16,7 @@ class InvestorInquiryRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'interest' => ['required', 'in:invest,partner'],
+            'subject' => ['required'/*, 'in:invest,partner'*/],
             'message' => ['required', 'string', 'max:5000'],
         ];
     }

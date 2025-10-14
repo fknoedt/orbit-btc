@@ -21,7 +21,7 @@ class PerformancePage extends Page
 {
     use UserSignalChart;
 
-    protected const int CHART_MONTHS_BACK = 18;
+    protected const int CHART_MONTHS_BACK = 12;
 
     protected static string $view = 'filament.pages.performance-page';
 

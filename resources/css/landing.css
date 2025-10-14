@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+/* Components */
+@import 'components/_buttons.css';
+
+/* Custom */
+@import 'custom/_general.css';
+@import 'custom/pages/_helper.css';
+@import 'custom/pages/_contact.css';
+@import 'custom/pages/_timeline.css';
+@import 'custom/plugins/_testi.css';
+@import 'custom/structure/_topnav.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Theme */
+@layer theme {
+    --font-rubik: "Rubik", "sans-serif";
+    --breakpoint-xs: 540px;
+    --breakpoint-sm: 640px;
+    --breakpoint-md: 720px;
+    --breakpoint-lg: 960px;
+    --breakpoint-lg_992: 992px;
+    --breakpoint-xl: 1140px;
+    --breakpoint-2xl: 1140px;
+}

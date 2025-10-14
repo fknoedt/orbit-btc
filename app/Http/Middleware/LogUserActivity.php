@@ -47,12 +47,12 @@ class LogUserActivity
         $method = $request->method();
         $path = $request->path();
 
-        // Normalize path to remove 'admin/' prefix and handle root admin
-        $slug = $path === 'admin' ? 'dashboard' : str_replace('admin/', '', $path);
+        // Normalize path to remove 'app/' prefix and handle root admin
+        $slug = $path === 'app' ? 'dashboard' : str_replace('app/', '', $path);
 
-        // Wildcard GET requests for /admin/*
-        if ($method === 'GET' && str_starts_with($path, 'admin/') || $path === 'admin') {
-            // Skip resource-specific pages (e.g., /admin/users/1/edit, /admin/users/create)
+        // Wildcard GET requests for /app/*
+        if ($method === 'GET' && str_starts_with($path, 'app/') || $path === 'app') {
+            // Skip resource-specific pages (e.g., /app/users/1/edit, /app/users/create)
             if ($this->isSkippableGetRequest($slug)) {
                 return null;
             }

@@ -143,7 +143,7 @@ class MetricResource extends Resource
                     ->label('Chart')
                     ->icon('heroicon-o-presentation-chart-line')
                     ->color('blue')
-                    ->url(fn ($record) => '/admin/time-series-page?selectedMetrics=' . $record->id)
+                    ->url(fn ($record) => '/app/time-series-page?selectedMetrics=' . $record->id)
                     ->extraAttributes(['style' => 'color: #3D68CC']),
             ])
             ->defaultSort('name')
