@@ -27,7 +27,7 @@ class Register extends BaseRegister
             "Name: {$user->name}\n" .
             "Email: {$user->email}\n" .
             "Registered At: {$user->created_at}\n" .
-            "View User: " . URL::route('filament.admin.resources.users.view', ['record' => $user->id]);
+            "View User: " . URL::route('filament.app.resources.users.view', ['record' => $user->id]);
 
         // Send the email to the system administrator
         Mail::raw($message, function ($mail) use ($adminEmail, $subject) {

@@ -48,7 +48,7 @@
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['metrics'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['metrics'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Learn about different </span><a target="_blank" href="/admin/metrics">Metrics / Indicators</a>
+                            <span class="checklist-text">Learn about different </span><a target="_blank" href="/app/metrics">Metrics / Indicators</a>
                         </div>
                         <div class="checklist-item {{ $this->getChecklistStatus()['alerts'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['alerts'] ? 'checked' : '' }} disabled>
@@ -79,7 +79,7 @@
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['time-series'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['time-series'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Dig into Metrics' </span><a target="_blank" href="/admin/time-series-page">Time Series</a><span class="checklist-text"> History</span>
+                            <span class="checklist-text">Dig into Metrics' </span><a target="_blank" href="/app/time-series-page">Time Series</a><span class="checklist-text"> History</span>
                         </div>
                         <div class="checklist-item {{ $this->getChecklistStatus()['search-by-similarity'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['search-by-similarity'] ? 'checked' : '' }} disabled>
@@ -110,7 +110,7 @@
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['user-signals'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['user-signals'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Create your first </span><a target="_blank" href="/admin/user-signals/create?step=info">Signal</a>
+                            <span class="checklist-text">Create your first </span><a target="_blank" href="/app/user-signals/create?step=info">Signal</a>
                         </div>
                     </div>
                 </div>
@@ -137,11 +137,11 @@
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['performance-page'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['performance-page'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Analyze your Signal’s trends over time in the <a target="_blank" href="/admin/performance-page">Performance Page</a></span>
+                            <span class="checklist-text">Analyze your Signal’s trends over time in the <a target="_blank" href="/app/performance-page">Performance Page</a></span>
                         </div>
                         <div class="checklist-item {{ $this->getChecklistStatus()['daily-signal'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['daily-signal'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Check daily signals by clicking on each day on your </span><a target="_blank" href="/admin/performance-page">Signal’s chart</a></span>
+                            <span class="checklist-text">Check daily signals by clicking on each day on your </span><a target="_blank" href="/app/performance-page">Signal’s chart</a></span>
                         </div>
                     </div>
                 </div>
@@ -168,7 +168,7 @@
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['dashboard'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['dashboard'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Explore your </span><a target="_blank" href="/admin">Dashboard</a><span class="checklist-text"> for real-time insights</span>
+                            <span class="checklist-text">Explore your </span><a target="_blank" href="/app">Dashboard</a><span class="checklist-text"> for real-time insights</span>
                         </div>
                     </div>
                 </div>

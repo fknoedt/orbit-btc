@@ -1,0 +1,74 @@
+/* resources/css/components/_buttons.css */
+/********************/
+/*     Buttons      */
+/*==================*/
+/* Note: If you want to add your own colors, you can do so by going to this tailwind.config.js file  */
+.btn {
+    padding: 0.5rem 1.25rem;
+    display: inline-block;
+    font-weight: 400;
+    letter-spacing: 0.025em;
+    border-width: 1px;
+    align-items: center;
+    transition: all 0.5s ease-in-out;
+    font-size: 1rem;
+    text-align: center;
+    color: #ffffff; /* Default text color */
+}
+.btn.btn-lg {
+    padding: 0.625rem 1.5rem;
+    font-size: 1.125rem;
+}
+.btn.btn-sm {
+    padding: 0.125rem 1rem;
+    font-size: 0.875rem;
+}
+/*  Button icons */
+.btn.btn-icon {
+    padding: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.btn.btn-icon.btn-lg {
+    width: 3rem;
+    height: 3rem;
+}
+.btn.btn-icon.btn-sm {
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Button Link */
+.btn.btn-link {
+    position: relative;
+    padding: 0;
+    border: none;
+}
+.btn.btn-link::after {
+    content: '';
+    position: absolute;
+    height: 1px;
+    width: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transition: all 0.5s;
+}
+.btn.btn-link:hover::after {
+    width: 100%;
+    right: auto;
+}
+
+/* Orange Button Styles */
+.btn.bg-orange-600 {
+    background-color: #f97316; /* Direct use of custom orange-600 */
+    border-color: #f97316;
+}
+.btn.bg-orange-600:hover {
+    background-color: #ea580c; /* Direct use of custom orange-700 */
+    border-color: #ea580c;
+}

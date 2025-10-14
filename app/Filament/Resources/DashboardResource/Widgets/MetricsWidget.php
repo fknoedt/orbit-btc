@@ -84,7 +84,7 @@ class MetricsWidget extends Widget
 
         foreach ($metrics as $metricId => $metric) {
             try {
-                $metric->chart_url = "/admin/time-series-page?selectedMetrics={$metricId}";
+                $metric->chart_url = "/app/time-series-page?selectedMetrics={$metricId}";
                 $endDate = Carbon::parse(array_key_last($dailyPrices));
                 $column = $metric->column_name;
                 $attempts = 0;

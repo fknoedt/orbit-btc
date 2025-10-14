@@ -77,7 +77,7 @@ class EditUserSignal extends EditRecord
                 ->label('Performance')
                     ->button()
                     ->color('gray')
-                    ->url(fn ($record) => "/admin/user-signal-score/{$record->id}"),
+                    ->url(fn ($record) => "/app/user-signal-score/{$record->id}"),
                 Actions\ViewAction::make(),
                 Actions\DeleteAction::make(),
             ],

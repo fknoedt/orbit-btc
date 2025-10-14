@@ -410,12 +410,12 @@
                             <p class="mt-1 text-sm text-red-500 hidden error-message" data-error="email">Please enter a valid email address.</p>
                         </div>
                         <div>
-                            <label for="interest" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Interest <span class="text-red-500">*</span></label>
-                            <select id="interest" name="interest" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-primary-500 focus:border-primary-500">
+                            <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Interest <span class="text-red-500">*</span></label>
+                            <select id="subject" name="subject" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-primary-500 focus:border-primary-500">
                                 <option value="invest">Angel Investment</option>
                                 <option value="partner">Partnership</option>
                             </select>
-                            <p class="mt-1 text-sm text-red-500 hidden error-message" data-error="interest">Please select an interest.</p>
+                            <p class="mt-1 text-sm text-red-500 hidden error-message" data-error="subject">Please select a subject.</p>
                         </div>
                         <div>
                             <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Message <span class="text-red-500">*</span></label>
@@ -434,7 +434,7 @@
                 </h2>
                 <div class="prose prose-gray dark:prose-invert text-left">
                     <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
-                        Create a user to explore Orbit's demo website here: <a href="/admin" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">https://orbitbtc.space</a>
+                        Create a user to explore Orbit's demo website here: <a href="/app" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">https://orbitbtc.space</a>
                     </p>
                     <p class="text-gray-600 dark:text-gray-400 mt-2 py-0.5">
                         <em>This website is being periodically updated so there could be some hiccups</em>
@@ -462,15 +462,12 @@
 @push('scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Test Alpine.js
-            console.log('Alpine.js test:', typeof Alpine !== 'undefined' ? 'Loaded' : 'Not loaded');
-
             // Form handling
             const form = document.getElementById('investor-inquiry-form');
             const submitButton = form.querySelector('button[type="submit"]');
             const nameInput = form.querySelector('#name');
             const emailInput = form.querySelector('#email');
-            const interestSelect = form.querySelector('#interest');
+            const subjectSelect = form.querySelector('#subject');
             const messageTextarea = form.querySelector('#message');
             const notificationContainer = document.createElement('div');
             document.body.appendChild(notificationContainer);
@@ -479,14 +476,14 @@
                 const isValid =
                     nameInput.value.trim() !== '' &&
                     emailInput.value.trim() !== '' &&
-                    interestSelect.value !== '' &&
+                    subjectSelect.value !== '' &&
                     messageTextarea.value.trim() !== '';
                 submitButton.disabled = !isValid;
             }
 
             updateSubmitButton();
 
-            [nameInput, emailInput, interestSelect, messageTextarea].forEach(field => {
+            [nameInput, emailInput, subjectSelect, messageTextarea].forEach(field => {
                 field.addEventListener('input', updateSubmitButton);
                 field.addEventListener('change', updateSubmitButton);
             });
@@ -497,7 +494,7 @@
 
                 const name = nameInput.value.trim();
                 const email = emailInput.value.trim();
-                const interest = interestSelect.value;
+                const subject = subjectSelect.value;
                 const message = messageTextarea.value.trim();
 
                 if (!name) {
@@ -508,8 +505,8 @@
                     form.querySelector('[data-error="email"]').classList.add('show');
                     isValid = false;
                 }
-                if (!interest) {
-                    form.querySelector('[data-error="interest"]').classList.add('show');
+                if (!subject) {
+                    form.querySelector('[data-error="subject"]').classList.add('show');
                     isValid = false;
                 }
                 if (!message) {
@@ -566,7 +563,6 @@
 
             // Fallback modal JavaScript
             window.openFallbackModal = function(src) {
-                console.log('Fallback modal opened with src:', src);
                 const modal = document.getElementById('fallback-modal');
                 const modalImage = document.getElementById('fallback-modal-image');
                 modalImage.src = src;
@@ -575,7 +571,6 @@
 
             document.getElementById('fallback-modal').addEventListener('click', function(e) {
                 if (e.target !== document.getElementById('fallback-modal-image')) {
-                    console.log('Fallback modal closed');
                     this.style.display = 'none';
                 }
             });
@@ -584,7 +579,6 @@
             document.querySelectorAll('[data-fallback-click]').forEach(img => {
                 img.addEventListener('click', function() {
                     if (typeof Alpine === 'undefined') {
-                        console.log('Alpine.js not loaded, using fallback');
                         window.openFallbackModal(this.src);
                     }
                 });

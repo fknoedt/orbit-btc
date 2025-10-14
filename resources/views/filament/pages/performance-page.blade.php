@@ -62,7 +62,7 @@
         @if (empty($this->userSignals))
             <div class="flex items-center justify-center h-64">
                 <p class="text-lg font-medium text-gray-500 dark:text-gray-400">
-                    You need to create a Model <a href="/admin/user-signals" class="text-primary-500 hover:underline">here</a>
+                    You need to create a Model <a href="/app/user-signals" class="text-primary-500 hover:underline">here</a>
                     in order to see its performance
                 </p>
             </div>
@@ -215,7 +215,7 @@
     document.addEventListener('livewire:initialized', () => {
         Livewire.on('update-url', (event) => {
             const newId = event[0].id;
-            const newUrl = `/admin/user-signal-score/${newId}`;
+            const newUrl = `/app/user-signal-score/${newId}`;
             window.history.pushState({}, document.title, newUrl);
         });
     });
