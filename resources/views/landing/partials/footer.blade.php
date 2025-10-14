@@ -8,13 +8,14 @@
                 </a>
             </div>
 
-            <div class="md:col-span-5 md:mt-0 mt-8">
+            <div class="md:col-span-6 md:mt-0 mt-8">
                 <div class="text-center">
-                    <p class="text-white">Made with <i class="mdi mdi-heart text-orange-700"></i> by a bitcoiner</p>
+                    <p class="text-white">Fix the money, fix the world <i class="mdi mdi-bitcoin text-orange-600" style="font-size: 2rem; vertical-align: middle"></i></p>
                 </div>
             </div>
 
-            <div class="md:col-span-4 md:mt-0 mt-8">
+            <div class="md:col-span-3">
+                &nbsp;
             </div><!--end col-->
         </div><!--end row-->
     </div><!--end container-->

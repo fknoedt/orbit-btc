@@ -12,10 +12,10 @@
 <!-- Switcher -->
 
 <!-- LTR & RTL Mode Code -->
-<div class="fixed top-1/3 -right-3 z-50">
+{{--<div class="fixed top-1/3 -right-3 z-50">
     <a href="" id="switchRtl">
         <span class="py-1 px-3 relative inline-block rounded-t-md -rotate-90 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-md dark:shadow-sm dark:shadow-gray-800 font-semibold rtl:block ltr:hidden">LTR</span>
         <span class="py-1 px-3 relative inline-block rounded-t-md -rotate-90 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-md dark:shadow-sm dark:shadow-gray-800 font-semibold ltr:block rtl:hidden">RTL</span>
     </a>
-</div>
+</div>--}}
 <!-- LTR & RTL Mode Code -->

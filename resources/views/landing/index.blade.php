@@ -129,7 +129,7 @@
     <!-- End -->--}}
 
     <!-- Start -->
-    <section class="py-24 w-full table relative bg-[url('../../assets/images/bg/cta.png')] bg-center bg-cover">
+    {{--<section class="py-24 w-full table relative bg-[url('../../assets/images/bg/cta.png')] bg-center bg-cover">
         <div class="absolute inset-0 bg-black opacity-80"></div>
         <div class="container relative">
             <div class="grid grid-cols-1 pb-8 text-center">
@@ -143,10 +143,11 @@
             </div><!--end grid-->
         </div><!--end container-->
     </section><!--end section-->
+    --}}
     <!-- End -->
 
     <!-- Start -->
-    <section class="relative md:py-24 py-8 bg-gray-50 dark:bg-slate-800" id="contact">
+    <section class="relative md:py-24 py-8" id="contact">
         <div class="container">
             <div class="grid grid-cols-1 pb-8 text-center">
                 <h6 class="text-orange-600 text-base font-medium uppercase mb-2">Contact us</h6>
