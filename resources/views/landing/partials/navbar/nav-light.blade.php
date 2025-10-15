@@ -1,5 +1,5 @@
 <!-- Navbar Start -->
-<nav class="navbar fixed top-0 w-full z-50 bg-transparent transition-all duration-500" id="navbar">
+<nav class="navbar fixed top-0 w-full z-50 transition-all duration-500" id="navbar">
     <div class="container flex flex-wrap items-center justify-between">
         <a class="navbar-brand order-first" href="{{ url('/') }}">
             <span class="inline-block dark:hidden">
@@ -10,10 +10,12 @@
         </a>
         <div class="navigation flex-1 order-2 hidden lg:flex justify-center" id="menu-collapse">
             <ul class="navbar-nav nav-light flex space-x-6" id="navbar-navlist">
-                <li class="nav-item"><a class="nav-link active text-white hover:text-orange-600" href="#home">Home</a></li>
-                <li class="nav-item"><a class="nav-link text-white hover:text-orange-600" href="#contact">Contact us</a></li>
-                <li class="nav-item"><a class="nav-link text-white hover:text-orange-600" href="/app/login">Log In</a></li>
-                <li class="nav-item"><a class="nav-link text-white hover:text-orange-600" href="/app/register">Sign Up</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="#how-it-works">How it Works</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Contact us</a></li>
+                <li class="nav-item"><a class="nav-link" href="/app/register">Sign Up</a></li>
+                <li class="nav-item"><a class="nav-link" href="/app/login">Log In</a></li>
             </ul>
         </div>
         <div class="nav-icons flex items-center order-3 ms-auto">
