@@ -19,13 +19,13 @@
     <!-- Hero End -->
 
     <!-- What is Orbit -->
-    <section class="relative md:py-24 py-16" id="features">
-        <div class="container md:mt-24 mt-8">
+    <section class="relative md:py-24 py-16" id="about">
+        <div class="container md:mt-8 mt-8">
             <div class="container mx-auto text-center">
                 <h6 class="text-orange-600 text-base font-medium uppercase mb-2">What is Orbit BTC ?</h6>
                 <h3 class="mb-4 md:text-2xl text-xl font-medium dark:text-white">Bitcoin exploring and monitoring tool</h3>
                 <p class="text-slate-400 max-w-xl mx-auto">Indicators can show you a snapshot of one factor influencing what you're trying to track, but that's usually just one part of the puzzle.
-                    In fields like the stock market, networks, medicine and climate, indexes are created with composite indicators to offer a more holistic view of what is being tracked. Orbit is a tool to bring the same approach into the bitcoin ecosystem enabling anyone to explore, compose, backtest and monitor bitcoin-related metrics in a simple and objective way.  </p>
+                    In fields like the stock market, networks, healthcare, climate and sports, indexes are created with composite indicators to offer a more holistic view of what is being tracked. Orbit is a tool to bring the same approach into the bitcoin ecosystem enabling anyone to explore, compose, backtest and monitor bitcoin-related metrics in a simple and objective way.  </p>
             </div><!--end grid-->
         </div>
     </section>
@@ -64,13 +64,13 @@
 
     <!-- Features Section -->
     <!-- Start -->
-    {{--<section class="relative md:py-24 py-8" id="features">
-        <div class="container md:mt-24 mt-8">
+    <section class="relative md:py-24 py-8" id="how-it-works">
+        <div class="container md:mt-8 mt-8">
             <div class="grid grid-cols-1 pb-8 text-center">
                 <h4 class="text-orange-600 text-base font-medium uppercase mb-2">How does it work ?</h4>
-                <h3 class="mb-4 md:text-2xl text-xl font-medium dark:text-white">Bitcoin-only exploring and monitoring tool</h3>
+                <h3 class="mb-4 md:text-2xl text-xl font-medium dark:text-white">Craft, test and monitor your own Signals</h3>
 
-                <p class="text-slate-400 max-w-xl mx-auto">Launch your campaign and benefit from our expertise on designing and managing conversion centered Tailwind CSS html page.</p>
+                <p class="text-slate-400 max-w-xl mx-auto">Orbit is a tool for anyone who is interested in exploring bitcoin's ecosystem.</p>
             </div><!--end grid-->
 
             <div class="grid grid-cols-1 mt-8">
@@ -79,13 +79,13 @@
                         <div class="grid sm:grid-cols-2">
                             <div class="">
                                 <div class="duration date-label-left ltr:float-right rtl:float-left md:me-7 relative">
-                                    <img src="assets/images/svg/design-thinking.svg" class="size-64" alt="">
+                                    <img src="assets/images/svg/explore.svg" class="size-36 mr-12" alt="">
                                 </div>
                             </div><!--end col-->
                             <div class="mt-4 md:mt-0">
                                 <div class="event event-description-right ltr:float-left rtl:float-right ltr:text-left rtl:text-right md:ms-7">
                                     <h5 class="text-lg dark:text-white mb-1 font-medium">Explore</h5>
-                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">The generated injected humour, or non-characteristic words etc. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis,</p>
+                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">Orbit offers all the relevant on-chain metrics and market indicators for you to use in your signals. You can understand how they relate to bitcoin's price, explore their time-series and use tools like pattern matching to pick your favorite ones.</p>
                                 </div>
                             </div><!--end col-->
                         </div><!--end grid-->
@@ -95,13 +95,29 @@
                         <div class="grid sm:grid-cols-2">
                             <div class="md:order-1 order-2">
                                 <div class="event event-description-left ltr:float-left rtl:float-right ltr:text-right rtl:text-left md:me-7">
-                                    <h5 class="text-lg dark:text-white mb-1 font-medium">Backtest</h5>
-                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">The generated injected humour, or non-characteristic words etc. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis,</p>
+                                    <h5 class="text-lg dark:text-white mb-1 font-medium">Build</h5>
+                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">Create your own signals based on weighted metrics, thresholds and time-horizon to simulate buy or sell operations whenever the threshold is hit.</p>
                                 </div>
                             </div><!--end col-->
                             <div class="md:order-2 order-1">
                                 <div class="duration duration-right md:ms-7 relative">
-                                    <img src="assets/images/svg/coding.svg" class="size-64" alt="">
+                                    <img src="assets/images/svg/build.svg" class="size-44 ml-12" alt="">
+                                </div>
+                            </div><!--end col-->
+                        </div><!--end grid-->
+                    </div><!--end timeline item-->
+
+                    <div class="timeline-item">
+                        <div class="grid sm:grid-cols-2">
+                            <div class="">
+                                <div class="duration date-label-left ltr:float-right rtl:float-left md:me-7 relative">
+                                    <img src="assets/images/svg/test.svg" class="size-44 mr-12" alt="">
+                                </div>
+                            </div><!--end col-->
+                            <div class="mt-4 md:mt-0">
+                                <div class="event event-description-right ltr:float-left rtl:float-right ltr:text-left rtl:text-right md:ms-7">
+                                    <h5 class="text-lg dark:text-white mb-1 font-medium">Backtest</h5>
+                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">Your signal is then tested against historical data and a score is given based on the buy or sell operations it triggers, which you can drill into.</p>
                                 </div>
                             </div><!--end col-->
                         </div><!--end grid-->
@@ -109,15 +125,15 @@
 
                     <div class="timeline-item mt-5 pt-4">
                         <div class="grid sm:grid-cols-2">
-                            <div class="mt-4 mt-sm-0">
-                                <div class="duration date-label-left ltr:float-right rtl:float-left md:me-7 relative">
-                                    <img src="assets/images/svg/office-desk.svg" class="size-64" alt="">
+                            <div class="md:order-1 order-2">
+                                <div class="event event-description-left ltr:float-left rtl:float-right ltr:text-right rtl:text-left md:me-7">
+                                    <h5 class="text-lg dark:text-white mb-1 font-medium">Monitor</h5>
+                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">With your signals tuned, you can sit back and wait for notifications or keep an eye on its performance to tweak them further.</p>
                                 </div>
                             </div><!--end col-->
-                            <div class="mt-4 mt-sm-0">
-                                <div class="event event-description-right ltr:float-left rtl:float-right ltr:text-left rtl:text-right md:ms-7">
-                                    <h5 class="text-lg dark:text-white mb-1 font-medium">Monitor</h5>
-                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">The generated injected humour, or non-characteristic words etc. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis,</p>
+                            <div class="md:order-2 order-1">
+                                <div class="duration duration-right md:ms-7 relative">
+                                    <img src="assets/images/svg/monitor.svg" class="size-36 ml-12" alt="">
                                 </div>
                             </div><!--end col-->
                         </div><!--end grid-->
@@ -126,7 +142,7 @@
             </div>
         </div><!--end container-->
     </section><!--end section-->
-    <!-- End -->--}}
+    <!-- End -->
 
     <!-- Start -->
     {{--<section class="py-24 w-full table relative bg-[url('../../assets/images/bg/cta.png')] bg-center bg-cover">
