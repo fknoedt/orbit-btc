@@ -45,12 +45,12 @@ class DailyPrice extends Model
     {
         return self::where('date', '>=', Carbon::now()->subDays(self::FUTURE_PRICE_MAX_DAYS_AGO))
             ->where(function ($query) {
-                return $query->where('price_change_1d', 0)
-                    ->orWhere('price_change_3d', 0)
-                    ->orWhere('price_change_5d', 0)
-                    ->orWhere('price_change_10d', 0)
-                    ->orWhere('price_change_14d', 0)
-                    ->orWhere('price_change_30d', 0);
+                return $query->whereNull('price_change_1d')
+                    ->orWhereNull('price_change_3d')
+                    ->orWhereNull('price_change_5d')
+                    ->orWhereNull('price_change_10d')
+                    ->orWhereNull('price_change_14d')
+                    ->orWhereNull('price_change_30d');
             })
             ->orderBy('date', 'asc')
             ->pluck('date')
