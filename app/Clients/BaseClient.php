@@ -4,6 +4,7 @@ namespace App\Clients;
 
 use App\Exceptions\AdapterException;
 use App\Exceptions\ExternalApiException;
+use App\Helpers\StringHelper;
 use App\Models\Request;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
@@ -21,6 +22,8 @@ abstract class BaseClient
     private const int REQUEST_CACHE_TTL = 20;
     protected const string CLIENT_ADAPTER_SUFFIX = 'ApiAdapter';
     protected const string CLIENT_SUFFIX = 'Client';
+
+    protected const int MAX_RAW_RESPONSE_LENGTH = 250;
 
     protected static int $dataSourceId;
     protected static string $url;
@@ -168,6 +171,9 @@ abstract class BaseClient
         return $data;
     }
 
+    /**
+     * @throws AdapterException
+     */
     public function logRequest(
         string $classMethod,
         array $args,
@@ -180,6 +186,15 @@ abstract class BaseClient
     {
         // remove namespace
         $classMethod = substr($classMethod, strrpos($classMethod, '\\') + 1);
+
+        // error: parse message
+        if (! str_starts_with($statusCode, '2')) {
+            $response = StringHelper::extractErrorMessage($response);
+        }
+
+        if (strlen($response) > self::MAX_RAW_RESPONSE_LENGTH) {
+            $response = substr($response, 0, self::MAX_RAW_RESPONSE_LENGTH);
+        }
 
         $data = [
             'class_method' => $classMethod,
