@@ -24,10 +24,6 @@ class RequestResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    /**
-     * @todo infolist with raw_response
-     * @see https://laraveldaily.com/post/filament-infolist-custom-entry-with-show-more-button
-     */
     public static function table(Table $table): Table
     {
         return $table
@@ -47,6 +43,11 @@ class RequestResource extends Resource
                     ->searchable()
                     ->limit(50)
                     ->label('Arguments')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('raw_response')
+                    ->searchable()
+                    ->limit(50, '...')
+                    ->label('Response')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('http_status_code')
                     ->numeric()
