@@ -13,7 +13,8 @@ class StringHelper
         $message = null;
 
         // Define error keys/tags once
-        $errorKeys = ['error', 'message', 'err', 'msg', 'description', 'detail'];
+        $errorKeys = ['error', 'message', 'err', 'msg', 'description', 'detail', 'error message'];
+        $errorMessages = ['error', 'failed', 'exception', 'not found'];
 
         // First, check if pure text (no tags, no JSON-like structures)
         if (!preg_match('/<[^<]+>/', $input) && !Str::startsWith($input, ['{', '['])) {
@@ -40,7 +41,7 @@ class StringHelper
                 }
                 // Fallback: whole stripped text if error-like
                 $text = trim(strip_tags($input));
-                if (Str::contains(Str::lower($text), ['error', 'failed', 'exception', 'not found'])) {
+                if (Str::contains(Str::lower($text), $errorMessages)) {
                     $message = $text;
                 }
             } else {
@@ -51,10 +52,12 @@ class StringHelper
                         break;
                     }
                 }
+            }
 
+            if (! $message) {
                 // Ultimate fallback: strip all tags and return if error-like
                 $text = trim(strip_tags($input));
-                if (Str::contains(Str::lower($text), ['error', 'failed', 'exception', 'not found'])) {
+                if (Str::contains(Str::lower($text), $errorMessages)) {
                     $message = $text;
                 }
             }
