@@ -228,9 +228,11 @@ class TimeSeriesPage extends Page
                 'decimalsInFloat' => $metric === 'mayer_multiple' ? 2 : 0,
                 'tickAmount' => 10,
             ];
+            // calculate Y-axis min and max range
             if ($maxValueAdjusted - $minValueAdjusted > self::YAXIS_MIN_MAGNITUDE) {
-                $yaxis['min'] = round($minValueAdjusted, -3);
-                $yaxis['max'] = round($maxValueAdjusted, -3);
+                $yaxis['min'] = round($minValueAdjusted, -3, PHP_ROUND_HALF_DOWN);
+                // if under 500, precision -3 will force it to 0
+                $yaxis['max'] = $maxValueAdjusted < 500 ? $maxValueAdjusted : round($maxValueAdjusted, -3, PHP_ROUND_HALF_UP);
             }
         }
 
