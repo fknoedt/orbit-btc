@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Helpers\NumberHelper;
 use App\Models\Metric;
 use App\Models\UserActivityLog;
 use App\Services\DailyPriceService;
@@ -21,7 +22,7 @@ class TimeSeriesPage extends Page
     /** percentage to increase y-axis' $maxValue range (up) */
     protected const int YAXIS_MARGIN_TOP = 5;
 
-    /** when Y axis magnitude is below this value, use auto magnitude/scaling */
+    /** when Y axis magnitude is below this value, use manual magnitude/scaling */
     protected const int YAXIS_MIN_MAGNITUDE = 5;
 
     /** percentage to decrease y-axis' $minValue range (down) */
@@ -228,12 +229,20 @@ class TimeSeriesPage extends Page
                 'decimalsInFloat' => $metric === 'mayer_multiple' ? 2 : 0,
                 'tickAmount' => 10,
             ];
-            // calculate Y-axis min and max range
-            if ($maxValueAdjusted - $minValueAdjusted > self::YAXIS_MIN_MAGNITUDE) {
-                $yaxis['min'] = round($minValueAdjusted, -3, PHP_ROUND_HALF_DOWN);
-                // if under 500, precision -3 will force it to 0
-                $yaxis['max'] = $maxValueAdjusted < 500 ? $maxValueAdjusted : round($maxValueAdjusted, -3, PHP_ROUND_HALF_UP);
+
+            // when Y-axis range is too small, calculate margin of minValue and maxValue
+            if ($maxValueAdjusted - $minValueAdjusted < self::YAXIS_MIN_MAGNITUDE) {
+                $minMagnitude = NumberHelper::getFloatMagnitude($minValueAdjusted) - 2;
+                $maxMagnitude = NumberHelper::getFloatMagnitude($maxValueAdjusted) - 2;
+                $yaxis['min'] = round($minValueAdjusted, $minMagnitude * -1);
+                $yaxis['max'] = round($maxValueAdjusted, $maxMagnitude * -1);
+
+                // don't let min go below 0 if minimum Y value is 0 or positive
+                if ($yaxis['min'] < 0 && $minValue >= 0) {
+                    $yaxis['min'] = 0;
+                }
             }
+
         }
 
         $options = [

@@ -26,4 +26,16 @@ class NumberHelper
 
         return Number::format($number, $precision);
     }
+
+    /**
+     * Return the number of digits, not considering decimals, the given float value has
+     * examples: 3.7 => 1; 9.0 => 1; 19.344 => 2; 421.5 => 3; 152555.13 => 6 and so on
+     */
+    public static function getFloatMagnitude(float $number): int
+    {
+        $intValue = (int) abs($number);
+        $stringValue = (string) $intValue;
+
+        return strlen($stringValue);
+    }
 }
