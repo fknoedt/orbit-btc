@@ -12,13 +12,21 @@ class MetricService
     protected ?Collection $allMetricsByKey = null;
 
     /**
-     * Using cache, return all Metrics indexed by their IDs. Params can be added ad-hoc.
+     * Using cache, return all Metrics indexed by their IDs
      */
     public function getAllMetricsKeyById(): Collection
     {
-        $cacheKey = __METHOD__;
+        $cacheKey = 'all-metrics';
         return Cache::remember($cacheKey, (new Carbon())->endOfDay(), function () {
             return Metric::get()->keyBy('id');
+        });
+    }
+
+    public function getAllMetricsKeyByColumnName(): array
+    {
+        $cacheKey = 'all-metrics';
+        return Cache::remember($cacheKey, (new Carbon())->endOfDay(), function () {
+            return Metric::get()->keyBy('column_name')->toArray();
         });
     }
 
