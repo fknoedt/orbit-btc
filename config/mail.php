@@ -90,6 +90,10 @@ return [
         'mailersend' => [
             'transport' => 'mailersend',
         ],
+
+        'reports' => [
+            'toAddress' => env('MAIL_REPORTS_TO', 'hello@orbitbtc.space'),
+        ]
     ],
 
     /*
