@@ -123,6 +123,12 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 
+        $schedule->command('btc:daily-prices-monitoring --send-email')
+            ->dailyAt('3:00')
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo);
+
+
         if (app()->environment('local')) {
             $schedule->command('backup:run')->daily()->at('03:00');
         }
