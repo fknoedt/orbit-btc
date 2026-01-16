@@ -78,7 +78,7 @@ class MetricsMonitoringService
         $invalidColumns = [];
         $metricsStats = [];
         $dailyCounter = 0;
-        $currentDate = Carbon::today();
+        $currentDate = Carbon::today('America/New_York');
         foreach ($lastDailyPrices as $dailyPrice) {
             $dailyCounter++;
             $dailyPriceDate = Carbon::parse($dailyPrice->date);
