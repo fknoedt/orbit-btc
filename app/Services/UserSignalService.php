@@ -120,7 +120,7 @@ class UserSignalService
         // calculate every Metric of every UserMetric and upsert all related tables
         foreach ($query->get() as $userSignal) {
             try {
-                // if one UserSignal fail processing, report and save errors to this object and try every other UserSignal
+                // if one UserSignal fails to process, report and save errors to this object and try every other UserSignal
                 DB::transaction(
                     function () use ($userSignal, $since, $metricService, $priceService) {
                         $now = Carbon::now();
