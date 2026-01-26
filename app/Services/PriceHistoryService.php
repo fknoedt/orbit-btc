@@ -339,7 +339,7 @@ class PriceHistoryService
                         if ($currentDay->copy()->addDays($numberOfDays) > Carbon::now()) {
                             $value = null;
                         } else { // missing day
-                            $value = 0;
+                            $value = null;
                         }
                     } else {
                         $value = ($dailyPricePlusN->close - $dailyPrice->close) / $dailyPrice->close * 100;
