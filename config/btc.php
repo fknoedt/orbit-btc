@@ -67,5 +67,9 @@ return [
             'url' => env('FMP_URL'),
             'key' => env('FMP_KEY'),
         ],
+        'coinmetrics' => [
+            'url' => env('COINMETRICS_URL'),
+            'key' => env('COINMETRICS_KEY'),
+        ],
     ]
 ];

@@ -12,7 +12,8 @@ class MetricsMonitoringService
 {
     use OutputBufferTrait;
 
-    protected const int MONITOR_X_PAST_DAYS = 30;
+    // minimum 31 to fulfill price_change_30d
+    protected const int MONITOR_X_PAST_DAYS = 31;
 
     protected array $dailyPricesInternalColumns = [
         'id',
@@ -44,7 +45,7 @@ class MetricsMonitoringService
     {
         $metrics = $metricService->getAllMetricsKeyByColumnName();
 
-        // add price_change_xd as metrics so it can be validated even if there's no metrics for them
+        // add price_change_xd as metrics so it can be validated even if there are no metrics for them
         foreach ([1, 3, 5, 10, 14, 30] as $numberOfDays) {
             $metrics["price_change_{$numberOfDays}d"] = [
                 'max_delayed_days' => $numberOfDays,

@@ -4,9 +4,7 @@ namespace App\Clients;
 
 
 use App\Exceptions\AdapterException;
-use App\Exceptions\DailyPriceStatsException;
 use App\Exceptions\ExternalApiException;
-use App\Services\DailyStatsService;
 use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;

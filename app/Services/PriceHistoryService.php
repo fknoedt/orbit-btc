@@ -335,14 +335,12 @@ class PriceHistoryService
                     );
 
                     if (! $dailyPricePlusN) {
-                        // future day
-                        if ($currentDay->copy()->addDays($numberOfDays) > Carbon::now()) {
-                            $value = null;
-                        } else { // missing day
-                            $value = null;
-                        }
+                        $value = null;
                     } else {
                         $value = ($dailyPricePlusN->close - $dailyPrice->close) / $dailyPrice->close * 100;
+                        if (! $value) {
+                            $value = null;
+                        }
                     }
 
                     $columnName = 'price_change_' . $numberOfDays . 'd';
