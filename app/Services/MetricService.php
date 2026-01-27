@@ -14,18 +14,28 @@ class MetricService
     /**
      * Using cache, return all Metrics indexed by their IDs
      */
-    public function getAllMetricsKeyById(): Collection
+    public function getAllMetricsKeyById(bool $includeInactive = false): Collection
     {
-        $cacheKey = 'all-metrics';
-        return Cache::remember($cacheKey, (new Carbon())->endOfDay(), function () {
+        if ($includeInactive) {
+            return Cache::remember('all-metrics-with-trash', (new Carbon())->endOfDay(), function () {
+                return Metric::withTrashed()->get()->keyBy('id');
+            });
+        }
+
+        return Cache::remember('all-metrics', (new Carbon())->endOfDay(), function () {
             return Metric::get()->keyBy('id');
         });
     }
 
-    public function getAllMetricsKeyByColumnName(): array
+    public function getAllMetricsKeyByColumnName(bool $includeInactive = false): array
     {
-        $cacheKey = 'all-metrics';
-        return Cache::remember($cacheKey, (new Carbon())->endOfDay(), function () {
+        if ($includeInactive) {
+            return Cache::remember('all-metrics-with-trash', (new Carbon())->endOfDay(), function () {
+                return Metric::withTrashed()->get()->keyBy('column_name')->toArray();
+            });
+        }
+
+        return Cache::remember('all-metrics', (new Carbon())->endOfDay(), function () {
             return Metric::get()->keyBy('column_name')->toArray();
         });
     }

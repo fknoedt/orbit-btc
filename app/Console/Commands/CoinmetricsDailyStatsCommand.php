@@ -2,11 +2,15 @@
 
 namespace App\Console\Commands;
 
-use App\Clients\CoinmetricsClient;
+use App\Clients\CoinMetricsClient;
+use App\Exceptions\AdapterException;
 use App\Exceptions\DailyPriceStatsException;
+use App\Exceptions\ExternalApiException;
 use App\Services\DailyStatsService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 
 class CoinmetricsDailyStatsCommand extends Command
 {
@@ -17,7 +21,7 @@ class CoinmetricsDailyStatsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:coinmetrics-daily-stats {metrics?} {--from=} {--to=}';
+    protected $signature = 'btc:coinmetrics-daily-stats {metrics?} {--from=} {--to=} {--force}';
 
     /**
      * The console command description.
@@ -28,15 +32,22 @@ class CoinmetricsDailyStatsCommand extends Command
 
     /**
      * Execute the console command.
+     * @param CoinMetricsClient $client
+     * @param DailyStatsService $dailyStatsService
      * @throws DailyPriceStatsException
+     * @throws AdapterException
+     * @throws ExternalApiException
+     * @throws ConnectionException
+     * @throws RequestException
      */
-    public function handle(CoinmetricsClient $client, DailyStatsService $dailyStatsService)
+    public function handle(CoinMetricsClient $client, DailyStatsService $dailyStatsService)
     {
         $from = $this->option('from') ?? Carbon::now()->subDays(self::SINCE_DAYS_AGO)->format('Y-m-d');
         $to = $this->option('to') ?? Carbon::now()->format('Y-m-d');
         $metricsInput = $this->argument('metrics');
+        $force = $this->option('force');
 
-        $endpoints = array_keys(CoinmetricsClient::METRIC_TO_COLUMN_NAME);
+        $endpoints = array_keys(CoinMetricsClient::METRIC_TO_COLUMN_NAME);
 
         if ($metricsInput) {
             $endpoints = array_intersect(explode(',', $metricsInput), $endpoints);
@@ -54,12 +65,12 @@ class CoinmetricsDailyStatsCommand extends Command
             $date = Carbon::parse($day['time'])->format('Y-m-d');
 
             foreach ($endpoints as $metric) {
-                $columnName = CoinmetricsClient::METRIC_TO_COLUMN_NAME[$metric];
+                $columnName = CoinMetricsClient::METRIC_TO_COLUMN_NAME[$metric];
                 $dailyData[$date][$columnName] = $day[$metric];
             }
         }
 
-        $recordsUpdated = $dailyStatsService->fillStats($dailyData);
+        $recordsUpdated = $dailyStatsService->fillStats($dailyData, $force);
 
         $this->info("{$recordsUpdated} daily_prices updated. All done ✅");
     }

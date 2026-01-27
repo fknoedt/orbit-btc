@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Clients\CoinmetricsClient;
+use App\Clients\CoinMetricsClient;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +29,7 @@ class ImportCoinMetricsData extends Command
         // Map headers to DB columns (excluding irrelevant ones)
         $headerMap = [
             'time' => 'date',
-            ...CoinmetricsClient::METRIC_TO_COLUMN_NAME,
+            ...CoinMetricsClient::METRIC_TO_COLUMN_NAME,
         ];
 
         $totalLines = count($lines);
