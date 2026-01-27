@@ -21,16 +21,6 @@ class CryptoCompareApiAdapter extends BaseClient implements ExternalApiAdapterIn
     public const int MAX_LIMIT = 2000;
     private ?string $key;
 
-    protected const array ENDPOINTS = [
-        /*'tradingsignals/intotheblock/latest' => [
-            'name' => 'Trading Signals',
-            'description' => 'Powered by IntoTheBlock, an intelligence company that leverages machine learning and advanced statistics to extract intelligent signals for crypto-assets.',
-            'result_fields' => [
-                'time',
-            ]
-        ],*/
-    ];
-
     public function __construct()
     {
         parent::__construct();

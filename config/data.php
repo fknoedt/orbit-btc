@@ -5,7 +5,7 @@
  */
 
 return [
-    // used on auto generated signals
+    // used on auto-generated signals
     'system_user_id' => 1000000,
     'data_source' => [
         'new_liberty_id' => 1,
@@ -19,6 +19,7 @@ return [
         'blockchain_com_id' => 9,
         'bgeometrics_id' => 10,
         'fmp_id' => 11,
+        'coinmetrics_id' => 12,
     ],
     'role_id' => [
         'user' => 1,
