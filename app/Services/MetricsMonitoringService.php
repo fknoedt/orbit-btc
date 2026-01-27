@@ -43,7 +43,7 @@ class MetricsMonitoringService
 
     public function runReport(MetricService $metricService): void
     {
-        $metrics = $metricService->getAllMetricsKeyByColumnName();
+        $metrics = $metricService->getAllMetricsKeyByColumnName(true);
 
         // add price_change_xd as metrics so it can be validated even if there are no metrics for them
         foreach ([1, 3, 5, 10, 14, 30] as $numberOfDays) {
@@ -77,6 +77,7 @@ class MetricsMonitoringService
         $delayedDailyPrice = null;
         $daysDelayed = 0;
         $invalidColumns = [];
+        $deactivatedMetrics = [];
         $metricsStats = [];
         $dailyCounter = 0;
         $currentDate = Carbon::today('America/New_York');
@@ -97,6 +98,12 @@ class MetricsMonitoringService
                     $invalidColumns[$columnName] = true;
                     continue;
                 }
+
+                if (! empty($metric['deleted_at'])) {
+                    $deactivatedMetrics[$columnName] = true;
+                    continue;
+                }
+
                 // first value found for metric
                 if (! empty($dailyPrice->{$columnName}) && ! isset($metricsStats[$columnName])) {
                     $metricDaysOutdated = $dailyCounter - ($metric['max_delayed_days'] + 1);
@@ -114,9 +121,14 @@ class MetricsMonitoringService
         } else {
             $this->output("daily_prices up to date: {$currentDate->format('Y-m-d')}", 'success');
         }
+
         if (! empty($invalidColumns)) {
             $this->output('Invalid columns found in daily_prices table: ' . implode(', ', array_keys($invalidColumns)), 'error');
             $this->issuesFound += count($invalidColumns);
+        }
+
+        if (! empty($deactivatedMetrics)) {
+            $this->output('Deactivated Metrics: ' . implode(', ', array_keys($deactivatedMetrics)), 'note');
         }
 
         $emptyMetrics = array_diff(array_keys($metrics), array_keys($metricsStats));

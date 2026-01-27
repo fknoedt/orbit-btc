@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Clients\BgeometricsClient;
+use App\Clients\CoinMetricsClient;
 use App\Clients\CurlCryptoQuantClient;
 use App\Clients\FmpClient;
 use App\Console\Commands\BgeometricsDailyStatsCommand;
@@ -19,7 +20,7 @@ class Kernel extends ConsoleKernel
     /** how many days in the past to look for missing daily_prices entries */
     private const int PRICE_SYNC_LAST_X_DAYS = 30;
 
-    /** since when NULL CruptoQuant stats should be updated */
+    /** from when NULL CryptoQuant stats should be updated */
     private const string STATS_START_DATE = '2023-01-01';
 
     /**
@@ -50,6 +51,12 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('btc:fmp-daily-stats')
             ->everyThirtyMinutes()->when($this->shouldUpdateStats(array_keys(FmpClient::METRICS)))
+            ->appendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo);
+
+        // TODO: ignore known delayed stats (metrics.max_delayed_days)
+        $schedule->command('btc:coinmetrics-daily-stats --force')
+            ->everyThirtyMinutes()->when($this->shouldUpdateStats(CoinMetricsClient::METRIC_TO_COLUMN_NAME))
             ->appendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);
 

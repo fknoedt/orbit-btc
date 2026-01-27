@@ -8,7 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 
-class CoinmetricsClient extends BaseClient
+class CoinMetricsClient extends BaseClient
 {
     /**
      * CM's metric => metrics.column_name / daily_prices column name
@@ -31,7 +31,7 @@ class CoinmetricsClient extends BaseClient
         'volume_reported_spot_usd_1d' => 'volume_reported_spot_usd_1d',
     ];
 
-    protected const int DEFAULT_DAYS_AGO = 30;
+    public const int DEFAULT_DAYS_AGO = 30;
 
     const array METRICS = [
         'spy' => 'getHistoricalSpy',
