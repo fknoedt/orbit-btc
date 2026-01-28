@@ -93,14 +93,14 @@ class MetricsMonitoringService
             foreach ($dailyPricesColumns as $dailyPriceColumn) {
                 $columnName = $dailyPriceColumn['name'];
 
-                // daily_prices column doesn't have a related metric
-                if (! $metric = $metrics[$columnName] ?? null) {
-                    $invalidColumns[$columnName] = true;
+                if (! empty($metric['deleted_at'])) {
+                    $deactivatedMetrics[$columnName] = true;
                     continue;
                 }
 
-                if (! empty($metric['deleted_at'])) {
-                    $deactivatedMetrics[$columnName] = true;
+                // daily_prices column doesn't have a related metric
+                if (! $metric = $metrics[$columnName] ?? null) {
+                    $invalidColumns[$columnName] = true;
                     continue;
                 }
 
