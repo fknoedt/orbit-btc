@@ -94,8 +94,14 @@ class MetricsMonitoringService
                 $columnName = $dailyPriceColumn['name'];
 
                 if (! empty($metric['deleted_at'])) {
+                    echo $metric['deleted_at'] . PHP_EOL;
                     $deactivatedMetrics[$columnName] = true;
+                    unset($metrics[$columnName]);
                     continue;
+                }
+
+                if ($columnName === 'm2') {
+                    dd($metric);
                 }
 
                 // daily_prices column doesn't have a related metric
