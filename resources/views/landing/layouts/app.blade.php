@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light scroll-smooth" dir="ltr">
+<html lang="en" class="dark scroll-smooth" dir="ltr">
 <head>
     @section('head')
     <meta charset="UTF-8">
