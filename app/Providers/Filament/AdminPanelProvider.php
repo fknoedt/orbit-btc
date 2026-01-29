@@ -8,7 +8,6 @@ use App\Filament\Pages\CustomDashboard;
 use App\Filament\Pages\PerformancePage;
 use App\Http\Middleware\LogUserActivity;
 use App\Http\Middleware\RedirectFirstLogin;
-use App\Models\UserActivityLog;
 use App\Services\WidgetService;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;

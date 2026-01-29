@@ -7,10 +7,11 @@
     <section class="py-36 lg:py-64 w-full table relative bg-no-repeat bg-center bg-cover active" id="home" style="background-image: url('/assets/images/bg/satellite-waves.jpg');">
         <div class="container relative z-1">
             <div class="grid grid-cols-1 mt-12">
-                <h4 class="text-white lg:text-5xl text-4xl lg:leading-normal leading-normal font-medium mb-7 position-relative z-10">Craft your own signals and <br> level-up your bitcoin game</h4>
+                <h4 class="text-white lg:text-5xl text-4xl lg:leading-normal leading-normal font-medium mb-7 position-relative z-10">Craft your own signals and <br> level-up your Bitcoin game</h4>
                 <p class="text-white opacity-80 mb-0 max-w-2xl text-lg z-10">Orbit allows you to create and monitor bitcoin signals by combining, weighting, thresholding and backtesting on-chain metrics and market indicators.</p>
                 <div class="relative mt-10 z-10">
                     <a href="/app/register" class="btn bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white rounded-md">Create a Free Account</a>
+                    <span class="ml-2 px-3 py-3 bg-red-100 border border-gray-300 text-red-600 text-sm font-semibold rounded">Demo version - 6 months of Pro Access for free upon registration</span>
                 </div>
             </div>
         </div><!--end container-->
@@ -32,7 +33,7 @@
     <!-- End What is Orbit -->
 
     <!-- Why Orbit -->
-    <section class="relative md:py-24 py-16 bg-gray-50 dark:bg-slate-800 z-10" id="about">
+    <section class="relative md:py-24 py-16 bg-gray-50 dark:bg-slate-800 z-10">
         <div class="container mx-auto">
             <div class="grid grid-cols-1 lg:grid-cols-12 md:grid-cols-2 gap-10 items-center">
                 <div class="lg:col-span-5">
@@ -144,23 +145,19 @@
     </section><!--end section-->
     <!-- End -->
 
-    <!-- Start -->
-    {{--<section class="py-24 w-full table relative bg-[url('../../assets/images/bg/cta.png')] bg-center bg-cover">
-        <div class="absolute inset-0 bg-black opacity-80"></div>
-        <div class="container relative">
-            <div class="grid grid-cols-1 pb-8 text-center">
-                <h3 class="mb-6 md:text-3xl text-2xl text-white font-medium">Ready to start your next web project now?</h3>
-
-                <p class="text-white opacity-50 max-w-xl mx-auto">Launch your campaign and benefit from our expertise on designing and managing conversion centered Tailwind CSS html page.</p>
-
+    <!-- Quote -->
+    <section class="relative md:py-24 py-16 bg-gray-50 dark:bg-slate-800 z-10" id="quote">
+        <div class="container md:mt-8 mt-8">
+            <div class="container mx-auto text-center">
+                <h6 class="text-orange-600 text-base font-medium uppercase mb-2">How can Orbit BTC help me ?</h6>
+                <h3 class="mb-4 md:text-2xl text-xl font-medium dark:text-white">Predicting the market might be hard, but patterns tend to reoccur. Customize, backtest and automate your own Bitcoin Signals with Orbit.</h3>
                 <div class="relative mt-10">
-                    <a href="/app/register" class="btn bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white rounded-md">Create a Free Account</a>
+                    <a href="/app/register" class="btn bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white rounded-md">Try it for free now</a>
                 </div>
-            </div><!--end grid-->
-        </div><!--end container-->
-    </section><!--end section-->
-    --}}
-    <!-- End -->
+            </div>
+        </div>
+    </section>
+    <!-- End Quote -->
 
     <!-- Start -->
     <section class="relative md:py-24 py-8" id="contact">

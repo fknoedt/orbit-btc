@@ -2,14 +2,36 @@
 
 namespace App\Filament\Pages\Auth;
 
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Form;
 use Filament\Pages\Auth\Register as BaseRegister;
-use Filament\Notifications\Notification;
 use Filament\Http\Responses\Auth\Contracts\RegistrationResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 
 class Register extends BaseRegister
 {
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                // Add a custom section with the message above the form
+                Section::make()
+                    ->schema([
+                        Placeholder::make('')
+                            ->content('Demo version - Get 3 months of Pro Access free if you sign up now')
+                            ->extraAttributes(['class' => 'text-sm text-red-600 mb-1']),
+                    ])
+                    ->collapsible(false),
+                // Default register form fields (name, email, password, etc.)
+                $this->getNameFormComponent(),
+                $this->getEmailFormComponent(),
+                $this->getPasswordFormComponent(),
+                $this->getPasswordConfirmationFormComponent(),
+            ]);
+    }
+
     public function register(): ?RegistrationResponse
     {
         // Perform the default registration process and capture the response
