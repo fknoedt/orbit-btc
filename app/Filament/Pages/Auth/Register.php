@@ -9,6 +9,7 @@ use Filament\Pages\Auth\Register as BaseRegister;
 use Filament\Http\Responses\Auth\Contracts\RegistrationResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\HtmlString;
 
 class Register extends BaseRegister
 {
@@ -20,9 +21,10 @@ class Register extends BaseRegister
                 Section::make()
                     ->schema([
                         Placeholder::make('')
-                            ->content('Demo version - Get 3 months of Pro Access free if you sign up now')
-                            ->extraAttributes(['class' => 'text-sm text-red-600 mb-1']),
+                            ->content(new HtmlString('<div style="text-align: center; color: red; font-size: 0.875rem; font-weight: 600; padding: 0.0rem;"><span style="font-size: 1rem;">Demo version</span><br/>Get 6 months of Pro Access for free if you sign up now</div>')),
                     ])
+                    ->compact()
+                    ->extraAttributes(['style' => 'background-color: rgba(255, 227, 227); border: 1px solid red;'])
                     ->collapsible(false),
                 // Default register form fields (name, email, password, etc.)
                 $this->getNameFormComponent(),

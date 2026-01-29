@@ -4,7 +4,7 @@
     @include('landing.partials.navbar.nav-light')
 
     <!-- Hero Start -->
-    <section class="py-36 lg:py-64 w-full table relative bg-no-repeat bg-center bg-cover active" id="home" style="background-image: url('/assets/images/bg/satellite-waves.jpg');">
+    <section class="py-36 lg:py-64 w-full table relative bg-no-repeat bg-center bg-cover active" id="home" style="background-image: url('/assets/images/bg/btc-satellite.jpg');">
         <div class="container relative z-1">
             <div class="grid grid-cols-1 mt-12">
                 <h4 class="text-white lg:text-5xl text-4xl lg:leading-normal leading-normal font-medium mb-7 position-relative z-10">Craft your own signals and <br> level-up your Bitcoin game</h4>
@@ -80,7 +80,7 @@
                         <div class="grid sm:grid-cols-2">
                             <div class="">
                                 <div class="duration date-label-left ltr:float-right rtl:float-left md:me-7 relative">
-                                    <img src="assets/images/svg/explore.svg" class="size-36 mr-12" alt="">
+                                    <img src="assets/images/svg/explore.svg" class="size-36 mr-12 dark:invert" alt="">
                                 </div>
                             </div><!--end col-->
                             <div class="mt-4 md:mt-0">
@@ -102,7 +102,7 @@
                             </div><!--end col-->
                             <div class="md:order-2 order-1">
                                 <div class="duration duration-right md:ms-7 relative">
-                                    <img src="assets/images/svg/build.svg" class="size-44 ml-12" alt="">
+                                    <img src="assets/images/svg/build.svg" class="size-44 ml-12 dark:invert" alt="">
                                 </div>
                             </div><!--end col-->
                         </div><!--end grid-->
@@ -112,7 +112,7 @@
                         <div class="grid sm:grid-cols-2">
                             <div class="">
                                 <div class="duration date-label-left ltr:float-right rtl:float-left md:me-7 relative">
-                                    <img src="assets/images/svg/test.svg" class="size-44 mr-12" alt="">
+                                    <img src="assets/images/svg/test.svg" class="size-44 mr-12 dark:invert" alt="">
                                 </div>
                             </div><!--end col-->
                             <div class="mt-4 md:mt-0">
@@ -134,7 +134,7 @@
                             </div><!--end col-->
                             <div class="md:order-2 order-1">
                                 <div class="duration duration-right md:ms-7 relative">
-                                    <img src="assets/images/svg/monitor.svg" class="size-36 ml-12" alt="">
+                                    <img src="assets/images/svg/monitor.svg" class="size-36 ml-12 dark:invert" alt="">
                                 </div>
                             </div><!--end col-->
                         </div><!--end grid-->

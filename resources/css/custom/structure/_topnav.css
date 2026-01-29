@@ -8,7 +8,7 @@
         .navbar-nav {
             @apply mt-4 flex flex-row overflow-y-scroll h-24;
             .nav-link {
-                @apply block p-3 text-slate-900 hover:text-orange-600 dark:text-white/60 dark:hover:text-white;
+                @apply block p-3 text-slate-900 hover:text-orange-600 dark:text-white/80 dark:hover:text-white;
             }
             .active {
                 .nav-link {
@@ -95,7 +95,7 @@
                 }
                 &.nav-light {
                     .nav-link {
-                        @apply block p-3 text-white/60 hover:text-white; /* Transparent navbar */
+                        @apply block p-3 text-white/80 hover:text-white; /* Transparent navbar */
                     }
                     .active {
                         .nav-link {
