@@ -9,9 +9,9 @@
             <div class="grid grid-cols-1 mt-12">
                 <h4 class="text-white lg:text-5xl text-4xl lg:leading-normal leading-normal font-medium mb-7 position-relative z-10">Craft your own signals and <br> level-up your Bitcoin game</h4>
                 <p class="text-white opacity-80 mb-0 max-w-2xl text-lg z-10">Orbit allows you to create and monitor bitcoin signals by combining, weighting, thresholding and backtesting on-chain metrics and market indicators.</p>
-                <div class="relative mt-10 z-10">
+                <div class="relative mt-10 z-10 flex flex-wrap items-center gap-2">
                     <a href="/app/register" class="btn bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white rounded-md">Create a Free Account</a>
-                    <span class="ml-2 px-3 py-3 bg-red-100 border border-gray-300 text-red-600 text-sm font-semibold rounded">Demo version - 6 months of Pro Access for free upon registration</span>
+                    <span class="ml-2 px-3 py-3 bg-red-100 border border-gray-300 text-red-600 text-sm font-semibold rounded">Demo version - 6 months of free Pro Access</span>
                 </div>
             </div>
         </div><!--end container-->
