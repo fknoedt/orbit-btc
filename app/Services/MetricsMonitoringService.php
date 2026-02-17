@@ -93,20 +93,18 @@ class MetricsMonitoringService
             foreach ($dailyPricesColumns as $dailyPriceColumn) {
                 $columnName = $dailyPriceColumn['name'];
 
-                if (! empty($metric['deleted_at'])) {
-                    echo $metric['deleted_at'] . PHP_EOL;
-                    $deactivatedMetrics[$columnName] = true;
-                    unset($metrics[$columnName]);
+                // daily_prices column doesn't have a related metric
+                if (! $metric = $metrics[$columnName] ?? null) {
+                    // deactivated metrics will remove entry from $metrics
+                    if (! array_key_exists($columnName, $deactivatedMetrics)) {
+                        $invalidColumns[$columnName] = true;
+                    }
                     continue;
                 }
 
-                if ($columnName === 'm2') {
-                    dd($metric);
-                }
-
-                // daily_prices column doesn't have a related metric
-                if (! $metric = $metrics[$columnName] ?? null) {
-                    $invalidColumns[$columnName] = true;
+                if (! empty($metric['deleted_at'])) {
+                    $deactivatedMetrics[$columnName] = true;
+                    unset($metrics[$columnName]);
                     continue;
                 }
 

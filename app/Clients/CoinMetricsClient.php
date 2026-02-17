@@ -33,11 +33,6 @@ class CoinMetricsClient extends BaseClient
 
     public const int DEFAULT_DAYS_AGO = 30;
 
-    const array METRICS = [
-        'spy' => 'getHistoricalSpy',
-        'gold' => 'getHistoricalGold',
-    ];
-
     private string $version = 'v4';
     private static ?string $apikey;
 
