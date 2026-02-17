@@ -3,18 +3,19 @@
 namespace App\Console\Commands;
 
 use App\Clients\BgeometricsClient;
+use App\Clients\BitcoinIsDataClient;
+use App\Exceptions\AdapterException;
 use App\Exceptions\DailyPriceStatsException;
+use App\Exceptions\ExternalApiException;
 use App\Services\DailyStatsService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Laravel\Octane\Exceptions\DdException;
 
 class BitcoinIsDataDailyStatsCommand extends Command
 {
-    // TODO: move to BitcoinIsDataClient when it is created
-    protected const array ALLOWED_METRICS = [
-        'm2'
-    ];
-
     public const int SINCE_DAYS_AGO = 15;
 
     /**
@@ -22,7 +23,7 @@ class BitcoinIsDataDailyStatsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:bitcoinisdata-daily-stats {--from-start} {--from-file} {metrics?}';
+    protected $signature = 'btc:bitcoinisdata-daily-stats {--since=} {--from-file} {metrics?}';
 
     /**
      * The console command description.
@@ -33,61 +34,61 @@ class BitcoinIsDataDailyStatsCommand extends Command
 
     /**
      * Execute the console command.
+     * @param DailyStatsService $dailyStatsService
+     * @param BitcoinIsDataClient $client
      * @throws DailyPriceStatsException
+     * @throws AdapterException
+     * @throws ExternalApiException
+     * @throws ConnectionException
+     * @throws RequestException
+     * @throws DdException
      */
-    public function handle(DailyStatsService $dailyStatsService)
+    public function handle(DailyStatsService $dailyStatsService, BitcoinIsDataClient $client)
     {
-        $since = $this->option('from-start') ?
-            '2009-01-01' :
-            Carbon::now()->subDays(self::SINCE_DAYS_AGO)->format('Y-m-d');
-
-        // currently only working from-file and for m2
-        $fromFile = $this->option('from-file');
-        $metric = 'm2';
-
-
-        if (! $fromFile) {
-            throw new \InvalidArgumentException('from-file option is required');
+        if (! $since = $this->option('since')) {
+            $since = Carbon::now()->subDays(self::SINCE_DAYS_AGO)->format('Y-m-d');
         }
 
-        $this->output->info("Updating daily_stats.m2 with BID data since {$since}");
+        // currently only m2 works
+        if ($this->option('from-file')) {
+            $metrics = 'm2';
 
-        // in .gitignore
-        $filepath = database_path() . DIRECTORY_SEPARATOR . 'local-data' . DIRECTORY_SEPARATOR . "bid-{$metric}.csv";
+            $this->output->info("Updating daily_stats.m2 with BID data since {$since}");
 
-        $numRows = 0;
-        $data = [];
+            // in .gitignore
+            $filepath = database_path() . DIRECTORY_SEPARATOR . 'local-data' . DIRECTORY_SEPARATOR . "bid-{$metrics}.csv";
 
-        if (($handle = fopen($filepath, "r")) !== FALSE) {
-            while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $numRows++;
-                // header
-                if ($numRows === 1) {
-                    continue;
+            $numRows = 0;
+            $data = [];
+
+            if (($handle = fopen($filepath, "r")) !== FALSE) {
+                while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                    $numRows++;
+                    // header
+                    if ($numRows === 1) {
+                        continue;
+                    }
+                    $data[$row[1]] = [$metrics => $row[2]];
                 }
-                $data[$row[1]] = [$metric => $row[2]];
+                fclose($handle);
+            } else {
+                throw new \RuntimeException('Unable to open ' . $filepath);
             }
-            fclose($handle);
+
+            // header doesn't count
+            $numRows--;
+
+            ksort($data);
+
+            $this->info("{$numRows} loaded from csv file. Updating...");
         } else {
-            throw new \RuntimeException('Unable to open ' . $filepath);
+            // see @todo on BitcoinIsDataClient
+            throw new \RuntimeException('Currently only --from-file is supported');
         }
 
-        // header doesn't count
-        $numRows--;
+        $recordsUpdated = $dailyStatsService->fillStats($data, true);
 
-        ksort($data);
-
-        $this->info("{$numRows} loaded from csv file. Updating...");
-
-        $recordsUpdated = $dailyStatsService->fillStats($data);
-
-        $this->info("{$recordsUpdated} daily_prices.{$metric} updated");
-
-        $this->info('Filling forward...');
-
-        $filledForward = $dailyStatsService->fillForward($metric, $since);
-
-        $this->info("{$filledForward} daily_prices.{$metric} filled forward");
+        $this->info("{$recordsUpdated} daily_prices.{$metrics} updated");
 
         $this->output->success("All done ✅");
     }
