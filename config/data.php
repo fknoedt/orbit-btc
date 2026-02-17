@@ -20,6 +20,7 @@ return [
         'bgeometrics_id' => 10,
         'fmp_id' => 11,
         'coinmetrics_id' => 12,
+        'bitcoinisdata_id' => 13,
     ],
     'role_id' => [
         'user' => 1,

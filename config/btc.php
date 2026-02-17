@@ -71,5 +71,9 @@ return [
             'url' => env('COINMETRICS_URL'),
             'key' => env('COINMETRICS_KEY'),
         ],
+        'bitcoinisdata' => [
+            'url' => env('BITCOINISDATA_URL'),
+            'key' => env('BITCOINISDATA_KEY'),
+        ],
     ]
 ];
