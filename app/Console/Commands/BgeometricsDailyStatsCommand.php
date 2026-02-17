@@ -3,9 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Clients\BgeometricsClient;
+use App\Exceptions\AdapterException;
+use App\Exceptions\DailyPriceStatsException;
+use App\Exceptions\ExternalApiException;
 use App\Services\DailyStatsService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 
 class BgeometricsDailyStatsCommand extends Command
 {
@@ -16,7 +21,7 @@ class BgeometricsDailyStatsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:bgeometrics-daily-stats {--from-start} {--from-file} {metrics?}';
+    protected $signature = 'btc:bgeometrics-daily-stats {--since=} {--from-file} {metrics?}';
 
     /**
      * The console command description.
@@ -27,12 +32,19 @@ class BgeometricsDailyStatsCommand extends Command
 
     /**
      * Execute the console command.
+     * @param BgeometricsClient $client
+     * @param DailyStatsService $dailyStatsService
+     * @throws DailyPriceStatsException
+     * @throws AdapterException
+     * @throws ExternalApiException
+     * @throws ConnectionException
+     * @throws RequestException
      */
     public function handle(BgeometricsClient $client, DailyStatsService $dailyStatsService)
     {
-        $since = $this->option('from-start') ?
-            '2009-01-01' :
-            Carbon::now()->subDays(self::SINCE_DAYS_AGO)->format('Y-m-d');
+        if (! $since = $this->option('since')) {
+            $since = Carbon::now()->subDays(self::SINCE_DAYS_AGO)->format('Y-m-d');
+        }
 
         $metrics = $this->argument('metrics');
 
@@ -64,18 +76,12 @@ class BgeometricsDailyStatsCommand extends Command
 
             $result = $client->getEndpoint($endpoint, ['startday' => $since], $fromFile);
 
-            $recordsUpdated = $dailyStatsService->fillStats($result);
+            $recordsUpdated = $dailyStatsService->fillStats($result, true);
             $totalRecordsUpdated += $recordsUpdated;
 
             $columnName = $client->getEndpointToColumnName($endpoint);
 
             $this->info("{$recordsUpdated} daily_prices.{$columnName} updated");
-
-            $this->info('Filling forward...');
-
-            $filledForward = $dailyStatsService->fillForward($columnName, $since);
-
-            $this->info("{$filledForward} daily_prices.{$columnName} filled forward");
         }
 
         $this->output->success("{$totalRecordsUpdated} records updated. All done ✅");

@@ -64,16 +64,10 @@ class FmpDailyStatsCommand extends Command
 
             $data = $client->parseHistoricalResult($result, $metric);
 
-            $recordsUpdated = $dailyStatsService->fillStats($data);
+            $recordsUpdated = $dailyStatsService->fillStats($data, true);
             $totalRecordsUpdated += $recordsUpdated;
 
             $this->info("{$recordsUpdated} daily_prices.{$metric} updated");
-
-            $this->info('Filling forward...');
-
-            $filledForward = $dailyStatsService->fillForward($metric, $from);
-
-            $this->info("{$filledForward} daily_prices.{$metric} filled forward");
         }
 
         $this->output->success("{$totalRecordsUpdated} records updated. All done ✅");
