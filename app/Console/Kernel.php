@@ -28,7 +28,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $logPath = storage_path() . '/logs/schedule.log';
+        $logPath = storage_path() . '/logs/';
         $emailErrorsTo = config('btc.system_admin_email');
 
         // get prices (necessary for the next commands) -- EST TZ because prices on CMC are not updated on UTC time
@@ -36,43 +36,44 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('btc:populate-price-history --since=' . $initialDate)
             ->everyThirtyMinutes()->when($this->shouldUpdatePrices($initialDate))
-            ->appendOutputTo($logPath)
+            ->sendOutputTo($logPath . 'populate-price-history.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:coin-market-cap-daily-stats-command')
             ->everyThirtyMinutes()->when($this->shouldUpdateCmcStats())
-            ->appendOutputTo($logPath)
+            ->sendOutputTo($logPath . 'coin-market-cap-daily-stats-command.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:mempool-daily-stats')
             ->everyThirtyMinutes()->when($this->shouldUpdateHashrate())
-            ->appendOutputTo($logPath)
+            ->sendOutputTo($logPath . 'mempool-daily-stats.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
+        /* FMP discontinued their free endpoints
         $schedule->command('btc:fmp-daily-stats')
             ->everyThirtyMinutes()->when($this->shouldUpdateStats(array_keys(FmpClient::METRICS)))
-            ->appendOutputTo($logPath)
-            ->emailOutputOnFailure($emailErrorsTo);
+            ->sendOutputTo($logPath)
+            ->emailOutputOnFailure($emailErrorsTo);*/
 
         // TODO: ignore known delayed stats (metrics.max_delayed_days)
         $schedule->command('btc:coinmetrics-daily-stats --force')
             ->everyThirtyMinutes()->when($this->shouldUpdateStats(CoinMetricsClient::METRIC_TO_COLUMN_NAME))
-            ->appendOutputTo($logPath)
+            ->sendOutputTo($logPath . 'coinmetrics-daily-stats.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:update-future-price-change')
             ->everyThirtyMinutes()->when($this->shouldUpdateFuturePriceChange())
-            ->appendOutputTo($logPath)
+            ->sendOutputTo($logPath . 'update-future-price-change.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:update-mayer-multiple')
             ->everyThirtyMinutes()->when($this->shouldUpdateMayerMultiple())
-            ->appendOutputTo($logPath)
+            ->sendOutputTo($logPath . 'update-mayer-multiple.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:update-rsi')
             ->everyThirtyMinutes()->when($this->shouldUpdateRsi())
-            ->appendOutputTo($logPath)
+            ->sendOutputTo($logPath . 'update-rsi.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
         // CQ needs a high tier subscription
@@ -82,11 +83,8 @@ class Kernel extends ConsoleKernel
             'btc:crypto-quant-daily-stats ' . implode(',', $cqMetrics) . ' --ignore-errors --from-file'
         )
             ->everyThirtyMinutes()->when($this->shouldUpdateStats($cqMetrics))
-            ->appendOutputTo($logPath)
-            ->emailOutputOnFailure($emailErrorsTo)
-            ->onFailure(function (\Throwable $e) {
-                \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
-            });*/
+            ->sendOutputTo($logPath . 'crypto-quant-daily-stats.log')
+            ->emailOutputOnFailure($emailErrorsTo);*/
 
         $schedule->command(
             'btc:cryptocompare-daily-stats --ignore-errors'
@@ -99,11 +97,8 @@ class Kernel extends ConsoleKernel
                 'block_size',
                 'exchanges_volume'
             ]))
-            ->appendOutputTo($logPath)
-            ->emailOutputOnFailure($emailErrorsTo)
-            ->onFailure(function (\Throwable $e) {
-                \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
-            });
+            ->sendOutputTo($logPath . 'cryptocompare-daily-stats.log')
+            ->emailOutputOnFailure($emailErrorsTo);
 
         $bgEndpoints = BgeometricsClient::getEndpointsAsColumnNames();
 
@@ -115,11 +110,8 @@ class Kernel extends ConsoleKernel
                     [implode(',', array_keys($endpoints))]
                 )
                     ->hourly()
-                    ->appendOutputTo($logPath)
-                    ->emailOutputOnFailure($emailErrorsTo)
-                    ->onFailure(function (\Throwable $e) {
-                        \Log::error('Task:daily failed but ignored: ' . $e->getMessage());
-                    });
+                    ->sendOutputTo($logPath . 'bgeometrics-daily-stats.log')
+                    ->emailOutputOnFailure($emailErrorsTo);
                 // limit reached
                 break;
             }
@@ -127,12 +119,12 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('btc:update-all-user-signal-scores')
             ->everyThirtyMinutes()->when($this->shouldUpdateUserSignals())
-            ->appendOutputTo($logPath)
+            ->sendOutputTo($logPath . 'update-all-user-signal-scores.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:daily-prices-monitoring --send-email')
             ->dailyAt('3:00')
-            ->appendOutputTo($logPath)
+            ->sendOutputTo($logPath . 'daily-prices-monitoring.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
 

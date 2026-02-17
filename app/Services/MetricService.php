@@ -50,7 +50,7 @@ class MetricService
         }
 
         if (! $this->allMetricsByKey) {
-            $this->allMetricsByKey = $this->getAllMetricsKeyById();
+            $this->allMetricsByKey = $this->getAllMetricsKeyById(true);
         }
 
         if ($findOrFail && ! isset($this->allMetricsByKey[$id])) {
