@@ -18,7 +18,7 @@ class MempoolDailyStatsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'btc:mempool-daily-stats {--initial-data}';
+    protected $signature = 'btc:mempool-daily-stats {--initial-data} {--time-period=}';
 
     /**
      * The console command description.
@@ -37,29 +37,22 @@ class MempoolDailyStatsCommand extends Command
      * @throws ConnectionException
      * @throws RequestException
      */
-    public function handle(DailyStatsService $service)
+    public function handle(DailyStatsService $service, MempoolClient $client)
     {
-        $client = new MempoolClient();
-
         if ($this->option('initial-data')) {
             $this->info('Loading initial static mempool hashrate & difficulty data');
             $totalRowsUpdated = $client->loadInitialDailyPricesData();
-            $since = null;
+            $since = 'initial data';
         } else {
+            $timePeriod = $this->option('time-period') ?? MempoolClient::HASHRATE_TIME_PERIOD;
             $this->info(
-                'Fetching hashrate & difficulty from Mempool\'s API (last ' . MempoolClient::HASHRATE_TIME_PERIOD . ')'
+                "Fetching hashrate & difficulty from Mempool's API (time-period: {$timePeriod})"
             );
-            $parsedData = $client->getParsedHistoricalHashrate();
+            $parsedData = $client->getParsedHistoricalHashrate($timePeriod);
             $totalRowsUpdated = $service->fillStats($parsedData, true);
-            $since = $client->getHashrateTimePeriodDate();
+            $since = $client->getHashrateTimePeriodDate($timePeriod);
         }
 
-        $this->info("{$totalRowsUpdated} daily_prices updated");
-
-        $this->info('Filling forward...');
-
-        $filledForward = $service->fillForward('difficulty', $since);
-
-        $this->info("{$filledForward} daily_prices.difficulty filled forward");
+        $this->info("{$totalRowsUpdated} daily_prices updated since {$since}");
     }
 }

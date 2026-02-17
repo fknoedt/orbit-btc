@@ -8,7 +8,6 @@ use App\Models\DailyPrice;
 class DailyStatsService
 {
     public const array FILL_FORWARD_ALLOWED_COLUMNS = [
-        'open_interest_futures',
         'm2',
     ];
 
