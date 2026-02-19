@@ -27,8 +27,6 @@ return [
 
     'currency' => env('DEFAULT_CURRENCY', 'usd'),
 
-    'price_external_url' => env('PRICE_EXTERNAL_URL'),
-
     'apis' => [
         'coinmarketcap' => [
             'url' => env('COINMARKETCAP_URL'),

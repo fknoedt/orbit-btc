@@ -91,6 +91,10 @@ class TimeSeriesPage extends Page
         $this->additionalCharts = [];
         $this->updateChartData();
         $this->updateMetricDescriptionLabel(); // Update label when metrics change
+
+        // Update client-side URL with selected metric IDs
+        $metricIds = Metric::whereIn('column_name', $this->selectedMetrics)->pluck('id')->implode(',');
+        $this->dispatchBrowserEvent('update-url-metrics', ['metrics' => $metricIds]);
     }
 
     protected function updateChartData(): void
@@ -184,6 +188,9 @@ class TimeSeriesPage extends Page
         $metricOptions = Metric::all()->keyBy('column_name')->toArray();
 
         foreach ($metrics as $index => $metric) {
+            $minValue = null;
+            $maxValue = null;
+
             $firstValue = reset($dailyPrices)[$metric] ?? 0;
             $lastValue = $dailyPrices[array_key_last($dailyPrices)][$metric] ?? 0;
             if (count($metrics) === 1) {
@@ -193,8 +200,6 @@ class TimeSeriesPage extends Page
             }
 
             $data = [];
-            $minValue = null;
-            $maxValue = null;
             foreach ($dailyPrices as $date => $dailyPrice) {
                 $value = $dailyPrice[$metric];
                 $data[] = [$date, $value];
@@ -206,6 +211,9 @@ class TimeSeriesPage extends Page
                 }
             }
 
+            // Handle cases with no data (fallback to 0)
+            $minValue = $minValue ?? 0;
+            $maxValue = $maxValue ?? 0;
 
             // Calculate margin of minValue and maxValue
             $minPercentage = $minValue * (self::YAXIS_MARGIN_BOTTOM / 100);
@@ -220,7 +228,8 @@ class TimeSeriesPage extends Page
             ];
 
             $colors[] = $areaColor;
-            $yaxis[] = [
+
+            $yaxisConfig = [
                 'seriesName' => $metricOptions[$metric]['name'] ?? 'BTC Price (USD)',
                 'opposite' => $index === 1,
                 'title' => [
@@ -228,21 +237,24 @@ class TimeSeriesPage extends Page
                 ],
                 'decimalsInFloat' => $metric === 'mayer_multiple' ? 2 : 0,
                 'tickAmount' => 10,
+                'min' => $minValueAdjusted,
+                'max' => $maxValueAdjusted,
             ];
 
-            // when Y-axis range is too small, calculate margin of minValue and maxValue
+            // when Y-axis range is too small, round based on magnitude
             if ($maxValueAdjusted - $minValueAdjusted < self::YAXIS_MIN_MAGNITUDE) {
                 $minMagnitude = NumberHelper::getFloatMagnitude($minValueAdjusted) - 2;
                 $maxMagnitude = NumberHelper::getFloatMagnitude($maxValueAdjusted) - 2;
-                $yaxis['min'] = round($minValueAdjusted, $minMagnitude * -1);
-                $yaxis['max'] = round($maxValueAdjusted, $maxMagnitude * -1);
+                $yaxisConfig['min'] = round($minValueAdjusted, $minMagnitude * -1);
+                $yaxisConfig['max'] = round($maxValueAdjusted, $maxMagnitude * -1);
 
                 // don't let min go below 0 if minimum Y value is 0 or positive
-                if ($yaxis['min'] < 0 && $minValue >= 0) {
-                    $yaxis['min'] = 0;
+                if ($yaxisConfig['min'] < 0 && $minValue >= 0) {
+                    $yaxisConfig['min'] = 0;
                 }
             }
 
+            $yaxis[] = $yaxisConfig;
         }
 
         $options = [
