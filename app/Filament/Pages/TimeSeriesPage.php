@@ -28,6 +28,8 @@ class TimeSeriesPage extends Page
     /** percentage to decrease y-axis' $minValue range (down) */
     protected const int YAXIS_MARGIN_BOTTOM = 5;
 
+    protected const string DEFAULT_METRIC = 'close';
+
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
 
     protected static ?int $navigationSort = 2;
@@ -66,7 +68,7 @@ class TimeSeriesPage extends Page
             $this->selectedMetrics = Metric::whereIn('id', explode(',', request()->input('selectedMetrics')))
                 ->pluck('column_name')->toArray();
         } else {
-            $this->selectedMetrics = ['close']; // Default to 'close' if not set
+            $this->selectedMetrics = [self::DEFAULT_METRIC]; // Default to 'close' if not set
         }
 
         $chartData = $this->generateChartData($this->selectedPeriod, $this->selectedMetrics);
@@ -92,9 +94,19 @@ class TimeSeriesPage extends Page
         $this->updateChartData();
         $this->updateMetricDescriptionLabel(); // Update label when metrics change
 
-        // Update client-side URL with selected metric IDs
+        // Server-side: Inject JS to update URL with metric IDs
         $metricIds = Metric::whereIn('column_name', $this->selectedMetrics)->pluck('id')->implode(',');
-        $this->dispatchBrowserEvent('update-url-metrics', ['metrics' => $metricIds]);
+        $jsCode = "
+            const params = new URLSearchParams(window.location.search);
+            if ('{$metricIds}') {
+                params.set('selectedMetrics', '{$metricIds}');
+            } else {
+                params.delete('selectedMetrics');
+            }
+            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            history.pushState({}, '', newUrl);
+        ";
+        $this->js($jsCode);
     }
 
     protected function updateChartData(): void
@@ -140,9 +152,9 @@ class TimeSeriesPage extends Page
         if (count($this->selectedMetrics) === 1) {
             $metric = $this->selectedMetrics[0];
         } else {
-            // If two metrics, prefer the non-'close' metric's description
-            $nonCloseMetric = array_diff($this->selectedMetrics, ['close']);
-            $metric = reset($nonCloseMetric) ?: $this->selectedMetrics[0];
+            // If two metrics, prefer the non-default metric's description
+            $nonDefaultMetric = array_diff($this->selectedMetrics, [self::DEFAULT_METRIC]);
+            $metric = reset($nonDefaultMetric) ?: $this->selectedMetrics[0];
         }
         $this->metricDescriptionLabel = $metrics[$metric]->description ?? 'Select up to two metrics to compare. Choose a time range to search for similar patterns.';
     }
@@ -241,14 +253,14 @@ class TimeSeriesPage extends Page
                 'max' => $maxValueAdjusted,
             ];
 
-            // when Y-axis range is too small, round based on magnitude
+            // When Y-axis range is too small, round based on magnitude
             if ($maxValueAdjusted - $minValueAdjusted < self::YAXIS_MIN_MAGNITUDE) {
                 $minMagnitude = NumberHelper::getFloatMagnitude($minValueAdjusted) - 2;
                 $maxMagnitude = NumberHelper::getFloatMagnitude($maxValueAdjusted) - 2;
                 $yaxisConfig['min'] = round($minValueAdjusted, $minMagnitude * -1);
                 $yaxisConfig['max'] = round($maxValueAdjusted, $maxMagnitude * -1);
 
-                // don't let min go below 0 if minimum Y value is 0 or positive
+                // Don't let min go below 0 if minimum Y value is 0 or positive
                 if ($yaxisConfig['min'] < 0 && $minValue >= 0) {
                     $yaxisConfig['min'] = 0;
                 }
