@@ -285,6 +285,63 @@ class PriceHistoryService
         return (new DailyStatsService())->fillStats($fillStats);
     }
 
+    public function updateBollingerBands(string $since = null): int
+    {
+        if (!$since) {
+            $since = DailyPrice::getLastEmptyBollingerBandsDay();
+
+            if (!$since) {
+                return 0;
+            }
+        }
+
+        $startDate = Carbon::createFromFormat($this->systemDateFormat, $since)
+            ->subDays(20)
+            ->format($this->systemDateFormat);
+
+        $prices = DailyPrice::where('date', '>=', $startDate)
+            ->select(['date', 'close'])
+            ->orderBy('date', 'asc')
+            ->get()
+            ->keyBy('date')
+            ->toArray();
+
+        if (count($prices) < 20) {
+            throw new DailyPriceStatsException("Not enough data to calculate Bollinger Bands");
+        }
+
+        $fillStats = [];
+        $dates = array_keys($prices);
+
+        for ($i = 19; $i < count($dates); $i++) {
+            $currentDate = $dates[$i];
+
+            // Get the last 20 closing prices
+            $periodPrices = array_slice($prices, $i - 19, 20, true);
+            $closingPrices = array_column($periodPrices, 'close');
+
+            // Calculate SMA (Simple Moving Average) - Middle Band
+            $sma = array_sum($closingPrices) / 20;
+
+            // Calculate standard deviation
+            $variance = 0;
+            foreach ($closingPrices as $price) {
+                $variance += pow($price - $sma, 2);
+            }
+            $stdDev = sqrt($variance / 20);
+
+            // Calculate bands
+            $upperBand = $sma + (2.0 * $stdDev);
+            $lowerBand = $sma - (2.0 * $stdDev);
+
+            $fillStats[$currentDate]['bb_upper'] = round($upperBand, 2);
+            $fillStats[$currentDate]['bb_middle'] = round($sma, 2);
+            $fillStats[$currentDate]['bb_lower'] = round($lowerBand, 2);
+        }
+
+        return (new DailyStatsService())->fillStats($fillStats);
+    }
+
     public function updateFuturePriceChange(string $since = null, OutputStyle $output = null, bool $dryRun = false): int
     {
         if (! $output) {

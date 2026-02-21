@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Services\DailyPriceService;
 use App\Services\SignalGeneratorService;
 use Illuminate\Console\Command;
 
@@ -25,13 +24,13 @@ class SignalGeneratorCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(SignalGeneratorService $service, DailyPriceService $priceService)
+    public function handle(SignalGeneratorService $service)
     {
         ini_set('max_execution_time', 0);
         ini_set('memory_limit', -1);
         if ($this->option('update-metrics-median')) {
             $this->output->info('Updating Metrics median...');
-            $metricsUpdated = $service->updateMetricsMedianChange($priceService);
+            $metricsUpdated = $service->updateMetricsMedianChange();
             $this->output->info("{$metricsUpdated} Metrics updated");
         } else {
             $this->output->info('Generating Signals...');

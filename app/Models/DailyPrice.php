@@ -14,6 +14,7 @@ class DailyPrice extends Model
     public const int FUTURE_PRICE_MAX_DAYS_AGO = 365;
     public const string START_OF_MAYER_MULTIPLE = '2012-01-01';
     public const string START_OF_RSI = '2012-01-01';
+    public const string START_OF_BOLLINGER_BANDS = '2012-01-01';
 
     protected $guarded = ['id'];
 
@@ -40,6 +41,19 @@ class DailyPrice extends Model
             ->first();
     }
 
+
+    public static function getLastEmptyBollingerBandsDay(): ?string
+    {
+        return self::where('date', '>=', self::START_OF_BOLLINGER_BANDS)
+            ->where(function ($query) {
+                return $query->whereNull('bb_upper')
+                    ->orWhereNull('bb_middle')
+                    ->orWhereNull('bb_lower');
+            })
+            ->orderBy('date', 'asc')
+            ->pluck('date')
+            ->first();
+    }
 
     public static function getLastEmptyFuturePriceDay(): ?string
     {
