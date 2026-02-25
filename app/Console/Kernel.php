@@ -55,7 +55,6 @@ class Kernel extends ConsoleKernel
             ->sendOutputTo($logPath)
             ->emailOutputOnFailure($emailErrorsTo);*/
 
-        // TODO: ignore known delayed stats (metrics.max_delayed_days)
         $schedule->command('btc:coinmetrics-daily-stats --force')
             ->everyThirtyMinutes()->when($this->shouldUpdateStats(CoinMetricsClient::METRIC_TO_COLUMN_NAME))
             ->sendOutputTo($logPath . 'coinmetrics-daily-stats.log')
@@ -74,6 +73,16 @@ class Kernel extends ConsoleKernel
         $schedule->command('btc:update-rsi')
             ->everyThirtyMinutes()->when($this->shouldUpdateRsi())
             ->sendOutputTo($logPath . 'update-rsi.log')
+            ->emailOutputOnFailure($emailErrorsTo);
+
+        $schedule->command('btc:update-bollinger-bands')
+            ->everyThirtyMinutes()->when($this->shouldUpdateBollingerBands())
+            ->sendOutputTo($logPath . 'update-bollinger-bands.log')
+            ->emailOutputOnFailure($emailErrorsTo);
+
+        $schedule->command('btc:update-us-treasury-stats')
+            ->everyThirtyMinutes()->when($this->shouldUpdateTbillOutstanding())
+            ->sendOutputTo($logPath . 'update-tbill-outstanding.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
         // CQ needs a high tier subscription
@@ -123,7 +132,7 @@ class Kernel extends ConsoleKernel
             ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:daily-prices-monitoring --send-email')
-            ->dailyAt('3:00')
+            ->dailyAt('5:00')
             ->sendOutputTo($logPath . 'daily-prices-monitoring.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
@@ -273,6 +282,30 @@ class Kernel extends ConsoleKernel
         }
 
         Log::info('Not necessary to run RSI stats update');
+
+        return false;
+    }
+
+    private function shouldUpdateTbillOutstanding(): bool
+    {
+        if (DailyPrice::getLastEmptyTbillOutstandingDay()) {
+            Log::info('Running US T-bill Outstanding stats update');
+            return true;
+        }
+
+        Log::info('Not necessary to run US T-bill Outstanding stats update');
+
+        return false;
+    }
+
+    private function shouldUpdateBollingerBands(): bool
+    {
+        if (DailyPrice::getLastEmptyBollingerBandsDay()) {
+            Log::info('Running Bollinger Bands stats update');
+            return true;
+        }
+
+        Log::info('Not necessary to run Bollinger Bands stats update');
 
         return false;
     }

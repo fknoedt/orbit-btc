@@ -73,5 +73,8 @@ return [
             'url' => env('BITCOINISDATA_URL'),
             'key' => env('BITCOINISDATA_KEY'),
         ],
+        'us_treasury' => [
+            'url' => env('US_TREASURY_URL'),
+        ],
     ]
 ];
