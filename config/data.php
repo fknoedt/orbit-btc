@@ -21,6 +21,7 @@ return [
         'fmp_id' => 11,
         'coinmetrics_id' => 12,
         'bitcoinisdata_id' => 13,
+        'us_treasury_id' => 14,
     ],
     'role_id' => [
         'user' => 1,
