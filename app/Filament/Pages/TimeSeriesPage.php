@@ -295,7 +295,7 @@ class TimeSeriesPage extends Page
             'series' => $series,
             'colors' => $colors,
             'stroke' => [
-                'curve' => ['straight', 'smooth'],
+                'curve' => 'smooth',
                 'lineCap' => 'butt',
                 'width' => 2,
             ],

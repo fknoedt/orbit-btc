@@ -15,6 +15,7 @@ class DailyPrice extends Model
     public const string START_OF_MAYER_MULTIPLE = '2012-01-01';
     public const string START_OF_RSI = '2012-01-01';
     public const string START_OF_BOLLINGER_BANDS = '2012-01-01';
+    public const string START_OF_TBILL_OUTSTANDING = '2010-01-01';
 
     protected $guarded = ['id'];
 
@@ -49,6 +50,18 @@ class DailyPrice extends Model
                 return $query->whereNull('bb_upper')
                     ->orWhereNull('bb_middle')
                     ->orWhereNull('bb_lower');
+            })
+            ->orderBy('date', 'asc')
+            ->pluck('date')
+            ->first();
+    }
+
+    public static function getLastEmptyTbillOutstandingDay(): ?string
+    {
+        return self::where('date', '>=', self::START_OF_TBILL_OUTSTANDING)
+            ->where(function ($query) {
+                return $query->whereNull('us_tbill_net_issuance')
+                    ->orWhereNull('us_tbill_normalized_qe');
             })
             ->orderBy('date', 'asc')
             ->pluck('date')
