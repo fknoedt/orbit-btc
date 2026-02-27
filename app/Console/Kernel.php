@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Log;
 class Kernel extends ConsoleKernel
 {
     /** how many days in the past to look for missing daily_prices entries */
-    private const int PRICE_SYNC_LAST_X_DAYS = 30;
+    private const int PRICE_SYNC_LAST_X_DAYS = 33;
 
     /** from when NULL CryptoQuant stats should be updated */
     private const string STATS_START_DATE = '2023-01-01';
@@ -132,7 +132,7 @@ class Kernel extends ConsoleKernel
             ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:daily-prices-monitoring --send-email')
-            ->dailyAt('5:00')
+            ->dailyAt('7:00')
             ->sendOutputTo($logPath . 'daily-prices-monitoring.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
