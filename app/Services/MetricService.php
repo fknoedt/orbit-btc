@@ -27,17 +27,36 @@ class MetricService
         });
     }
 
-    public function getAllMetricsKeyByColumnName(bool $includeInactive = false): array
+    public function getAllMetricsKeyByColumnName(
+        bool $includeInactive = false,
+        bool $withDataSource = false
+    ): array
     {
-        if ($includeInactive) {
-            return Cache::remember('all-metrics-with-trash', (new Carbon())->endOfDay(), function () {
-                return Metric::withTrashed()->get()->keyBy('column_name')->toArray();
-            });
-        }
+        $suffix = $withDataSource ? '-with-data-source' : '';
+        $cacheKey = $includeInactive
+            ? "all-metrics-with-trash{$suffix}"
+            : "all-metrics{$suffix}";
 
-        return Cache::remember('all-metrics', (new Carbon())->endOfDay(), function () {
-            return Metric::get()->keyBy('column_name')->toArray();
-        });
+        return Cache::remember(
+            $cacheKey,
+            now()->endOfDay(),
+            function () use ($includeInactive, $withDataSource) {
+                $query = Metric::query();
+
+                if ($includeInactive) {
+                    $query->withTrashed();
+                }
+
+                if ($withDataSource) {
+                    $query->with('dataSource');
+                }
+
+                return $query
+                    ->get()
+                    ->keyBy('column_name')
+                    ->toArray();
+            }
+        );
     }
 
     /**

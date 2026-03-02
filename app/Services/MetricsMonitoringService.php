@@ -32,8 +32,6 @@ class MetricsMonitoringService
         'low',
         'time_high',
         'time_low',
-        'miner_balances',
-        'open_interest_futures',
     ];
 
     protected int $issuesFound = 0;
@@ -45,7 +43,7 @@ class MetricsMonitoringService
 
     public function runReport(MetricService $metricService): void
     {
-        $metrics = $metricService->getAllMetricsKeyByColumnName(true);
+        $metrics = $metricService->getAllMetricsKeyByColumnName(true, true);
 
         // add price_change_xd as metrics so it can be validated even if there are no metrics for them
         foreach ([1, 3, 5, 10, 14, 30] as $numberOfDays) {
@@ -120,6 +118,7 @@ class MetricsMonitoringService
                     $metricsStats[$columnName] = [
                         'days_outdated' => $metricDaysOutdated,
                         'last_value' => $dailyPrice->{$columnName},
+                        'data_source' => $metric['data_source']['name'] ?? 'Internal',
                     ];
                 }
             }
@@ -152,7 +151,7 @@ class MetricsMonitoringService
         foreach ($metricsStats as $columnName => $metricsStat) {
             if ($metricsStat['days_outdated'] > 0) {
                 $this->output(
-                    "`{$columnName}` is {$metricsStat['days_outdated']} day(s) outdated: " . round($metricsStat['last_value'],
+                    "`{$columnName}` ({$metricsStat['data_source']}) is {$metricsStat['days_outdated']} day(s) outdated: " . round($metricsStat['last_value'],
                         3),
                     'error'
                 );
