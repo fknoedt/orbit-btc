@@ -18,7 +18,7 @@ class BgeometricsClient extends BaseClient
     private string $version = 'v1';
 
     /** For throttling -- @see https://bitcoin-data.com/bguser/pricing */
-    public const int MAX_REQUESTS_PER_HOUR = 3;
+    public const int MAX_REQUESTS_PER_HOUR = 5;
 
     /** /v1/{endpoint} => result_field */
     public const array ENDPOINTS = [

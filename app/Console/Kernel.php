@@ -132,7 +132,7 @@ class Kernel extends ConsoleKernel
             ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:daily-prices-monitoring --send-email')
-            ->dailyAt('7:00')
+            ->dailyAt('7:15')
             ->sendOutputTo($logPath . 'daily-prices-monitoring.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
