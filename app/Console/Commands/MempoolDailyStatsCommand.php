@@ -48,11 +48,28 @@ class MempoolDailyStatsCommand extends Command
             $this->info(
                 "Fetching hashrate & difficulty from Mempool's API (time-period: {$timePeriod})"
             );
-            $parsedData = $client->getParsedHistoricalHashrate($timePeriod);
-            $totalRowsUpdated = $service->fillStats($parsedData, true);
+
+            $rawData = $client->getHistoricalHashrate($timePeriod);
+
+            $hashrateData = $client->parseHashrate($rawData['hashrates'] ?? []);
+            $difficultyData = $client->parseDifficulty($rawData['difficulty'] ?? []);
+
+            $this->info('Filling hashrate stats...');
+            $hashrateRows = $service->fillStats($hashrateData, true);
+
+            $this->info('Filling difficulty stats...');
+            $difficultyRows = $service->fillStats($difficultyData, true);
+
+            $totalRowsUpdated = $hashrateRows + $difficultyRows;
             $since = $client->getHashrateTimePeriodDate($timePeriod);
         }
 
         $this->info("{$totalRowsUpdated} daily_prices updated since {$since}");
+
+        $this->info('Filling difficulty forward...');
+
+        $filledForward = $service->fillForward('difficulty', $since);
+
+        $this->info("{$filledForward} daily_prices.difficulty filled forward");
     }
 }

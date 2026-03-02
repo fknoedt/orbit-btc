@@ -50,6 +50,30 @@ class MempoolClient extends BaseClient
         return $date->format('Y-m-d');
     }
 
+    public function parseHashrate(array $hashrates): array
+    {
+        $parsedData = [];
+        foreach ($hashrates as $row) {
+            $day = Carbon::createFromTimestamp($row['timestamp'])
+                ->format('Y-m-d');
+            $parsedData[$day]['average_hashrate'] = $row['avgHashrate'];
+        }
+        ksort($parsedData);
+        return $parsedData;
+    }
+
+    public function parseDifficulty(array $difficulties): array
+    {
+        $parsedData = [];
+        foreach ($difficulties as $row) {
+            $day = Carbon::createFromTimestamp($row['time'])
+                ->format('Y-m-d');
+            $parsedData[$day]['difficulty'] = $row['difficulty'];
+        }
+        ksort($parsedData);
+        return $parsedData;
+    }
+
     /**
      * Get historical Hashrate and Difficulty
      * @see https://mempool.space/docs/api/rest#get-hashrate
@@ -63,19 +87,6 @@ class MempoolClient extends BaseClient
         return $this->request(
             'get',
             'mining/hashrate/' . $since,
-        );
-    }
-
-    /**
-     * @throws ExternalApiException
-     * @throws AdapterException
-     * @throws ConnectionException
-     * @throws RequestException
-     */
-    public function getParsedHistoricalHashrate(string $since = self::HASHRATE_TIME_PERIOD): array
-    {
-        return $this->parseHistoricalHashrateResponse(
-            $this->getHistoricalHashrate($since)
         );
     }
 
