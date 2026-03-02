@@ -15,6 +15,8 @@ class MetricsMonitoringService
     // minimum 31 to fulfill price_change_30d
     protected const int MONITOR_X_PAST_DAYS = 31;
 
+    protected const string TIMEZONE = 'America/New_York';
+
     protected array $dailyPricesInternalColumns = [
         'id',
         'date',
@@ -80,11 +82,15 @@ class MetricsMonitoringService
         $deactivatedMetrics = [];
         $metricsStats = [];
         $dailyCounter = 0;
-        $currentDate = Carbon::today('America/New_York');
+
+        // if running early in the day, consider it the day before
+        $currentDate = Carbon::now(self::TIMEZONE)->hour > 10 ?
+            Carbon::today(self::TIMEZONE) : Carbon::yesterday(self::TIMEZONE);
+
         foreach ($lastDailyPrices as $dailyPrice) {
             $dailyCounter++;
             $dailyPriceDate = Carbon::parse($dailyPrice->date);
-            // if first available record is not today's, will report it
+            // if the first available record is not today's, will report it
             if ($dailyCounter === 1 && $dailyPriceDate < $currentDate) {
                 $delayedDailyPrice = $dailyPrice->date;
                 $daysDelayed = $currentDate->diffInDays($dailyPriceDate);
