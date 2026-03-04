@@ -5,6 +5,7 @@
         'No man should work for what another man can print',
         'Be your own bank',
         'Bitcoin fixes this',
+        'Don\'t trust, verify',
         'When in doubt zoom out',
         'Everyone gets Bitcoin at the price they deserve',
         'Stay humble, stack sats',
@@ -26,7 +27,7 @@
 
             <div class="md:col-span-6 md:mt-0 mt-8">
                 <div class="text-center">
-                    <p class="text-white text-lg md:text-xl font-medium">{{ $randomQuote }} <i class="mdi mdi-bitcoin text-orange-600" style="font-size: 2rem; vertical-align: middle"></i></p>
+                    <p class="text-white text-lg md:text-xl font-medium pl-16">{{ $randomQuote }} <i class="mdi mdi-bitcoin text-orange-600" style="font-size: 2rem; vertical-align: middle"></i></p>
                 </div>
             </div>
 

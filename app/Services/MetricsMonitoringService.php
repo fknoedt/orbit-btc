@@ -13,7 +13,7 @@ class MetricsMonitoringService
     use OutputBufferTrait;
 
     // minimum 31 to fulfill price_change_30d
-    protected const int MONITOR_X_PAST_DAYS = 31;
+    protected const int MONITOR_X_PAST_DAYS = 33;
 
     protected const string TIMEZONE = 'America/New_York';
 

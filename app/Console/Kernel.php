@@ -112,7 +112,7 @@ class Kernel extends ConsoleKernel
         $bgEndpoints = BgeometricsClient::getEndpointsAsColumnNames();
 
         // bgeometrics limits the free plan at 4 requests/hour
-        foreach (array_chunk($bgEndpoints, BgeometricsClient::MAX_REQUESTS_PER_HOUR, true) as $endpoints) {
+        foreach (array_chunk($bgEndpoints, BgeometricsClient::MAX_REQUESTS_PER_RUN, true) as $endpoints) {
             if ($this->shouldUpdateBgeometricsStats(array_values($endpoints))) {
                 $schedule->command(
                     'btc:bgeometrics-daily-stats',
