@@ -111,9 +111,14 @@ class PerformancePage extends Page
             return;
         }
 
-        $userSignal = UserSignal::with(['userSignalMetrics' => function ($query) {
-            return $query->orderBy('weight', 'desc');
-        }, 'userSignalMetrics.metric'])
+        $userSignal = UserSignal::with([
+            'userSignalMetrics' => function ($query) {
+                return $query->orderBy('weight', 'desc');
+            },
+            'userSignalMetrics.metric' => function ($query) {
+                $query->withTrashed();
+            }
+        ])
             ->find($this->selectedUserSignalId);
 
         // Clear Signal data if the Signal is not found
