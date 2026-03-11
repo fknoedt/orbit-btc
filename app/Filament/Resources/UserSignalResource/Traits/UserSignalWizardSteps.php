@@ -108,7 +108,7 @@ trait UserSignalWizardSteps
 
     public function getMetricsSchema(string $operation = null): array
     {
-        $metrics = Metric::with('dataSource')->orderBy('name')->get();
+        $metrics = Metric::withTrashed()->with('dataSource')->orderBy('name')->get();
         $frequencies = Frequency::orderBy('number_of_days')->get();
 
         $extraActions = $operation === 'view' ? [] :
