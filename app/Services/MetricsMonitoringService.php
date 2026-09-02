@@ -91,7 +91,7 @@ class MetricsMonitoringService
             // if the first available record is not today's, will report it
             if ($dailyCounter === 1 && $dailyPriceDate < $currentDate) {
                 $delayedDailyPrice = $dailyPrice->date;
-                $daysDelayed = $currentDate->diffInDays($dailyPriceDate);
+                $daysDelayed = (int) $currentDate->diffInDays($dailyPriceDate, true);
                 $dailyCounter += $daysDelayed;
             }
             foreach ($dailyPricesColumns as $dailyPriceColumn) {

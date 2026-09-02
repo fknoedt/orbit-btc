@@ -392,7 +392,7 @@ class TimeSeriesPage extends Page
 
         $startDate = Carbon::parse($start);
         $endDate = Carbon::parse($end);
-        $daysDiff = $startDate->diffInDays($endDate);
+        $daysDiff = (int) $startDate->diffInDays($endDate, true);
 
         $limitMin = config('btc.time_series_pattern_min_days', 7);
         $limitMax = config('btc.time_series_pattern_max_days', 365);
@@ -461,7 +461,7 @@ class TimeSeriesPage extends Page
             $endDate,
             self::MAX_MATCHING_TIME_SERIES
         );
-        $diffInDays = $startDate->diffInDays($endDate);
+        $diffInDays = (int) $startDate->diffInDays($endDate, true);
 
         foreach ($similarTimeSeries as $timeSeries) {
             $seriesStart = Carbon::parse($timeSeries['start_date']);

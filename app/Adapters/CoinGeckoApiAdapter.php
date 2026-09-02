@@ -122,7 +122,7 @@ class CoinGeckoApiAdapter extends BaseClient implements ExternalApiAdapterInterf
             $endDate = $endDate->addDay();
         }
 
-        if (Carbon::now()->diffInDays($startDate) > self::MAX_PAST_DAYS) {
+        if ((int) Carbon::now()->diffInDays($startDate, true) > self::MAX_PAST_DAYS) {
             throw new AdapterException(
                 sprintf(
                     '%s cannot retrieve dates older than %s: %s given',

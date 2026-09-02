@@ -125,7 +125,7 @@ class PriceHistoryService
 
         $clientAdapter = AdapterFactory::getAdapter($client);
 
-        if ($initialDate->diffInDays($endDate) === 0) {
+        if ((int) $initialDate->diffInDays($endDate, true) === 0) {
             $initialDate->subDay();
         }
 

@@ -38,7 +38,7 @@ class CryptoCompareDailyStatsCommand extends Command
             if (! $sinceDate = \DateTime::createFromFormat('Y-m-d', $since)) {
                 throw new \RuntimeException('Invalid --since');
             }
-            $daysAgo = Carbon::now()->diffInDays($sinceDate);
+            $daysAgo = (int) Carbon::now()->diffInDays($sinceDate, true);
             if ($daysAgo > CryptoCompareApiAdapter::MAX_LIMIT) {
                 throw new \RuntimeException('Maximum days reached: ' . CryptoCompareApiAdapter::MAX_LIMIT);
             }

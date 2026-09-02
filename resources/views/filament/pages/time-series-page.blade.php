@@ -96,7 +96,7 @@
                             'From %s to %s (%s days)',
                             $chart['startDate']->format('M d Y'),
                             $chart['endDate']->format('M d Y'),
-                            $chart['startDate']->diffInDays($chart['endDate']),
+                            (int) $chart['startDate']->diffInDays($chart['endDate'], true),
                         ),
                         'name' => 'additional-chart-' . $index,
                         'hint' => "DTW Distance: {$chart['distance']}",

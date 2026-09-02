@@ -39,7 +39,7 @@ class DailyPriceService
         bool   $shortDates = false
     ): array
     {
-        if ($reduce && $startDate->diffInDays($endDate) > self::NUMBER_OF_DAYS_IN_REDUCTION) {
+        if ($reduce && (int) $startDate->diffInDays($endDate, true) > self::NUMBER_OF_DAYS_IN_REDUCTION) {
             $days = [];
             $period = CarbonPeriod::create($startDate, $endDate);
             $totalDays = $period->count();
