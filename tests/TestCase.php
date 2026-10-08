@@ -14,5 +14,8 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         $this->withoutVite();
+
+        $guardableColumns = new \ReflectionProperty(\Illuminate\Database\Eloquent\Model::class, 'guardableColumns');
+        $guardableColumns->setValue(null, []);
     }
 }
