@@ -15,10 +15,11 @@ class DtwDistance
      * @param array $series2 Second time series (array of numbers)
      * @param int|null $window Optional Sakoe-Chiba window size (null for no constraint)
      * @param bool $normalize Whether to apply z-score normalization
-     * @return float DTW distance
+     * @param float|null $giveUpAt Stop and return null once every alignment so far is already worse than this distance
+     * @return float|null DTW distance, or null when $giveUpAt was exceeded
      * @throws MathException If series are empty or have different lengths
      */
-    function distance(array $series1, array $series2, ?int $window = null, bool $normalize = false): float
+    function distance(array $series1, array $series2, ?int $window = null, bool $normalize = false, ?float $giveUpAt = null): ?float
     {
         // Validate input
         $n = count($series1);
@@ -32,36 +33,47 @@ class DtwDistance
             $series2 = $this->normalizeSeries($series2);
         }
 
-        // Initialize cost matrix with infinity
-        $costMatrix = array_fill(0, $n + 1, array_fill(0, $n + 1, INF));
+        // Only the previous row is needed. The same two rows are reused for every
+        // step. Costs never go down, so a row that is already worse than $giveUpAt
+        // cannot produce a better final distance.
+        $previous = array_fill(0, $n + 1, INF);
+        $current = array_fill(0, $n + 1, INF);
+        $previous[0] = 0.0;
 
-        // Set starting point
-        $costMatrix[0][0] = 0.0;
-
-        // Fill cost matrix
         for ($i = 1; $i <= $n; $i++) {
-            // Apply Sakoe-Chiba window constraint
             $jStart = max(1, $window !== null ? $i - $window : 1);
             $jEnd = min($n, $window !== null ? $i + $window : $n);
 
-            for ($j = $jStart; $j <= $jEnd; $j++) {
-                // Local cost (squared difference, as in tslearn)
-                $cost = pow($series1[$i - 1] - $series2[$j - 1], 2);
+            if ($window !== null) {
+                for ($k = 0; $k <= $n; $k++) {
+                    $current[$k] = INF;
+                }
+            } else {
+                $current[0] = INF;
+            }
 
-                // Minimum cost from previous steps
-                $minCost = min(
-                    $costMatrix[$i - 1][$j],     // Insertion
-                    $costMatrix[$i][$j - 1],     // Deletion
-                    $costMatrix[$i - 1][$j - 1]  // Match
+            $rowMin = INF;
+            for ($j = $jStart; $j <= $jEnd; $j++) {
+                $difference = $series1[$i - 1] - $series2[$j - 1];
+                $current[$j] = ($difference * $difference) + min(
+                    $previous[$j],
+                    $current[$j - 1],
+                    $previous[$j - 1]
                 );
 
-                // Cumulative cost
-                $costMatrix[$i][$j] = $cost + $minCost;
+                if ($current[$j] < $rowMin) {
+                    $rowMin = $current[$j];
+                }
             }
+
+            if ($giveUpAt !== null && $rowMin < INF && sqrt($rowMin) > $giveUpAt) {
+                return null;
+            }
+
+            [$previous, $current] = [$current, $previous];
         }
 
-        // Return DTW distance (square root of final cost, as in tslearn)
-        return sqrt($costMatrix[$n][$n]);
+        return sqrt($previous[$n]);
     }
 
     /**
