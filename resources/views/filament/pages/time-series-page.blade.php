@@ -99,7 +99,7 @@
                             (int) $chart['startDate']->diffInDays($chart['endDate'], true),
                         ),
                         'name' => 'additional-chart-' . $index,
-                        'hint' => "DTW Distance: {$chart['distance']}",
+                        'hint' => "Line distance: {$chart['distance']}",
                         'options' => $chart['options'],
                         'rawExtraJsOptions' => [],
                         'distance' => $chart['distance'] ?? null,

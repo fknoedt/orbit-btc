@@ -3,15 +3,13 @@
 namespace App\Services;
 
 use App\Exceptions\TimeSeriesException;
-use App\Math\DtwDistance;
+use App\Math\LineDistance;
 use App\Models\DailyPrice;
 use App\Models\Metric;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
-use Phpml\Exception\InvalidArgumentException;
-use Phpml\Math\Distance\Euclidean;
 
 class DailyPriceService
 {
@@ -168,9 +166,6 @@ class DailyPriceService
         return null;
     }
 
-    /**
-     * @throws InvalidArgumentException
-     */
     public function getPatterMatchingTimeSeries(string $metric, Carbon $startDate, Carbon $endDate, int $limit = 3): array
     {
         if ($metric === 'close') {
@@ -185,63 +180,89 @@ class DailyPriceService
         }
 
         $initialDate = Carbon::parse($initialDailyPriceDate);
-        // add 1 extra day for first day daily_change
         $prices = $this->getAllDailyPricesKeyByDate($initialDate, Carbon::now(), false);
 
-        $input = [];
-        $timeSeries = [];
+        $values = [];
+        $dates = [];
+        $queryStart = null;
+        $queryEnd = null;
         $lastValue = null;
+        $startKey = $startDate->format('Y-m-d');
+        $endKey = $endDate->format('Y-m-d');
 
-        // parse prices to calculate daily_change while populating $inputDailyPrices
         foreach ($prices as $dailyPrice) {
-            if (is_null($lastValue)) {
-                $lastValue = $dailyPrice->$metric;
-                continue;
-            }
-            // missing day: repeat last one
-            if (!$dailyPrice->$metric) {
+            $value = $dailyPrice->$metric;
+            // missing day: repeat the last known price
+            if (!$value) {
                 if ($lastValue) {
-                    $dailyPrice->$metric = $lastValue;
+                    $value = $lastValue;
                 } else {
-                    throw new \RuntimeException(
-                        "DailyPrice {$dailyPrice->date} with empty {$metric}. Would try to divide by 0."
-                    );
+                    $lastValue = $value;
+                    continue;
                 }
             }
-            $dailyChange = ($lastValue - $dailyPrice->$metric) / $dailyPrice->$metric;
-            $timeSeries[$dailyPrice->date] = $dailyChange;
 
-            // get a ride and fetch the input values =P
-            if (
-                $dailyPrice->date >= $startDate->format('Y-m-d') &&
-                $dailyPrice->date <= $endDate->format('Y-m-d')
-            ) {
-                $input[] = $dailyChange;
+            $date = $dailyPrice->date instanceof \DateTimeInterface
+                ? $dailyPrice->date->format('Y-m-d')
+                : substr((string) $dailyPrice->date, 0, 10);
+            $values[] = (float) $value;
+            $dates[] = $date;
+            $lastValue = (float) $value;
+
+            if ($date >= $startKey && $date <= $endKey) {
+                $queryStart ??= count($values) - 1;
+                $queryEnd = count($values) - 1;
             }
-
-            $lastValue = $dailyPrice->$metric;
         }
 
-        //$euclidean = new Euclidean();
-        $dtw = new DtwDistance();
+        if ($queryStart === null || $queryEnd === null || $queryEnd <= $queryStart) {
+            throw new \RuntimeException('Selected period has no comparable prices');
+        }
+        if ($values[$queryStart] == 0.0) {
+            throw new \RuntimeException('Selected period starts at zero');
+        }
 
-        $windowSize = count($input);
+        $query = [];
+        for ($k = $queryStart; $k <= $queryEnd; $k++) {
+            $query[] = ($values[$k] / $values[$queryStart]) - 1;
+        }
+
+        $line = new LineDistance();
+        $windowSize = count($query);
         $matches = [];
+        // One extra slot: the searched period itself is distance 0 and is removed at the end.
+        $keptDistances = [];
 
         $lastDistance = null;
         $lastIndex = null;
         $quarantineUntil = null;
-        for ($i = 0; $i <= count($timeSeries) - $windowSize; $i++) {
-            $window = array_slice($timeSeries, $i, $windowSize);
-            $distance = $dtw->distance($input, array_values($window));
-            $seriesStartDate = Carbon::parse(array_key_first($window));
+        $lastWindow = count($values) - $windowSize;
+        for ($i = 0; $i <= $lastWindow; $i++) {
+            if ($values[$i] == 0.0) {
+                continue;
+            }
+
+            $seriesStartDate = Carbon::parse($dates[$i]);
+            $inQuarantine = $quarantineUntil && $quarantineUntil > $seriesStartDate;
+            $giveUpAt = $inQuarantine ? (float) $lastDistance : null;
+            if (count($keptDistances) >= $limit + 1) {
+                $cutoff = $keptDistances[$limit];
+                $giveUpAt = $giveUpAt === null ? $cutoff : min($giveUpAt, $cutoff);
+            }
+
+            $distance = $line->distance($query, $values, $i, $giveUpAt);
+            if ($distance === null) {
+                continue;
+            }
+
             // avoid hits too close to each other if they're smaller than the last one
-            if ($quarantineUntil && $quarantineUntil > $seriesStartDate) {
+            if ($inQuarantine) {
                 if ($distance > $lastDistance) {
                     continue;
                 }
                 // during quarantine but distance is better: remove the item that started quarantine and start it again
                 unset($matches[$lastIndex]);
+                $this->forgetDistance($keptDistances, $lastDistance);
             }
 
             // make sure distances won't overlap
@@ -252,6 +273,7 @@ class DailyPriceService
 
             // if there's more than one 1 (searched period) distance 0 series, we'll need to check searched period here
             $matches[$index] = ['start_date' => $seriesStartDate->format('Y-m-d'), 'distance' => $distance];
+            $this->rememberDistance($keptDistances, $distance);
 
             $lastDistance = $distance;
             $lastIndex = $index;
@@ -292,5 +314,27 @@ class DailyPriceService
         }
 
         return array_slice($matches, 0, $limit);
+    }
+
+    /**
+     * @param array<int, float> $distances
+     */
+    private function rememberDistance(array &$distances, float $distance): void
+    {
+        $distances[] = $distance;
+        sort($distances, SORT_NUMERIC);
+    }
+
+    /**
+     * @param array<int, float> $distances
+     */
+    private function forgetDistance(array &$distances, float $distance): void
+    {
+        $index = array_search($distance, $distances, false);
+        if ($index === false) {
+            return;
+        }
+
+        array_splice($distances, (int) $index, 1);
     }
 }
