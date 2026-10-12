@@ -1,46 +1,32 @@
-<!-- Navbar Start -->
-<nav class="navbar fixed top-0 w-full z-50 transition-all duration-500" id="navbar">
-    <div class="container flex flex-wrap items-center justify-between">
-        <a class="navbar-brand order-first" href="{{ url('/') }}">
-            <span class="inline-block dark:hidden">
-                <img src="{{ asset('assets/images/logo-dark.png') }}" class="l-dark" alt="">
-                <img src="{{ asset('assets/images/logo-light.png') }}" class="l-light" alt="">
-            </span>
-            <img src="{{ asset('assets/images/logo-light.png') }}" class="hidden dark:inline-block" alt="">
-        </a>
-        <div class="navigation flex-1 order-2 hidden lg:flex justify-center" id="menu-collapse">
-            <ul class="navbar-nav nav-light flex space-x-6" id="navbar-navlist">
-                <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-                <li class="nav-item"><a class="nav-link" href="#how-it-works">How it Works</a></li>
-                <li class="nav-item"><a class="nav-link" href="#contact">Contact us</a></li>
-                <li class="nav-item"><a class="nav-link" href="/app/register">Sign Up</a></li>
-                <li class="nav-item"><a class="nav-link" href="/app/login">Log In</a></li>
-            </ul>
+<header>
+    <nav class="ol-nav" id="navbar">
+        <div class="ol-wrap ol-nav__inner">
+            <a class="ol-logo" href="{{ url('/') }}">
+                <img src="{{ asset('assets/images/logo-light.png') }}" width="160" height="24" alt="Orbit BTC">
+            </a>
+
+            <div class="ol-menu hidden" id="menu-collapse">
+                <ul id="navbar-navlist">
+                    <li class="active"><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#how-it-works">How it Works</a></li>
+                    <li><a href="#contact">Contact us</a></li>
+                </ul>
+                <a class="ol-menu-login" href="/app/login">Log in</a>
+            </div>
+
+            <div class="ol-nav__actions">
+                <a class="ol-login" href="/app/login">Log in</a>
+                <a class="ol-btn ol-btn--sm" href="/app/register">Sign up</a>
+                <button class="ol-burger" type="button" data-collapse="menu-collapse" aria-controls="menu-collapse" aria-expanded="false" aria-label="Navigation Menu">
+                    <svg class="ol-burger__open" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="ol-burger__close" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
         </div>
-        <div class="nav-icons flex items-center order-3 ms-auto">
-            {{--<ul class="list-none menu-social mb-0 flex space-x-2">
-                <li class="inline">
-                    <a href="https://github.com" target="_blank">
-                        <span class="login-btn-primary"><span class="btn btn-sm btn-icon rounded-full bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white"><i class="uil uil-github"></i></span></span>
-                    </a>
-                </li>
-                <li class="inline">
-                    <a href="https://twitter.com" target="_blank">
-                        <span class="login-btn-primary"><span class="btn btn-sm btn-icon rounded-full bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white"><i class="uil uil-twitter"></i></span></span>
-                    </a>
-                </li>
-                <li class="inline">
-                    <a href="https://instagram.com" target="_blank">
-                        <span class="login-btn-primary"><span class="btn btn-sm btn-icon rounded-full bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white"><i class="uil uil-instagram"></i></span></span>
-                    </a>
-                </li>
-            </ul>--}}
-            <button data-collapse="menu-collapse" type="button" class="collapse-btn inline-flex items-center ms-3 text-white dark:text-white lg_992:hidden" aria-controls="menu-collapse" aria-expanded="false">
-                <span class="sr-only">Navigation Menu</span>
-                <i class="mdi mdi-menu mdi-24px"></i>
-            </button>
-        </div>
-    </div>
-</nav>
-<!-- Navbar End -->
+    </nav>
+</header>

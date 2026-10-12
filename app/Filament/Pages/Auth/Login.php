@@ -9,6 +9,10 @@ use Filament\Forms\Form;
 
 class Login extends BaseLogin
 {
+    protected array $extraBodyAttributes = [
+        'class' => 'orbit-login',
+    ];
+
     public function form(Form $form): Form
     {
         return $form

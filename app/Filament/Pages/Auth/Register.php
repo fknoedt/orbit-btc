@@ -13,6 +13,10 @@ use Illuminate\Support\HtmlString;
 
 class Register extends BaseRegister
 {
+    protected array $extraBodyAttributes = [
+        'class' => 'orbit-login',
+    ];
+
     public function form(Form $form): Form
     {
         return $form

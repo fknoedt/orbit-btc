@@ -88,6 +88,15 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 'panels::topbar.start',
                 fn () => view('filament.topbar-widgets', ['widgets' => $service->getTopbarWidgets()])
+            )
+            ->renderHook(
+                'panels::body.start',
+                fn () => request()->routeIs([
+                    'filament.app.auth.login',
+                    'filament.app.auth.register',
+                ])
+                    ? view('filament.auth.chart-background')
+                    : null,
             );
     }
 
