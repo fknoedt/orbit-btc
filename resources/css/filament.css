@@ -169,54 +169,28 @@ ul li p {
     margin-top: 0.5rem;
 }
 
-html.dark .bg-gray-900 {
-    color: text-gray-400 !important; /* Gray-400 in dark mode */
+/* How Signals Work sits on a dark panel in both themes, so the copy stays light. */
+.help-signal,
+.help-signal * {
+    color: #e5e7eb !important;
 }
 
-html.dark .bg-gray-900 :not(h2) {
-    color: text-gray-400 !important; /* Gray-400 in dark mode */
+.help-signal h2,
+.help-signal h2 * {
+    color: #f54900 !important;
 }
 
-html.dark .fi-fo-wizard-step .bg-gray-900 {
-    color: text-gray-400 !important; /* Gray-400 in dark mode */
-}
-
-html.dark .fi-fo-wizard-step .bg-gray-900 :not(h2) {
-    color: text-gray-400 !important; /* Gray-400 in dark mode */
-}
-
-html.dark .bg-gray-900 h2.text-orange-500 {
-    color: text-orange-600 !important; /* Use custom orange-600 */
-}
-
-.fi-fo-wizard-step:not(.dark) .bg-gray-900 {
-    color: #000000 !important;
-}
-
-.fi-fo-wizard-step:not(.dark) .bg-gray-900 * {
-    color: #000000 !important;
-}
-
-.fi-fo-wizard-step:not(.dark) .bg-gray-900 h2 {
-    color: #000000 !important;
-}
-
-/* Adjusted: Target h2.text-orange-500 in bg-gray-900 directly for light mode */
-.bg-gray-900:not(.dark) h2.text-orange-500 {
-    color: text-orange-600 !important; /* Use custom orange-600 */
-}
-
-.bg-gray-900 section:not(:first-child) {
+.help-signal section:not(:first-child) {
     padding-top: 2rem !important;
 }
 
-.bg-gray-900 h2 {
+.help-signal h2 {
     margin-top: 0 !important;
     margin-bottom: 1rem !important;
 }
 
-.bg-gray-900 ul.list-disc {
-    padding-left: 1.25rem !important; /* pl-5, 20px */
+.help-signal ul.list-disc {
+    padding-left: 1.25rem !important;
     list-style-position: outside !important;
 }
 

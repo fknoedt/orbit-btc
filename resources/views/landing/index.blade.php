@@ -13,7 +13,7 @@
 
             <div class="ol-wrap ol-hero__copy">
                 <h1 class="ol-h1">Craft your own signals and level-up your <span class="ol-grad">Bitcoin game</span></h1>
-                <p class="ol-lead">Orbit allows you to create and monitor bitcoin signals by combining, weighting, thresholding and backtesting on-chain metrics and market indicators.</p>
+                <p class="ol-lead">Orbit lets you combine on-chain metrics and market indicators into a formula, then monitor it. Weight it, set a threshold, and backtest how it would have performed.</p>
                 <div class="ol-hero__actions">
                     <a class="ol-btn" href="/app/register">Create a Free Account</a>
                     <a class="ol-btn ol-btn--ghost" href="#how-it-works">See how it works</a>
@@ -50,8 +50,8 @@
         <section class="ol-section" id="about">
             <div class="ol-wrap ol-center">
                 <p class="ol-kicker">What is Orbit BTC?</p>
-                <h2 class="ol-h2">Bitcoin exploring and monitoring tool</h2>
-                <p class="ol-lead ol-narrow">Indicators can show you a snapshot of one factor influencing what you're trying to track, but that's usually just one part of the puzzle. In fields like the stock market, networks, healthcare, climate and sports, indexes are created with composite indicators to offer a more holistic view of what is being tracked. Orbit is a tool to bring the same approach into the bitcoin ecosystem enabling anyone to explore, compose, backtest and monitor bitcoin-related metrics in a simple and objective way.</p>
+                <h2 class="ol-h2">A tool to explore and monitor Bitcoin</h2>
+                <p class="ol-lead ol-narrow">Indicators can show you a snapshot of one factor, but that's usually just one part of the puzzle. In fields like the stock market, networks, healthcare, climate and sports, indexes mix several indicators to see the whole picture. Orbit brings that same approach to Bitcoin, so you can explore the metrics, combine them into a formula, then backtest and monitor it.</p>
             </div>
         </section>
 
@@ -63,8 +63,8 @@
                 <div>
                     <p class="ol-kicker">Why Orbit?</p>
                     <h2 class="ol-h2">Unique features and all the good indicators</h2>
-                    <p class="ol-lead">Separating signal from noise on bitcoin's ecosystem doesn't mean checking lots of complex charts on multiple platforms every day, reading a long newsletter every week or scrolling through BTC brawls on X. Those are actually cool, but what if there's an objective yet flexible way to keep track of the indicators you want the way you want?</p>
-                    <p class="ol-lead">Orbit lets you learn about, experiment and test relevant bitcoin-related indicators to build and track your own custom signals. From a single notification when your favorite on-chain metric varies above a custom threshold, to a combination of weighted metrics into a unique signal that you can back-test against historical data, track and share, all in a single and friendly platform.</p>
+                    <p class="ol-lead">Separating signal from noise in Bitcoin doesn't mean checking lots of complex charts on multiple platforms every day, reading a long newsletter every week or scrolling through BTC brawls on X. Those are actually cool, but what if there's an objective yet flexible way to keep track of the indicators you want, the way you want?</p>
+                    <p class="ol-lead">Orbit lets you learn about, experiment with and test Bitcoin indicators, then combine them into a formula you can track. Start with one metric and a threshold, or weight several together, backtest against historical data, and keep tuning it.</p>
                     <a class="ol-btn" href="/app/register">Create a Free Account</a>
                 </div>
             </div>
@@ -74,8 +74,8 @@
             <div class="ol-wrap">
                 <div class="ol-center">
                     <p class="ol-kicker">How does it work?</p>
-                    <h2 class="ol-h2">Craft, test and monitor your own Signals</h2>
-                    <p class="ol-lead ol-narrow">Orbit is a tool for anyone who is interested in exploring bitcoin's ecosystem.</p>
+                    <h2 class="ol-h2">Craft, test and monitor your own formula</h2>
+                    <p class="ol-lead ol-narrow">For anyone curious about Bitcoin's health and what can move its price: explore the metrics, then turn them into a formula you can track.</p>
                 </div>
 
                 <div class="ol-steps">
@@ -84,7 +84,7 @@
                             <img src="{{ asset('assets/images/svg/explore.svg') }}" alt="" width="148" height="148">
                         </div>
                         <h3>Explore</h3>
-                        <p>Orbit offers all the relevant on-chain metrics and market indicators for you to use in your signals. You can understand how they relate to bitcoin's price, explore their time-series and use tools like pattern matching to pick your favorite ones.</p>
+                        <p>Orbit offers the relevant on-chain metrics and market indicators for your formula. See how they relate to Bitcoin's price, look through their history, and use pattern matching to pick your favorites.</p>
                     </article>
 
                     <article class="ol-step">
@@ -92,7 +92,7 @@
                             <img src="{{ asset('assets/images/svg/build.svg') }}" alt="" width="148" height="148">
                         </div>
                         <h3>Build</h3>
-                        <p>Create your own signals based on weighted metrics, thresholds and time-horizon to simulate buy or sell operations whenever the threshold is hit.</p>
+                        <p>Combine your metrics, set a weight on each, then choose a threshold, a time horizon, and whether a hit means buy or sell.</p>
                     </article>
 
                     <article class="ol-step">
@@ -100,7 +100,7 @@
                             <img class="is-wide" src="{{ asset('assets/images/svg/test.svg') }}" alt="" width="230" height="100">
                         </div>
                         <h3>Backtest</h3>
-                        <p>Your signal is then tested against historical data and a score is given based on the buy or sell operations it triggers, which you can drill into.</p>
+                        <p>Orbit replays that formula against historical data. With your combination, threshold and time horizon, it triggers the buys and sells that would have happened, so you can see how they would have performed.</p>
                     </article>
 
                     <article class="ol-step">
@@ -108,7 +108,7 @@
                             <img src="{{ asset('assets/images/svg/monitor.svg') }}" alt="" width="148" height="148">
                         </div>
                         <h3>Monitor</h3>
-                        <p>With your signals tuned, you can sit back and wait for notifications or keep an eye on its performance to tweak them further.</p>
+                        <p>With your formula tuned, sit back and wait for an email, or keep an eye on its performance and tweak it.</p>
                     </article>
                 </div>
             </div>
@@ -117,7 +117,7 @@
         <section class="ol-section ol-section--alt ol-cta" id="quote">
             <div class="ol-wrap">
                 <p class="ol-kicker">How can Orbit BTC help me?</p>
-                <h2 class="ol-h2">Predicting the market might be hard, but patterns tend to reoccur. Customize, backtest and automate your own Bitcoin Signals with Orbit.</h2>
+                <h2 class="ol-h2">Predicting the market might be hard, but patterns tend to repeat. Customize a formula, backtest it, and let Orbit watch it.</h2>
                 <a class="ol-btn" href="/app/register">Try it for free now</a>
             </div>
         </section>
