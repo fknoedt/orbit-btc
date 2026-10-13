@@ -27,6 +27,9 @@ return [
 
     'currency' => env('DEFAULT_CURRENCY', 'usd'),
 
+    /** Dollar size of each simulated signal trade */
+    'trade_size_in_usd' => env('BTC_TRADE_SIZE_IN_USD', 1000),
+
     'apis' => [
         'coinmarketcap' => [
             'url' => env('COINMARKETCAP_URL'),

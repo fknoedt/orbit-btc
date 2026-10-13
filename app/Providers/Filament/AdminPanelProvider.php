@@ -97,6 +97,10 @@ class AdminPanelProvider extends PanelProvider
                 ])
                     ? view('filament.auth.chart-background')
                     : null,
+            )
+            ->renderHook(
+                'panels::scripts.before',
+                fn () => view('filament.components.pinned-tooltip-script'),
             );
     }
 

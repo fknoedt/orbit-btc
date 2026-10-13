@@ -154,8 +154,8 @@ class PerformancePage extends Page
             'last_date_calculated' => $userSignal->last_date_calculated ?? null,
             'error' => $userSignal->error,
             'warning' => $userSignal->warning,
-            'stake_value' => UserSignalService::TRADE_SIZE_IN_USD,
-            'total_stake' => Number::abbreviate(UserSignalService::TRADE_SIZE_IN_USD * ($userSignal->total_simulated_trades ?? 0)),
+            'stake_value' => UserSignalService::tradeSizeInUsd(),
+            'total_stake' => Number::abbreviate(UserSignalService::tradeSizeInUsd() * ($userSignal->total_simulated_trades ?? 0)),
         ];
     }
 
