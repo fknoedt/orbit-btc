@@ -19,8 +19,11 @@ class UserSignalService
     /** used to calculate max threshold */
     public const int MAX_OSCILLATION_PER_METRIC = 50;
 
-    /** to calculate each day's signal_value, we need to simulate a trade weighted against the threshold */
-    public const int TRADE_SIZE_IN_USD = 1000;
+    /** Dollar size of one simulated trade. Configured in config/btc.php. */
+    public static function tradeSizeInUsd(): int
+    {
+        return (int) config('btc.trade_size_in_usd');
+    }
 
     protected int $totalDailyScoresCreated = 0;
     protected int $totalSimulatedTrades = 0;
@@ -265,7 +268,7 @@ class UserSignalService
                                     } else {
                                         $conviction = 1;
                                     }
-                                    $tradeValue = $conviction * self::TRADE_SIZE_IN_USD;
+                                    $tradeValue = $conviction * self::tradeSizeInUsd();
 
                                     // get the future price change
                                     $futurePriceColumnName = 'price_change_' . $userSignal->time_horizon . 'd';

@@ -11,7 +11,7 @@
         </p>
         <p class="mt-2">
             Every day, going back {{ Number::abbreviate(UserSignalService::MAX_DAYS_BACK) }} days, Orbit runs
-            a {{ Number::currency(constant('App\Services\UserSignalService::TRADE_SIZE_IN_USD')) }} trade simulation if
+            a {{ Number::currency(UserSignalService::tradeSizeInUsd()) }} trade simulation if
             your Signal’s score hits its threshold. It then checks how it performs over your chosen time horizon (1 to 10
             days) using real bitcoin price data—past and present.
         </p>
