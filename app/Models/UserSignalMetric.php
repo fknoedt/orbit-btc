@@ -42,4 +42,17 @@ class UserSignalMetric extends Model
 
         return (1 - $oscillation) * 100;
     }
+
+    /**
+     * A rise is negative and a drop is positive, matching dailyOscillation().
+     * Up keeps rises, down keeps drops, and both keeps either.
+     */
+    public function matchesDirection(float $oscillation): bool
+    {
+        return match ($this->operator) {
+            Operators::PLUS => $oscillation < 0,
+            Operators::MINUS => $oscillation > 0,
+            default => true,
+        };
+    }
 }

@@ -190,7 +190,63 @@ it('scores days, simulates a buy, and quarantines the time horizon', function ()
         ->and($scores[2]->quarantined)->toBeFalsy()
         ->and($scores[2]->signal_value)->toEqual(100);
 
-    expect($signal->fresh()->total_simulated_trades)->toBe(2);
+    expect($signal->fresh()->total_simulated_trades)->toBe(2)
+        ->and(substr((string) $signal->fresh()->first_date_calculated, 0, 10))->toBe('2024-03-08');
+});
+
+it('does not carry the trade wait from one signal into the next', function () {
+    seedPrices('2024-02-06', '2024-03-10');
+    makeSignal(['name' => 'first']);
+    $second = makeSignal(['name' => 'second']);
+
+    (new UserSignalService)->updateDailyScores(since: Carbon::parse('2024-03-07'));
+
+    $scores = UserSignalDailyScore::where('user_signal_id', $second->id)->orderBy('date')->get();
+
+    expect($scores)->toHaveCount(3)
+        ->and($scores[0]->quarantined)->toBeFalsy()
+        ->and($scores[0]->signal_value)->toEqual(100)
+        ->and($scores[1]->quarantined)->toBeTruthy()
+        ->and($scores[1]->signal_value)->toBeNull()
+        ->and($scores[2]->quarantined)->toBeFalsy()
+        ->and($scores[2]->signal_value)->toEqual(100);
+});
+
+it('adds points for a rise only when direction is up', function () {
+    seedPrices('2024-02-06', '2024-03-10', close: 100, change1d: 10);
+    DailyPrice::where('date', '2024-03-08')->update(['close' => 110]);
+
+    $up = makeSignal(['name' => 'up', 'threshold' => 1], ['operator' => '+']);
+    $down = makeSignal(['name' => 'down', 'threshold' => 1], ['operator' => '-']);
+
+    (new UserSignalService)->updateDailyScores(since: Carbon::parse('2024-03-07'));
+
+    $upDay = UserSignalDailyScore::where('user_signal_id', $up->id)->orderBy('date')->first();
+    $downDay = UserSignalDailyScore::where('user_signal_id', $down->id)->orderBy('date')->first();
+
+    expect($upDay->score)->toEqual(10.0)
+        ->and($upDay->signal_value)->toEqual(100)
+        ->and($downDay->score)->toEqual(0.0)
+        ->and($downDay->signal_value)->toBeNull();
+});
+
+it('does not open a trade when the forward price is still unknown', function () {
+    seedPrices('2024-02-06', '2024-03-10', close: 100, change1d: 10);
+    DailyPrice::where('date', '2024-03-08')->update(['price_change_1d' => null]);
+    $signal = makeSignal(['threshold' => 0]);
+
+    (new UserSignalService)->updateDailyScores(
+        userSignalId: $signal->id,
+        since: Carbon::parse('2024-03-07'),
+    );
+
+    $scores = UserSignalDailyScore::orderBy('date')->get();
+
+    expect($scores[0]->signal_value)->toBeNull()
+        ->and($scores[0]->quarantined)->toBeFalsy()
+        ->and($scores[1]->signal_value)->toEqual(100)
+        ->and($scores[1]->quarantined)->toBeFalsy()
+        ->and($scores[2]->quarantined)->toBeTruthy();
 });
 
 it('throws when a metric id does not exist', function () {

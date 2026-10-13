@@ -98,9 +98,7 @@ class UserSignalService
             $priceService = new DailyPriceService();
         }
 
-        if (! $since) {
-            $since = Carbon::now()->subDays(self::MAX_DAYS_BACK);
-        }
+        $since = ($since ?? Carbon::now()->subDays(self::MAX_DAYS_BACK))->copy();
         // always add maximum frequency (monthly) more days to allow oscillation calculation on the fly
         $since->subDays(Frequency::MAX_FREQUENCY_IN_DAYS);
 
@@ -108,7 +106,11 @@ class UserSignalService
         $priceService->getAllDailyPricesKeyByDate($since, Carbon::now(), true);
 
         // don't eager load userSignalMetrics.metric to use a pre-loaded hashmap
-        $query = UserSignal::with(['userSignalMetrics', 'userSignalMetrics.frequency'])
+        $query = UserSignal::with([
+            'userSignalMetrics',
+            'userSignalMetrics.frequency',
+            'userSignalMetrics.metric' => fn ($metric) => $metric->withTrashed(),
+        ])
             ->where('is_paused', false)
             ->whereHas('userSignalMetrics');
 
@@ -126,6 +128,10 @@ class UserSignalService
                 // if one UserSignal fails to process, report and save errors to this object and try every other UserSignal
                 DB::transaction(
                     function () use ($userSignal, $since, $metricService, $priceService) {
+                        // The wait between trades belongs to this signal. A leftover from the
+                        // previous signal would block this signal's first days.
+                        $this->quarantine = 0;
+
                         $now = Carbon::now();
                         $totalSignalValue = 0;
                         $userSignalSimulatedTrades = 0;
@@ -145,7 +151,6 @@ class UserSignalService
                         // when days fetched for reference end
                         $subDaysEndDate = $since->copy()->addDays(Frequency::MAX_FREQUENCY_IN_DAYS);
 
-                        $userSignalMetricsWarnings = [];
                         $userSignalDaysCalculated = 0;
 
                         // iterate through every day of the time series and, on each day, go through every metric
@@ -160,15 +165,14 @@ class UserSignalService
                             }
 
                             if (! $dailyPrice) {
-                                // create one warning per metric
                                 foreach ($userSignal->userSignalMetrics->pluck('id')->all() as $userSignalMetricId) {
-                                    $userSignalMetricsWarnings[$userSignalMetricId]['Missing Day(s)'] ??= 0;
-                                    $userSignalMetricsWarnings[$userSignalMetricId]['Missing Day(s)']++;
+                                    $warnings[$userSignalMetricId]['Missing Day(s)'] ??= 0;
+                                    $warnings[$userSignalMetricId]['Missing Day(s)']++;
                                 }
                                 continue;
                             }
 
-                            if ($userSignalDaysCalculated === 1) {
+                            if ($userSignalDaysCalculated === 0) {
                                 $userSignal->first_date_calculated = $date->format('Y-m-d');
                             }
 
@@ -225,12 +229,8 @@ class UserSignalService
                                     $metric->column_name
                                 );
 
-                                // ignore variations against what is expected
-                                if (
-                                    $userSignalMetric->operator === '+' && $dailyOscillation < 0 ||
-                                    $userSignalMetric->operator === '-' && $dailyOscillation > 0
-                                ) {
-                                        continue;
+                                if (! $userSignalMetric->matchesDirection($dailyOscillation)) {
+                                    continue;
                                 }
 
                                 $dailyOscillation = abs($dailyOscillation);
@@ -252,34 +252,32 @@ class UserSignalService
                             $conviction = null;
                             $tradeValue = null;
                             $dailySignalValue = null;
+                            $quarantined = false;
                             if ($this->quarantine > 0) {
                                 $quarantined = true;
                                 $this->quarantine--;
-                            } else {
-                                if ($userSignalDailyScore >= $userSignal->threshold) {
-                                    // TODO: user_signal.conviction_trade bool to make it proportional to how past threshold
-                                    if (! empty($userSignal->conviction_trade)) {
-                                        // how strong - above the threshold - the model is today
-                                        $tradeStrength =
-                                            ($userSignalDailyScore - $userSignal->threshold) /
-                                            $userSignal->threshold;
-                                        // amount bought or sold depends on conviction (cap to full value)
-                                        $conviction = min($tradeStrength, 1);
-                                    } else {
-                                        $conviction = 1;
-                                    }
-                                    $tradeValue = $conviction * self::tradeSizeInUsd();
+                            } elseif ($userSignalDailyScore >= $userSignal->threshold) {
+                                // TODO: user_signal.conviction_trade bool to make it proportional to how past threshold
+                                if (! empty($userSignal->conviction_trade)) {
+                                    // how strong - above the threshold - the model is today
+                                    $tradeStrength =
+                                        ($userSignalDailyScore - $userSignal->threshold) /
+                                        $userSignal->threshold;
+                                    // amount bought or sold depends on conviction (cap to full value)
+                                    $conviction = min($tradeStrength, 1);
+                                } else {
+                                    $conviction = 1;
+                                }
+                                $tradeValue = $conviction * self::tradeSizeInUsd();
 
-                                    // get the future price change
-                                    $futurePriceColumnName = 'price_change_' . $userSignal->time_horizon . 'd';
-                                    // and normalize it (maybe it should be stored like that in the first place?)
-                                    $futureTradeValueChange = ($dailyPrice->{$futurePriceColumnName} / 100);
-                                    // total gained or saved this day
-                                    $futureValueDelta = $tradeValue * $futureTradeValueChange;
+                                // Unknown until the horizon has elapsed. A missing change is not a $0 result.
+                                $futurePriceColumnName = 'price_change_' . $userSignal->time_horizon . 'd';
+                                $futureChange = $dailyPrice->{$futurePriceColumnName} ?? null;
+                                if ($futureChange !== null) {
+                                    $futureValueDelta = $tradeValue * ($futureChange / 100);
                                     // if signal was to sell, invert value (price going up is bad while down is good)
                                     $dailySignalValue = ($userSignal->buy_or_sell === 'buy') ?
                                         $futureValueDelta : (-1 * $futureValueDelta);
-                                    // sum to the model's grand signal score
                                     $totalSignalValue += $dailySignalValue;
 
                                     $userSignalSimulatedTrades++;
@@ -288,11 +286,12 @@ class UserSignalService
                                     // until time horizon is hit, no simulations will be made
                                     $this->quarantine = (int) $userSignal->time_horizon;
                                 }
+                            }
 
-                                $userSignal->last_score = $userSignalDailyScore;
-                                $userSignal->last_date_calculated = $date->format('Y-m-d');
+                            $userSignal->last_score = $userSignalDailyScore;
+                            $userSignal->last_date_calculated = $date->format('Y-m-d');
+                            if (! $quarantined) {
                                 $userSignal->last_signal_value = $dailySignalValue;
-                                $quarantined = false;
                             }
 
                             // save day in user_signal_daily_scores

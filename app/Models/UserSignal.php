@@ -39,12 +39,12 @@ class UserSignal extends Model
     {
         $cappedAt = null;
         foreach ($this->userSignalMetrics as $userSignalMetric) {
-            if ($userSignalMetric->metrics) {
-                foreach ($userSignalMetric->metrics as $metric) {
-                    if (is_null($cappedAt) || $metric->data_limited_at > $cappedAt) {
-                        $cappedAt = $metric->data_limited_at;
-                    }
-                }
+            $limitedAt = $userSignalMetric->metric?->data_limited_at;
+            if (! $limitedAt) {
+                continue;
+            }
+            if (is_null($cappedAt) || $limitedAt > $cappedAt) {
+                $cappedAt = $limitedAt;
             }
         }
 
