@@ -16,7 +16,7 @@
                         </svg>
                     </div>
                     <p class="text-gray-700 dark:text-gray-300 mt-4">
-                        Orbit BTC is your place to explore and monitor bitcoin's price with the right set of tools. Whether you’re looking to explore and monitor key metrics or build your own custom Signals with thresholded alerts, this platform offers a straightforward way to gain insights, test ideas, and make informed and calculated decisions.
+                        Orbit is where you explore Bitcoin's price and health. Look through the metrics, or combine them into a formula, set a threshold, and backtest how it would have performed against historical data.
                     </p>
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['get-started-page'] ? 'checked' : '' }}">
@@ -43,7 +43,7 @@
                         </svg>
                     </div>
                     <p class="text-gray-700 dark:text-gray-300 mt-4">
-                        Metrics are at the core of Orbit. Think of them as indicators that can potentially impact the subject you're trying to monitor. Just like a physician monitors heart rate, blood pressure, temperature and white blood cells, we are looking at bitcoin historical and real time data like market sentiment, hashrate, exchanges reserve, and many others. In the menu you’ll find detailed information and charts about each Metric.
+                        Metrics are at the core of Orbit. Think of them as indicators of Bitcoin's health and what can move its price. Just like a physician monitors heart rate, blood pressure, temperature and white blood cells, Orbit looks at data such as market sentiment, hashrate, exchange reserves, and many others. In the menu you’ll find the chart and detail for each metric.
                     </p>
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['metrics'] ? 'checked' : '' }}">
@@ -74,7 +74,7 @@
                         </svg>
                     </div>
                     <p class="text-gray-700 dark:text-gray-300 mt-4">
-                        The Time Series menu lets you dive deeper by viewing charts of each metric. It’s a space to explore how these indicators have evolved—whether over weeks, months, or years and correlate to each other. You can also define time ranges and search for similar oscillation pattern in previous years. Try it out!
+                        Time Series lets you go deeper into each metric's chart. See how these indicators have moved over weeks, months, or years, and how they relate to each other. Set a time range and search earlier history for a similar pattern.
                     </p>
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['time-series'] ? 'checked' : '' }}">
@@ -105,7 +105,7 @@
                         </svg>
                     </div>
                     <p class="text-gray-700 dark:text-gray-300 mt-4">
-                        Signals blend one or more Metrics, each with tailored frequencies and weights, to track Bitcoin’s price and market trends comprehensively. Set a global threshold for Buy or Sell alerts, fine-tune your strategy, and let Orbit monitor them in real-time while showing past performance with historical on-chain and market data. Forget the daily chart grind—let Orbit clear the noise and deliver your signal!
+                        A signal blends one or more metrics, each with its own weight, into a formula. Set a threshold, a time horizon, and whether a hit means buy or sell. Orbit replays that formula against historical data, and can email you when the combined daily score fires.
                     </p>
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['user-signals'] ? 'checked' : '' }}">
@@ -132,7 +132,7 @@
                         </svg>
                     </div>
                     <p class="text-gray-700 dark:text-gray-300 mt-4">
-                        Now that you have created a Signal, the Performance page shows you how they hold up. Simulated trades triggered by your Signal's thresholds will show you, on a daily basis, how your signal would perform if you followed the Buy or Sell signal and purchased a fixed USD amount in BTC. This will give you insights into what works, what doesn’t, and how to improve your analysis.
+                        The Performance page shows how a signal would have held up. When the combined daily score crosses your threshold, Orbit triggers a simulated buy or sell against historical data, for a fixed USD amount in BTC. You can see what worked, what didn’t, and what to tune.
                     </p>
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['performance-page'] ? 'checked' : '' }}">
@@ -163,12 +163,12 @@
                         </svg>
                     </div>
                     <p class="text-gray-900 dark:text-gray-300 mt-4">
-                        The Dashboard is your central hub for staying on top of your Bitcoin analysis. Monitor your latest alerts, track signal performance, and keep up with fresh, up-to-date Bitcoin metrics—all in one place.
+                        The Dashboard keeps your latest alerts, signal performance, and Bitcoin metrics in one place.
                     </p>
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['dashboard'] ? 'checked' : '' }}">
                             <input type="checkbox" {{ $this->getChecklistStatus()['dashboard'] ? 'checked' : '' }} disabled>
-                            <span class="checklist-text">Explore your </span><a target="_blank" href="/app">Dashboard</a><span class="checklist-text"> for real-time insights</span>
+                            <span class="checklist-text">Explore your </span><a target="_blank" href="/app">Dashboard</a><span class="checklist-text"> for alerts, signals, and metrics</span>
                         </div>
                     </div>
                 </div>

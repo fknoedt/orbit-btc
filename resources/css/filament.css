@@ -389,80 +389,39 @@ html.dark .fi-infolist-action[data-action="chart"] .fi-infolist-action-label.dar
 
 /* Get Started Page Styles */
 .get-started-container {
-    min-height: 100vh;
     position: relative;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
+    gap: 1rem;
+    width: min(920px, 100%);
+    margin-inline: auto;
 }
 
 .get-started-section {
-    min-height: 36vh; /* Reduced from 60vh to allow sections to be closer */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem 1rem; /* Reduced vertical padding from 0.25rem to 0.5rem for consistency, adjust as needed */
+    display: block;
     position: relative;
-    margin: 2rem 0; /* Add small margin to control spacing, adjust as needed */
+    margin: 0;
 }
 
 .section-background-container {
     position: relative;
-    padding: 3.5rem !important;
-    border-radius: 0.5rem !important;
-    transition: background 0.5s ease;
-    width: 90% !important;
-    background-blend-mode: overlay;
-    box-shadow: 0 0 12px 4px rgba(0, 0, 0, 0.1) !important; /* Light mode glow */
+    width: 100% !important;
+    padding: 1.75rem 1.75rem 1.5rem !important;
+    border: 1px solid rgba(24, 24, 27, 0.08);
+    border-radius: 18px !important;
+    background:
+        radial-gradient(440px 160px at 100% 0%, rgba(245, 73, 0, 0.08), transparent 70%),
+        #ffffff !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05) !important;
+    overflow: hidden;
 }
 
 html.dark .section-background-container {
-    box-shadow: 0 0 12px 4px rgba(249, 115, 22, 0.15) !important; /* Dark mode glow */
-}
-
-#welcome-section .section-background-container {
-    background: linear-gradient(135deg, #d1d5db 0%, #e5e7eb 100%) !important;
-}
-html.dark #welcome-section .section-background-container {
-    background: linear-gradient(135deg, #0a0a23 0%, #1a1a2e 100%) !important;
-}
-#metrics-section .section-background-container {
-    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
-}
-html.dark #metrics-section .section-background-container {
-    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%) !important;
-}
-#time-series-section .section-background-container {
-    background: linear-gradient(135deg, #d1d5db 0%, #e5e7eb 100%) !important;
-}
-html.dark #time-series-section .section-background-container {
-    background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%) !important;
-}
-#signals-section .section-background-container {
-    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
-}
-html.dark #signals-section .section-background-container {
-    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a23 100%) !important;
-}
-#performance-section .section-background-container {
-    background: linear-gradient(135deg, #d1d5db 0%, #e5e7eb 100%) !important;
-}
-html.dark #performance-section .section-background-container {
-    background: linear-gradient(135deg, #0a0a23 0%, #1a1a2e 100%) !important;
-}
-#dashboard-section .section-background-container {
-    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
-}
-html.dark #dashboard-section .section-background-container {
-    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a23 100%) !important;
-}
-
-/* Layer 1: Base starry effect */
-.section-background-container::before,
-.section-background-container::after,
-.section-background-container .content-wrapper::before {
-    background-position: center center !important; /* Fix position to prevent scrolling shift */
-    background-attachment: fixed !important; /* Fix background to viewport, preventing movement */
+    border-color: rgba(255, 255, 255, 0.1);
+    background:
+        radial-gradient(480px 190px at 100% 0%, rgba(245, 73, 0, 0.16), transparent 68%),
+        #10131a !important;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32) !important;
 }
 
 .get-started-section .content-wrapper {
@@ -477,33 +436,33 @@ html.dark #dashboard-section .section-background-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
 }
 
 /* Center the title text without taking extra space */
 .get-started-section .title-wrapper {
     text-align: center;
-    margin-right: 1rem;
+    margin-right: 0;
 }
 
 /* Update title color to orange with tighter line height */
 .get-started-section .title-image-container h1 {
-    font-size: 3rem !important;
-    font-weight: 800 !important;
-    color: #f97316 !important;
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    color: #f54900 !important;
     line-height: 1.2 !important;
 }
 
 html.dark .get-started-section .title-image-container h1 {
-    color: #fb923c !important;
+    color: #ff6a2c !important;
 }
 
-/* NEW: Bigger text font */
 .get-started-section .content-wrapper p {
-    font-size: 1.125rem !important;
-    color: #1f2937 !important; /* Dark grey in light mode */
-    margin-top: 1.5rem !important;
+    font-size: 1.02rem !important;
+    line-height: 1.6 !important;
+    color: #3f3f46 !important;
+    margin-top: 1rem !important;
 }
 
 html.dark .get-started-section .content-wrapper p {
@@ -512,34 +471,33 @@ html.dark .get-started-section .content-wrapper p {
 
 /* Style the heroicons */
 .get-started-section .title-image-container svg.section-icon {
-    height: 80px !important;
-    width: 80px !important;
-    color: #f97316 !important;
-    stroke: #f97316 !important;
+    height: 42px !important;
+    width: 42px !important;
+    color: #f54900 !important;
+    stroke: #f54900 !important;
 }
 
 /* Dark mode adjustments */
 html.dark .get-started-section .title-image-container svg.section-icon {
-    color: #fb923c !important;
-    stroke: #fb923c !important;
+    color: #ff6a2c !important;
+    stroke: #ff6a2c !important;
 }
 
 /* Checklist container */
 .get-started-section .checklist-container {
-    margin-top: 2rem;
-    border: 2px solid #d1d5db;
-    border-radius: 0.75rem;
-    padding: 1rem;
-    background-color: rgba(255, 255, 255, 0.05);
-    width: 75%; /* Set to 50% of the parent container's width */
-    max-width: 800px; /* Cap at 500px to ensure it doesn't exceed this width */
-    margin-left: auto; /* Center the checklist within the parent */
+    margin-top: 1.25rem;
+    border: 1px solid rgba(24, 24, 27, 0.08);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    background-color: rgba(24, 24, 27, 0.03);
+    width: 100%;
+    margin-left: auto;
     margin-right: auto;
 }
 
 html.dark .get-started-section .checklist-container {
-    border-color: #4b5563;
-    background-color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 /* Checklist item */
@@ -547,10 +505,10 @@ html.dark .get-started-section .checklist-container {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 18px;
+    font-size: 15px;
     color: #1f2937;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin-top: 0.35rem;
+    margin-bottom: 0.35rem;
 }
 
 html.dark .get-started-section .checklist-item {
@@ -570,12 +528,12 @@ html.dark .get-started-section .checklist-item.checked .checklist-text {
 
 /* Style links in checklist */
 .get-started-section .checklist-item a {
-    color: #f97316 !important;
+    color: #f54900 !important;
     text-decoration: underline;
 }
 
 html.dark .get-started-section .checklist-item a {
-    color: #fb923c !important;
+    color: #ff6a2c !important;
 }
 
 /* Divider line */
@@ -591,20 +549,24 @@ html.dark .get-started-section .checklist-divider {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .get-started-section {
-        min-height: auto;
-        padding: 0.5rem;
+    .section-background-container {
+        padding: 1.25rem 1.15rem 1.1rem !important;
+        border-radius: 16px !important;
     }
 
     .get-started-section .content-wrapper {
         max-width: 100%;
-        padding: 0.5rem 0;
+        padding: 0;
     }
 
     .get-started-section .title-image-container {
         flex-direction: column;
         align-items: center;
         text-align: center;
+    }
+
+    .get-started-section .title-image-container h1 {
+        font-size: 1.5rem !important;
     }
 }
 
