@@ -169,54 +169,28 @@ ul li p {
     margin-top: 0.5rem;
 }
 
-html.dark .bg-gray-900 {
-    color: text-gray-400 !important; /* Gray-400 in dark mode */
+/* How Signals Work sits on a dark panel in both themes, so the copy stays light. */
+.help-signal,
+.help-signal * {
+    color: #e5e7eb !important;
 }
 
-html.dark .bg-gray-900 :not(h2) {
-    color: text-gray-400 !important; /* Gray-400 in dark mode */
+.help-signal h2,
+.help-signal h2 * {
+    color: #f54900 !important;
 }
 
-html.dark .fi-fo-wizard-step .bg-gray-900 {
-    color: text-gray-400 !important; /* Gray-400 in dark mode */
-}
-
-html.dark .fi-fo-wizard-step .bg-gray-900 :not(h2) {
-    color: text-gray-400 !important; /* Gray-400 in dark mode */
-}
-
-html.dark .bg-gray-900 h2.text-orange-500 {
-    color: text-orange-600 !important; /* Use custom orange-600 */
-}
-
-.fi-fo-wizard-step:not(.dark) .bg-gray-900 {
-    color: #000000 !important;
-}
-
-.fi-fo-wizard-step:not(.dark) .bg-gray-900 * {
-    color: #000000 !important;
-}
-
-.fi-fo-wizard-step:not(.dark) .bg-gray-900 h2 {
-    color: #000000 !important;
-}
-
-/* Adjusted: Target h2.text-orange-500 in bg-gray-900 directly for light mode */
-.bg-gray-900:not(.dark) h2.text-orange-500 {
-    color: text-orange-600 !important; /* Use custom orange-600 */
-}
-
-.bg-gray-900 section:not(:first-child) {
+.help-signal section:not(:first-child) {
     padding-top: 2rem !important;
 }
 
-.bg-gray-900 h2 {
+.help-signal h2 {
     margin-top: 0 !important;
     margin-bottom: 1rem !important;
 }
 
-.bg-gray-900 ul.list-disc {
-    padding-left: 1.25rem !important; /* pl-5, 20px */
+.help-signal ul.list-disc {
+    padding-left: 1.25rem !important;
     list-style-position: outside !important;
 }
 
@@ -953,4 +927,62 @@ html.dark .metric-details-modal .chart-link {
 
 html.dark .metric-details-modal .chart-link:hover {
     color: #1d4ed8 !important; /* Match table hover */
+}
+
+/* Login page: same chart backdrop as the landing hero */
+body.fi-body.orbit-login {
+    background: #07080d !important;
+    overflow-x: hidden;
+}
+
+.orbit-login-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.orbit-login-bg__glow {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    width: 760px;
+    height: 520px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, rgba(245, 73, 0, 0.22), transparent 68%);
+}
+
+.orbit-login-bg__glow--edge {
+    top: auto;
+    left: auto;
+    right: -120px;
+    bottom: 24%;
+    width: 520px;
+    height: 420px;
+    transform: none;
+    background: radial-gradient(ellipse at center, rgba(245, 73, 0, 0.2), transparent 70%);
+}
+
+.orbit-login-bg__chart {
+    position: absolute;
+    right: 0;
+    bottom: 18%;
+    left: 0;
+    height: 52%;
+    opacity: 0.9;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.orbit-login-bg__chart svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+body.orbit-login .fi-simple-layout {
+    position: relative;
+    z-index: 1;
+    background: transparent !important;
 }

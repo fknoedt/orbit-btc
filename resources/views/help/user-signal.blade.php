@@ -1,5 +1,5 @@
 @php use App\Services\UserSignalService;use Illuminate\Support\Number; @endphp
-<div class="p-6 bg-gray-900 text-black-400 dark:text-gray-400 rounded-lg">
+<div class="help-signal p-6 bg-gray-900 rounded-lg">
     <section>
         <h2 class="text-xl font-bold text-orange-500 border-b-2 border-orange-500 pb-2 mb-4">Signal - Overview</h2>
         <p class="mt-2">

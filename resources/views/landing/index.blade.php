@@ -3,217 +3,176 @@
 @section('content')
     @include('landing.partials.navbar.nav-light')
 
-    <!-- Hero Start -->
-    <section class="py-36 lg:py-64 w-full table relative bg-no-repeat bg-center bg-cover active" id="home" style="background-image: url('/assets/images/bg/btc-satellite.jpg');">
-        <div class="container relative z-1">
-            <div class="grid grid-cols-1 mt-12">
-                <h4 class="text-white lg:text-5xl text-4xl lg:leading-normal leading-normal font-medium mb-7 position-relative z-10">Craft your own signals and <br> level-up your Bitcoin game</h4>
-                <p class="text-white opacity-80 mb-0 max-w-2xl text-lg z-10">Orbit allows you to create and monitor bitcoin signals by combining, weighting, thresholding and backtesting on-chain metrics and market indicators.</p>
-                <div class="relative mt-10 z-10 flex flex-wrap items-center gap-2">
-                    <a href="/app/register" class="btn bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white rounded-md">Create a Free Account</a>
-                    <span class="ml-2 px-3 py-3 bg-red-100 border border-gray-300 text-red-600 text-sm font-semibold rounded">Demo version - 6 months of free Pro Access</span>
+    <main>
+        <section class="ol-hero" id="home">
+            <div class="ol-hero__glow" aria-hidden="true"></div>
+            <div class="ol-hero__glow--edge" aria-hidden="true"></div>
+            <div class="ol-hero__chart" aria-hidden="true">
+                @include('partials.orbit-chart', ['prefix' => 'ol'])
+            </div>
+
+            <div class="ol-wrap ol-hero__copy">
+                <h1 class="ol-h1">Craft your own signals and level-up your <span class="ol-grad">Bitcoin game</span></h1>
+                <p class="ol-lead">Orbit lets you combine on-chain metrics and market indicators into a formula, then monitor it. Weight it, set a threshold, and backtest how it would have performed.</p>
+                <div class="ol-hero__actions">
+                    <a class="ol-btn" href="/app/register">Create a Free Account</a>
+                    <a class="ol-btn ol-btn--ghost" href="#how-it-works">See how it works</a>
+                </div>
+                <ul class="ol-checks">
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                            <circle cx="9" cy="9" r="9" fill="rgba(61,214,140,0.16)"/>
+                            <path d="M5 9.2l2.4 2.4L13 6.2" fill="none" stroke="#3dd68c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Demo version
+                    </li>
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                            <circle cx="9" cy="9" r="9" fill="rgba(61,214,140,0.16)"/>
+                            <path d="M5 9.2l2.4 2.4L13 6.2" fill="none" stroke="#3dd68c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        6 months of free Pro Access
+                    </li>
+                </ul>
+            </div>
+
+            <div class="ol-wrap">
+                <figure class="ol-frame">
+                    <figcaption class="ol-frame__bar">
+                        <span class="ol-frame__dots" aria-hidden="true"><span></span><span></span><span></span></span>
+                        <span class="ol-frame__url">Orbit dashboard</span>
+                    </figcaption>
+                    <img src="{{ asset('assets/images/dashboard.png') }}" width="1439" height="742" alt="Orbit dashboard with bitcoin price, signals, and on-chain metrics">
+                </figure>
+            </div>
+        </section>
+
+        <section class="ol-section" id="about">
+            <div class="ol-wrap ol-center">
+                <p class="ol-kicker">What is Orbit BTC?</p>
+                <h2 class="ol-h2">A tool to explore and monitor Bitcoin</h2>
+                <p class="ol-lead ol-narrow">Indicators can show you a snapshot of one factor, but that's usually just one part of the puzzle. In fields like the stock market, networks, healthcare, climate and sports, indexes mix several indicators to see the whole picture. Orbit brings that same approach to Bitcoin, so you can explore the metrics, combine them into a formula, then backtest and monitor it.</p>
+            </div>
+        </section>
+
+        <section class="ol-section ol-section--alt" id="why">
+            <div class="ol-wrap ol-split ol-why">
+                <div class="ol-shot">
+                    <img src="{{ asset('assets/images/dashboard-part.png') }}" width="828" height="754" alt="Signal score chart with daily bars and price">
+                </div>
+                <div>
+                    <p class="ol-kicker">Why Orbit?</p>
+                    <h2 class="ol-h2">Unique features and all the good indicators</h2>
+                    <p class="ol-lead">Separating signal from noise in Bitcoin doesn't mean checking lots of complex charts on multiple platforms every day, reading a long newsletter every week or scrolling through BTC brawls on X. Those are actually cool, but what if there's an objective yet flexible way to keep track of the indicators you want, the way you want?</p>
+                    <p class="ol-lead">Orbit lets you learn about, experiment with and test Bitcoin indicators, then combine them into a formula you can track. Start with one metric and a threshold, or weight several together, backtest against historical data, and keep tuning it.</p>
+                    <a class="ol-btn" href="/app/register">Create a Free Account</a>
                 </div>
             </div>
-        </div><!--end container-->
-        <div class="absolute lg:w-1/2 w-full h-full bg-gradient-to-t from-orange-400 to-orange-600 top-0 z-0"></div>
-    </section><!--end section-->
-    <!-- Hero End -->
+        </section>
 
-    <!-- What is Orbit -->
-    <section class="relative md:py-24 py-16" id="about">
-        <div class="container md:mt-8 mt-8">
-            <div class="container mx-auto text-center">
-                <h6 class="text-orange-600 text-base font-medium uppercase mb-2">What is Orbit BTC ?</h6>
-                <h3 class="mb-4 md:text-2xl text-xl font-medium dark:text-white">Bitcoin exploring and monitoring tool</h3>
-                <p class="text-slate-400 max-w-xl mx-auto">Indicators can show you a snapshot of one factor influencing what you're trying to track, but that's usually just one part of the puzzle.
-                    In fields like the stock market, networks, healthcare, climate and sports, indexes are created with composite indicators to offer a more holistic view of what is being tracked. Orbit is a tool to bring the same approach into the bitcoin ecosystem enabling anyone to explore, compose, backtest and monitor bitcoin-related metrics in a simple and objective way.  </p>
-            </div><!--end grid-->
-        </div>
-    </section>
-    <!-- End What is Orbit -->
-
-    <!-- Why Orbit -->
-    <section class="relative md:py-24 py-16 bg-gray-50 dark:bg-slate-800 z-10">
-        <div class="container mx-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-12 md:grid-cols-2 gap-10 items-center">
-                <div class="lg:col-span-5">
-                    <div class="relative">
-                        <img src="{{ asset('assets/images/dashboard-part.png') }}" class="group-hover:origin-center group-hover:scale-105 transition duration-500" alt="">
-                        <!--img src="{{ asset('assets/images/dashboard.png') }}" class="rounded-lg shadow-lg relative" alt=""-->
-                        <!--div class="absolute bottom-2/4 translate-y-2/4 start-0 end-0 text-center">
-                            <a href="#!" data-type="youtube" data-id="S_CGed6E610" class="lightbox size-20 rounded-full shadow-lg shadow-slate-100 dark:shadow-slate-800 inline-flex items-center justify-center bg-white dark:bg-slate-900 text-orange-600">
-                                <i class="mdi mdi-play inline-flex items-center justify-center text-2xl"></i>
-                            </a>
-                        </div-->
-                    </div>
+        <section class="ol-section" id="how-it-works">
+            <div class="ol-wrap">
+                <div class="ol-center">
+                    <p class="ol-kicker">How does it work?</p>
+                    <h2 class="ol-h2">Craft, test and monitor your own formula</h2>
+                    <p class="ol-lead ol-narrow">For anyone curious about Bitcoin's health and what can move its price: explore the metrics, then turn them into a formula you can track.</p>
                 </div>
-                <div class="lg:col-span-7">
-                    <div class="lg:ms-7">
-                        <h4 class="text-orange-600 text-base font-medium uppercase mb-2">Why Orbit ?</h4>
-                        <h3 class="mb-4 md:text-2xl text-xl font-medium dark:text-white">Unique features and all the good indicators</h3>
-                        <p class="text-slate-400 max-w-2xl">Separating signal from noise on bitcoin's ecosystem doesn't mean checking lots of complex charts on multiple platforms every day, reading a long newsletter every week or scrolling through BTC brawls on X. Those are actually cool, but what if there's an objective yet flexible way to keep track of the indicators you want the way you want?</p>
-                        <p class="text-slate-400 max-w-2xl mt-4">Orbit let's you learn about, experiment and test relevant bitcoin-related indicators to build and track your own custom signals. From a single notification when your favorite on-chain metric varies above a custom threshold, to a combination of weighted metrics into a unique signal that you can back-test against historical data, track and share, all in a single and friendly platform. </p>
-                        <div class="relative mt-10">
-                            <a href="/app/register" class="btn bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white rounded-md">Create a Free Account</a>
+
+                <div class="ol-steps">
+                    <article class="ol-step">
+                        <div class="ol-step__icon">
+                            <img src="{{ asset('assets/images/svg/explore.svg') }}" alt="" width="148" height="148">
+                        </div>
+                        <h3>Explore</h3>
+                        <p>Orbit offers the relevant on-chain metrics and market indicators for your formula. See how they relate to Bitcoin's price, look through their history, and use pattern matching to pick your favorites.</p>
+                    </article>
+
+                    <article class="ol-step">
+                        <div class="ol-step__icon">
+                            <img src="{{ asset('assets/images/svg/build.svg') }}" alt="" width="148" height="148">
+                        </div>
+                        <h3>Build</h3>
+                        <p>Combine your metrics, set a weight on each, then choose a threshold, a time horizon, and whether a hit means buy or sell.</p>
+                    </article>
+
+                    <article class="ol-step">
+                        <div class="ol-step__icon">
+                            <img class="is-wide" src="{{ asset('assets/images/svg/test.svg') }}" alt="" width="230" height="100">
+                        </div>
+                        <h3>Backtest</h3>
+                        <p>Orbit replays that formula against historical data. With your combination, threshold and time horizon, it triggers the buys and sells that would have happened, so you can see how they would have performed.</p>
+                    </article>
+
+                    <article class="ol-step">
+                        <div class="ol-step__icon">
+                            <img src="{{ asset('assets/images/svg/monitor.svg') }}" alt="" width="148" height="148">
+                        </div>
+                        <h3>Monitor</h3>
+                        <p>With your formula tuned, sit back and wait for an email, or keep an eye on its performance and tweak it.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="ol-section ol-section--alt ol-cta" id="quote">
+            <div class="ol-wrap">
+                <p class="ol-kicker">How can Orbit BTC help me?</p>
+                <h2 class="ol-h2">Predicting the market might be hard, but patterns tend to repeat. Customize a formula, backtest it, and let Orbit watch it.</h2>
+                <a class="ol-btn" href="/app/register">Try it for free now</a>
+            </div>
+        </section>
+
+        <section class="ol-section" id="contact">
+            <div class="ol-wrap">
+                <div class="ol-center">
+                    <p class="ol-kicker">Contact us</p>
+                    <h2 class="ol-h2">Get in touch</h2>
+                    <p class="ol-lead ol-narrow">Feel free to hit us up with questions, feedback, feature requests or to discuss potential partnerships.</p>
+                </div>
+
+                <form class="ol-form" method="post" name="contactForm" id="contactForm" action="{{ route('investor-inquiry.store') }}">
+                    @csrf
+                    <p id="error-msg"></p>
+                    <div id="simple-msg"></div>
+                    <div class="ol-form__row">
+                        <div class="ol-field-wrap">
+                            <label class="ol-label" for="name">Name</label>
+                            <input class="ol-field" name="name" id="name" type="text" autocomplete="name" placeholder="Your name">
+                        </div>
+                        <div class="ol-field-wrap">
+                            <label class="ol-label" for="email">Email</label>
+                            <input class="ol-field" name="email" id="email" type="email" autocomplete="email" placeholder="you@email.com">
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- End About Section -->
-
-    <!-- Features Section -->
-    <!-- Start -->
-    <section class="relative md:py-24 py-8" id="how-it-works">
-        <div class="container md:mt-8 mt-8">
-            <div class="grid grid-cols-1 pb-8 text-center">
-                <h4 class="text-orange-600 text-base font-medium uppercase mb-2">How does it work ?</h4>
-                <h3 class="mb-4 md:text-2xl text-xl font-medium dark:text-white">Craft, test and monitor your own Signals</h3>
-
-                <p class="text-slate-400 max-w-xl mx-auto">Orbit is a tool for anyone who is interested in exploring bitcoin's ecosystem.</p>
-            </div><!--end grid-->
-
-            <div class="grid grid-cols-1 mt-8">
-                <div class="timeline relative">
-                    <div class="timeline-item">
-                        <div class="grid sm:grid-cols-2">
-                            <div class="">
-                                <div class="duration date-label-left ltr:float-right rtl:float-left md:me-7 relative">
-                                    <img src="assets/images/svg/explore.svg" class="size-36 mr-12 dark:invert" alt="">
-                                </div>
-                            </div><!--end col-->
-                            <div class="mt-4 md:mt-0">
-                                <div class="event event-description-right ltr:float-left rtl:float-right ltr:text-left rtl:text-right md:ms-7">
-                                    <h5 class="text-lg dark:text-white mb-1 font-medium">Explore</h5>
-                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">Orbit offers all the relevant on-chain metrics and market indicators for you to use in your signals. You can understand how they relate to bitcoin's price, explore their time-series and use tools like pattern matching to pick your favorite ones.</p>
-                                </div>
-                            </div><!--end col-->
-                        </div><!--end grid-->
-                    </div><!--end timeline item-->
-
-                    <div class="timeline-item mt-5 pt-4">
-                        <div class="grid sm:grid-cols-2">
-                            <div class="md:order-1 order-2">
-                                <div class="event event-description-left ltr:float-left rtl:float-right ltr:text-right rtl:text-left md:me-7">
-                                    <h5 class="text-lg dark:text-white mb-1 font-medium">Build</h5>
-                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">Create your own signals based on weighted metrics, thresholds and time-horizon to simulate buy or sell operations whenever the threshold is hit.</p>
-                                </div>
-                            </div><!--end col-->
-                            <div class="md:order-2 order-1">
-                                <div class="duration duration-right md:ms-7 relative">
-                                    <img src="assets/images/svg/build.svg" class="size-44 ml-12 dark:invert" alt="">
-                                </div>
-                            </div><!--end col-->
-                        </div><!--end grid-->
-                    </div><!--end timeline item-->
-
-                    <div class="timeline-item">
-                        <div class="grid sm:grid-cols-2">
-                            <div class="">
-                                <div class="duration date-label-left ltr:float-right rtl:float-left md:me-7 relative">
-                                    <img src="assets/images/svg/test.svg" class="size-44 mr-12 dark:invert" alt="">
-                                </div>
-                            </div><!--end col-->
-                            <div class="mt-4 md:mt-0">
-                                <div class="event event-description-right ltr:float-left rtl:float-right ltr:text-left rtl:text-right md:ms-7">
-                                    <h5 class="text-lg dark:text-white mb-1 font-medium">Backtest</h5>
-                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">Your signal is then tested against historical data and a score is given based on the buy or sell operations it triggers, which you can drill into.</p>
-                                </div>
-                            </div><!--end col-->
-                        </div><!--end grid-->
-                    </div><!--end timeline item-->
-
-                    <div class="timeline-item mt-5 pt-4">
-                        <div class="grid sm:grid-cols-2">
-                            <div class="md:order-1 order-2">
-                                <div class="event event-description-left ltr:float-left rtl:float-right ltr:text-right rtl:text-left md:me-7">
-                                    <h5 class="text-lg dark:text-white mb-1 font-medium">Monitor</h5>
-                                    <p class="timeline-subtitle mt-3 mb-0 text-slate-400">With your signals tuned, you can sit back and wait for notifications or keep an eye on its performance to tweak them further.</p>
-                                </div>
-                            </div><!--end col-->
-                            <div class="md:order-2 order-1">
-                                <div class="duration duration-right md:ms-7 relative">
-                                    <img src="assets/images/svg/monitor.svg" class="size-36 ml-12 dark:invert" alt="">
-                                </div>
-                            </div><!--end col-->
-                        </div><!--end grid-->
-                    </div><!--end timeline item-->
-                </div>
-            </div>
-        </div><!--end container-->
-    </section><!--end section-->
-    <!-- End -->
-
-    <!-- Quote -->
-    <section class="relative md:py-24 py-16 bg-gray-50 dark:bg-slate-800 z-10" id="quote">
-        <div class="container md:mt-8 mt-8">
-            <div class="container mx-auto text-center">
-                <h6 class="text-orange-600 text-base font-medium uppercase mb-2">How can Orbit BTC help me ?</h6>
-                <h3 class="mb-4 md:text-2xl text-xl font-medium dark:text-white">Predicting the market might be hard, but patterns tend to reoccur. Customize, backtest and automate your own Bitcoin Signals with Orbit.</h3>
-                <div class="relative mt-10">
-                    <a href="/app/register" class="btn bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white rounded-md">Try it for free now</a>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- End Quote -->
-
-    <!-- Start -->
-    <section class="relative md:py-24 py-8" id="contact">
-        <div class="container">
-            <div class="grid grid-cols-1 pb-8 text-center">
-                <h6 class="text-orange-600 text-base font-medium uppercase mb-2">Contact us</h6>
-                <h3 class="mb-4 md:text-2xl text-xl font-medium dark:text-white">Get in touch</h3>
-                <p class="text-slate-400 max-w-xl mx-auto">Feel free to hit us up with questions, feedback, feature requests or to discuss potential partnerships.</p>
-            </div><!--end grid-->
-
-            <div class="grid grid-cols-1 lg:grid-cols-8 md:grid-cols-2 items-center gap-6">
-                <div class="lg:col-span-8">
-                    <div class="p-6 rounded-md shadow-sm bg-white dark:bg-slate-900">
-                        <form method="post" name="contactForm" id="contactForm" action="/investor-inquiry">
-                            <p class="mb-0" id="error-msg"></p>
-                            <div id="simple-msg"></div>
-                            <div class="grid lg:grid-cols-12 lg:gap-6">
-                                <div class="lg:col-span-6 mb-5">
-                                    <input name="name" id="name" type="text" class="form-input w-full py-2 px-3 border border-gray-200 dark:border-gray-800 focus:ring-0 focus:border-orange-600/50 dark:bg-slate-500 dark:text-slate-200 rounded h-10 outline-none" placeholder="Name">
-                                </div>
-
-                                <div class="lg:col-span-6 mb-5">
-                                    <input name="email" id="email" type="email" class="form-input w-full py-2 px-3 border border-gray-200 dark:border-gray-800 focus:ring-0 focus:border-orange-600/50 dark:bg-slate-500 dark:text-slate-200 rounded h-10 outline-none" placeholder="Email">
-                                </div><!--end col-->
-                            </div>
-
-                            <div class="grid grid-cols-1">
-                                <div class="mb-5">
-                                    <input name="subject" id="subject" class="form-input w-full py-2 px-3 border border-gray-200 dark:border-gray-800 focus:ring-0 focus:border-orange-600/50 dark:bg-slate-500 dark:text-slate-200 rounded h-10 outline-none" placeholder="Subject">
-                                </div>
-
-                                <div class="mb-5">
-                                    <textarea name="message" id="message" class="form-input w-full py-2 px-3 border border-gray-200 dark:border-gray-800 focus:ring-0 focus:border-orange-600/50 dark:bg-slate-500 dark:text-slate-200 rounded h-28 outline-none textarea" placeholder="Message"></textarea>
-                                </div>
-                            </div>
-                            <button type="submit" id="submit" name="send" class="btn bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700 text-white rounded-md h-11 justify-center flex items-center">Send Message</button>
-                        </form>
+                    <div class="ol-field-wrap">
+                        <label class="ol-label" for="subject">Subject</label>
+                        <input class="ol-field" name="subject" id="subject" type="text" placeholder="What is this about?">
                     </div>
-                </div>
-            </div><!--end grid-->
-        </div><!--end container-->
-    </section><!--end section-->
-    <!-- End -->
+                    <div class="ol-field-wrap">
+                        <label class="ol-label" for="message">Message</label>
+                        <textarea class="ol-field" name="message" id="message" placeholder="Tell us a bit more"></textarea>
+                    </div>
+                    <button class="ol-btn" type="submit" id="submit" name="send">Send Message</button>
+                </form>
+            </div>
+        </section>
+    </main>
 
     @include('landing.partials.footer')
 
-    <!-- Back to Top -->
-    <a href="#" onclick="topFunction()" id="back-to-top" class="back-to-top fixed hidden text-lg rounded-full z-10 bottom-5 right-5 size-8 text-center bg-orange-600 text-white leading-8">
-        <i class="mdi mdi-arrow-up"></i>
+    <a href="#home" onclick="topFunction()" id="back-to-top" class="ol-top hidden" aria-label="Back to top">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M9 14V4M9 4L4.5 8.5M9 4l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
     </a>
-
-    @include('landing.partials.switcher')
 @endsection
 
 @section('scripts')
     <script>
+        function topFunction() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function validateForm() {
             var name = document.forms["contactForm"]["name"].value;
             var email = document.forms["contactForm"]["email"].value;
@@ -303,5 +262,58 @@
                 }
             }, 200);
         }
+
+        function markNav() {
+            var links = Array.prototype.slice.call(document.querySelectorAll('#navbar-navlist a'));
+            var current = links[0];
+            links.forEach(function (link) {
+                var section = document.querySelector(link.getAttribute('href'));
+                if (section && section.getBoundingClientRect().top <= 140) {
+                    current = link;
+                }
+            });
+            links.forEach(function (link) {
+                link.parentElement.classList.toggle('active', link === current);
+            });
+        }
+
+        markNav();
+        window.addEventListener('scroll', markNav, { passive: true });
+
+        document.querySelectorAll('[data-collapse]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                setTimeout(function () {
+                    var menu = document.getElementById(button.getAttribute('data-collapse'));
+                    button.setAttribute('aria-expanded', menu && !menu.classList.contains('hidden') ? 'true' : 'false');
+                }, 0);
+            });
+        });
+
+        document.querySelectorAll('#menu-collapse a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (window.innerWidth < 992) {
+                    document.getElementById('menu-collapse').classList.add('hidden');
+                    var burger = document.querySelector('.ol-burger');
+                    if (burger) {
+                        burger.setAttribute('aria-expanded', 'false');
+                    }
+                }
+            });
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key !== 'Escape') {
+                return;
+            }
+            var menu = document.getElementById('menu-collapse');
+            if (!menu) {
+                return;
+            }
+            menu.classList.add('hidden');
+            var burger = document.querySelector('.ol-burger');
+            if (burger) {
+                burger.setAttribute('aria-expanded', 'false');
+            }
+        });
     </script>
 @endsection
