@@ -157,10 +157,15 @@ trait UserSignalWizardSteps
                         Placeholder::make('readout')
                             ->hiddenLabel()
                             ->columnSpanFull()
-                            ->content(function (Get $get, Placeholder $component) use ($metrics, $frequencies, $levelingMoves) {
+                            ->content(function (Get $get) use ($metrics, $frequencies) {
                                 $rows = $this->metricRows($get);
                                 $weight = is_numeric($get('weight')) ? (float) $get('weight') : 1.0;
                                 $several = count($rows) > 1;
+
+                                $exactMultiplier = null;
+                                if (! $several && abs($weight - 1) >= 0.001) {
+                                    $exactMultiplier = (new MetricWeightSuggester)->formatExact($weight);
+                                }
 
                                 return view('forms.components.metric-readout', [
                                     ...$this->metricChoice(
@@ -171,12 +176,8 @@ trait UserSignalWizardSteps
                                         $metrics,
                                         $frequencies,
                                     ),
-                                    'lookBackTip' => self::LOOK_BACK_TIP,
-                                    'multiplierTip' => self::MULTIPLIER_TIP,
-                                    'multiplierHint' => $several
-                                        ? $this->multiplierHint($rows, $this->rowKeyFromPath($component->getStatePath()), $levelingMoves)
-                                        : null,
-                                    'lockedNote' => $several ? null : $this->singleMetricNote($weight),
+                                    'locked' => ! $several,
+                                    'exactMultiplier' => $exactMultiplier,
                                 ]);
                             }),
                     ]),
@@ -357,11 +358,11 @@ trait UserSignalWizardSteps
     }
 
     /**
-     * Name, direction, window, and chart link for one metric on the view page.
+     * The words of one metric sentence on the view page.
      *
      * @param  Collection<int, Metric>  $metrics
      * @param  Collection<int, Frequency>  $frequencies
-     * @return array{name: string, source: ?string, span: string, directionWord: string, directionIcon: string, directionClass: string, multiplierText: string, chartUrl: ?string}
+     * @return array{name: string, spanPhrase: string, directionPhrase: string, multiplierText: string, chartUrl: ?string}
      */
     private function metricChoice(
         mixed $metricId,
@@ -374,21 +375,17 @@ trait UserSignalWizardSteps
         $metric = $metrics->firstWhere('id', (int) $metricId);
         $frequency = $frequencies->firstWhere('id', (int) $frequencyId);
         $days = (int) ($frequency->number_of_days ?? 1);
-        $span = $days === 1 ? '1 day' : "{$days} days";
-        [$directionWord, $directionIcon, $directionClass] = match ($operator) {
-            Operators::PLUS->value => ['Up', 'arrow-up', 'is-up'],
-            Operators::MINUS->value => ['Down', 'arrow-down', 'is-down'],
-            default => ['Both', 'arrows-up-down', 'is-both'],
+        $directionPhrase = match ($operator) {
+            Operators::PLUS->value => 'up',
+            Operators::MINUS->value => 'down',
+            default => 'up or down',
         };
         $multiplier = is_numeric($weight) ? (float) $weight : 1.0;
 
         return [
             'name' => $metric->name ?? 'Pick a metric',
-            'source' => $metric?->dataSource?->name,
-            'span' => $span,
-            'directionWord' => $directionWord,
-            'directionIcon' => $directionIcon,
-            'directionClass' => $directionClass,
+            'spanPhrase' => $days === 1 ? 'day' : "{$days} days",
+            'directionPhrase' => $directionPhrase,
             'multiplierText' => (new MetricWeightSuggester)->formatNumber($multiplier),
             'chartUrl' => $this->metricChartUrl($metric?->id),
         ];

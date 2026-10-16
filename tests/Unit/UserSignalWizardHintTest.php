@@ -2,7 +2,9 @@
 
 use App\Filament\Resources\UserSignalResource\Pages\ViewUserSignal;
 use App\Filament\Resources\UserSignalResource\Traits\UserSignalWizardSteps;
+use App\Models\Frequency;
 use App\Models\LevelingMove;
+use App\Models\Metric;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Schema\Blueprint;
@@ -31,6 +33,17 @@ function hintPage(): object
         public function note(float $weight): string
         {
             return $this->singleMetricNote($weight);
+        }
+
+        public function choice(
+            mixed $metricId,
+            mixed $frequencyId,
+            mixed $operator,
+            mixed $weight,
+            Collection $metrics,
+            Collection $frequencies,
+        ): array {
+            return $this->metricChoice($metricId, $frequencyId, $operator, $weight, $metrics, $frequencies);
         }
 
         public function level(): void
@@ -185,4 +198,100 @@ it('loads leveling percents once when leveling every row', function () {
         ->and($rows['mvrv']['weight'])->toEqual(6.2)
         ->and($rows['puell']['weight'])->toEqual(3.2)
         ->and($page->levelMetricsNotice)->toBeNull();
+});
+
+/** One metric and one window, without touching the database. */
+function readoutMetric(int $id, string $name, int $days): array
+{
+    $metric = (new Metric)->forceFill(['id' => $id, 'name' => $name]);
+    $frequency = new Frequency(['id' => 1, 'number_of_days' => $days]);
+
+    return [$metric, $frequency];
+}
+
+it('reads a viewed metric as a sentence and leaves the data source off the name', function () {
+    [$metric, $frequency] = readoutMetric(24, 'MVRV', 1);
+    $choice = hintPage()->choice(24, 1, '+', 8, collect([$metric]), collect([$frequency]));
+
+    expect($choice)->not->toHaveKey('source')
+        ->and($choice['name'])->toBe('MVRV')
+        ->and($choice['directionPhrase'])->toBe('up')
+        ->and($choice['spanPhrase'])->toBe('day')
+        ->and($choice['multiplierText'])->toBe('8')
+        ->and($choice['chartUrl'])->toBe('/app/time-series-page?selectedMetrics=24');
+
+    $html = view('forms.components.metric-readout', [
+        ...$choice,
+        'locked' => false,
+        'exactMultiplier' => null,
+    ])->render();
+
+    expect($html)
+        ->toContain('>MVRV</span>')
+        ->toContain('moves')
+        ->toContain('>up</span>')
+        ->toContain('in the last')
+        ->toContain('>day</span>')
+        ->toContain('multiply the percent movement by')
+        ->toContain('>8</span>')
+        ->toContain('metric-chart-icon')
+        ->toContain('/app/time-series-page?selectedMetrics=24')
+        ->toContain('Open this metric\'s chart')
+        ->toContain('<svg')
+        ->not->toContain('>8</span>.')
+        ->not->toContain('Try 7.8 to level the metrics')
+        ->not->toContain('metric-hint')
+        ->not->toContain('BGeometrics')
+        ->not->toContain('When the metric')
+        ->not->toContain('>Chart<');
+});
+
+it('reads down and a longer window in the same sentence', function () {
+    [$metric, $frequency] = readoutMetric(6, 'Fear & Greed', 7);
+    $choice = hintPage()->choice(6, 1, '-', 1.34, collect([$metric]), collect([$frequency]));
+
+    expect($choice['directionPhrase'])->toBe('down')
+        ->and($choice['spanPhrase'])->toBe('7 days')
+        ->and($choice['multiplierText'])->toBe('1.3');
+
+    $both = hintPage()->choice(6, 1, '+-', 1, collect([$metric]), collect([$frequency]));
+
+    expect($both['directionPhrase'])->toBe('up or down');
+});
+
+it('ends a one-metric view on the points sentence', function () {
+    $html = view('forms.components.metric-readout', [
+        'name' => 'MVRV',
+        'chartUrl' => '/app/time-series-page?selectedMetrics=24',
+        'directionPhrase' => 'up',
+        'spanPhrase' => 'day',
+        'multiplierText' => '1',
+        'locked' => true,
+        'exactMultiplier' => null,
+    ])->render();
+
+    expect($html)
+        ->toContain('that percent becomes points on the day\'s score')
+        ->not->toContain('day\'s score.')
+        ->not->toContain('multiply the percent movement by');
+});
+
+it('keeps a saved one-metric multiplier exact on the view sentence', function () {
+    $html = view('forms.components.metric-readout', [
+        'name' => 'Fear & Greed',
+        'chartUrl' => null,
+        'directionPhrase' => 'down',
+        'spanPhrase' => '7 days',
+        'multiplierText' => '1.3',
+        'locked' => true,
+        'exactMultiplier' => '1.34',
+    ])->render();
+
+    expect($html)
+        ->toContain('this saved signal still multiplies that percent by')
+        ->toContain('>1.34</span>')
+        ->toContain('Saving from Edit uses 1')
+        ->not->toContain('uses 1.')
+        ->not->toContain('metric-chart-icon')
+        ->not->toContain('>1.3</span>');
 });
