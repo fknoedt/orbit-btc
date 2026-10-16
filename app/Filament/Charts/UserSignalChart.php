@@ -146,7 +146,7 @@ trait UserSignalChart
                     'title' => [
                         'text' => 'Daily Signal',
                     ],
-                    'decimalsInFloat' => 0,
+                    'decimalsInFloat' => 2,
                     'tickAmount' => 10,
                     'min' => $minSignal,
                     'max' => $maxSignal,
@@ -196,9 +196,9 @@ trait UserSignalChart
                     'columnWidth' => '50%',
                     'colors' => [
                         'ranges' => [
-                            ['from' => 0, 'to' => $threshold - 1, 'color' => '#897F7F'],
-                            ['from' => $threshold, 'to' => $threshold, 'color' => '#F97315'],
-                            ['from' => $threshold + 1, 'to' => $scores ? max($scores) : $threshold + 1, 'color' => '#F97315'],
+                            // A score equal to the threshold is a hit. The gray range stops just short of it.
+                            ['from' => 0, 'to' => max(0, $threshold - 0.0000001), 'color' => '#897F7F'],
+                            ['from' => $threshold, 'to' => max($threshold, $scores ? max($scores) : $threshold), 'color' => '#F97315'],
                         ],
                     ],
                     'dataLabels' => [

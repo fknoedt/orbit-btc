@@ -16,9 +16,6 @@ class UserSignalService
     /** How far back a user_signal will span */
     public const int MAX_DAYS_BACK = 1096;
 
-    /** used to calculate max threshold */
-    public const int MAX_OSCILLATION_PER_METRIC = 50;
-
     /** Dollar size of one simulated trade. Configured in config/btc.php. */
     public static function tradeSizeInUsd(): int
     {
@@ -71,15 +68,16 @@ class UserSignalService
 
         $metrics = UserSignalMetric::where('user_signal_id', $userSignalId)->get();
 
-        if (empty($metrics)) {
+        if ($metrics->isEmpty()) {
             return $max;
         }
 
+        // The slider can reach a 100% move on every metric.
         foreach ($metrics as $metric) {
-            $max += $metric->weight * self::MAX_OSCILLATION_PER_METRIC;
+            $max += $metric->weight * 100;
         }
 
-        return $max;
+        return (int) round($max);
     }
 
     public function updateDailyScores(
@@ -104,6 +102,8 @@ class UserSignalService
 
         // pre-load all daily_prices to avoid repeated DB/cache access
         $priceService->getAllDailyPricesKeyByDate($since, Carbon::now(), true);
+
+        $this->clearSignalsWithNoMetrics($userSignalId, $userId);
 
         // don't eager load userSignalMetrics.metric to use a pre-loaded hashmap
         $query = UserSignal::with([
@@ -233,18 +233,12 @@ class UserSignalService
                                     continue;
                                 }
 
-                                $dailyOscillation = abs($dailyOscillation);
-
-                                // ignore if variation is below threshold
-                                if (isset($userSignalMetric->threshold) && $userSignalMetric->threshold > $dailyOscillation) {
+                                $absChange = abs($dailyOscillation);
+                                if ($absChange == 0.0) {
                                     continue;
                                 }
 
-                                // apply weight and use absolute value to sum up to the score
-                                $userSignalMetricLastScore = $dailyOscillation * $userSignalMetric->weight;
-
-                                // add points to User Signal grand score for the day
-                                $userSignalDailyScore += $userSignalMetricLastScore;
+                                $userSignalDailyScore += $absChange * $userSignalMetric->weight;
                             }
 
                             // with (all metrics) daily score set, calculate signal_value
@@ -354,6 +348,38 @@ class UserSignalService
         }
 
         return $this->getStats();
+    }
+
+    /**
+     * A signal with no metrics is not scored, so an older total would stay on the list.
+     */
+    /** Clears the score and the trade totals of an unpaused signal that has no metrics left. */
+    private function clearSignalsWithNoMetrics(?int $userSignalId, ?int $userId): void
+    {
+        $empty = UserSignal::query()
+            ->where('is_paused', false)
+            ->whereDoesntHave('userSignalMetrics');
+
+        if ($userSignalId) {
+            $empty->where('id', $userSignalId);
+        } elseif ($userId) {
+            $empty->where('user_id', $userId);
+        }
+
+        $emptyIds = $empty->pluck('id');
+        if ($emptyIds->isEmpty()) {
+            return;
+        }
+
+        UserSignalDailyScore::whereIn('user_signal_id', $emptyIds)->delete();
+        UserSignal::whereIn('id', $emptyIds)->update([
+            'total_signal_value' => 0,
+            'total_simulated_trades' => 0,
+            'last_score' => 0,
+            'last_signal_value' => null,
+            'warning' => false,
+            'error' => false,
+        ]);
     }
 
     public function getUserStats(int $userId): array

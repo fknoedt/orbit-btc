@@ -21,7 +21,7 @@
             </span>
             <span class="text-base font-semibold !text-white">
                 {{ $userSignal->threshold }}
-                @if ($dailyScore->score > $userSignal->threshold)
+                @if ($dailyScore->score >= $userSignal->threshold)
                     🎯
                     <x-heroicon-o-arrow-right class="inline w-5 h-5" />
                     {{ ucfirst($userSignal->buy_or_sell) }}
@@ -54,7 +54,7 @@
                 {{ number_format($futureChange, 2) }}%
             </span>
         </p>
-        @if($dailyScore->score > $userSignal->threshold && ! $dailyScore->quarantined)
+        @if($dailyScore->score >= $userSignal->threshold && ! $dailyScore->quarantined)
             <p class="mt-2 text-sm">
             <span class="text-gray-600 dark:text-gray-400">
                 Stake:

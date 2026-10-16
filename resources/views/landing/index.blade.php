@@ -13,7 +13,7 @@
 
             <div class="ol-wrap ol-hero__copy">
                 <h1 class="ol-h1">Craft your own signals and level-up your <span class="ol-grad">Bitcoin game</span></h1>
-                <p class="ol-lead">Orbit lets you combine on-chain metrics and market indicators into a formula, then monitor it. Weight it, set a threshold, and backtest how it would have performed.</p>
+                <p class="ol-lead">Orbit lets you combine on-chain metrics and market indicators into a formula, then monitor it. Set how important each metric is, choose a threshold, and backtest how it would have performed.</p>
                 <div class="ol-hero__actions">
                     <a class="ol-btn" href="/app/register">Create a Free Account</a>
                     <a class="ol-btn ol-btn--ghost" href="#how-it-works">See how it works</a>
@@ -64,7 +64,7 @@
                     <p class="ol-kicker">Why Orbit?</p>
                     <h2 class="ol-h2">Unique features and all the good indicators</h2>
                     <p class="ol-lead">Separating signal from noise in Bitcoin doesn't mean checking lots of complex charts on multiple platforms every day, reading a long newsletter every week or scrolling through BTC brawls on X. Those are actually cool, but what if there's an objective yet flexible way to keep track of the indicators you want, the way you want?</p>
-                    <p class="ol-lead">Orbit lets you learn about, experiment with and test Bitcoin indicators, then combine them into a formula you can track. Start with one metric and a threshold, or weight several together, backtest against historical data, and keep tuning it.</p>
+                    <p class="ol-lead">Orbit lets you learn about, experiment with and test Bitcoin indicators, then combine them into a formula you can track. Start with one metric and a threshold, or combine several, backtest against historical data, and keep tuning it.</p>
                     <a class="ol-btn" href="/app/register">Create a Free Account</a>
                 </div>
             </div>
@@ -92,7 +92,7 @@
                             <img src="{{ asset('assets/images/svg/build.svg') }}" alt="" width="148" height="148">
                         </div>
                         <h3>Build</h3>
-                        <p>Combine your metrics, set a weight on each, then choose a threshold, a time horizon, and whether a hit means buy or sell.</p>
+                        <p>Combine your metrics, set how important each one is, then choose a threshold, a time horizon, and whether a hit means buy or sell.</p>
                     </article>
 
                     <article class="ol-step">

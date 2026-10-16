@@ -33,15 +33,6 @@ class CreateUserSignal extends CreateRecord
     {
         $this->threshold = $data['threshold'] ?? 0;
 
-        // Initialize userSignalMetrics for new record
-        if (isset($data['userSignalMetrics'])) {
-            $data['userSignalMetrics'] = array_map(function ($item) {
-                $item['oscillation_threshold_enabled'] = !empty($item['oscillation_threshold']);
-                return $item;
-            }, $data['userSignalMetrics']);
-            $this->form->fill($data);
-        }
-
         return $data;
     }
 

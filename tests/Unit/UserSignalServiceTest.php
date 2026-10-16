@@ -3,6 +3,7 @@
 use App\Models\DailyPrice;
 use App\Models\Frequency;
 use App\Models\Metric;
+use App\Models\LevelingMove;
 use App\Models\UserSignal;
 use App\Models\UserSignalDailyScore;
 use App\Models\UserSignalMetric;
@@ -21,6 +22,7 @@ beforeEach(function () {
     Carbon::setTestNow('2024-03-10 12:00:00');
 
     foreach ([
+        'leveling_moves',
         'user_signal_daily_scores',
         'user_signal_metrics',
         'user_signals',
@@ -91,6 +93,16 @@ beforeEach(function () {
         $table->boolean('quarantined')->nullable();
     });
 
+    Schema::create('leveling_moves', function (Blueprint $table) {
+        $table->id();
+        $table->unsignedBigInteger('metric_id');
+        $table->unsignedBigInteger('frequency_id');
+        $table->float('abs_percent');
+        $table->unsignedInteger('samples');
+        $table->date('price_date');
+        $table->dateTime('calculated_at');
+    });
+
     Schema::create('daily_prices', function (Blueprint $table) {
         $table->id();
         $table->date('date')->unique();
@@ -141,7 +153,19 @@ function makeSignal(array $signal = [], array $metric = []): UserSignal
     return $userSignal;
 }
 
-it('sums weight times 50 for the max threshold', function () {
+function seedLevelingMove(UserSignalMetric $metric, float $percent): void
+{
+    LevelingMove::create([
+        'metric_id' => $metric->metric_id,
+        'frequency_id' => $metric->frequency_id,
+        'abs_percent' => $percent,
+        'samples' => 30,
+        'price_date' => '2024-03-10',
+        'calculated_at' => now(),
+    ]);
+}
+
+it('sums a 100 percent move times each multiplier for the max threshold', function () {
     $signal = makeSignal();
     UserSignalMetric::create([
         'user_signal_id' => $signal->id,
@@ -151,8 +175,14 @@ it('sums weight times 50 for the max threshold', function () {
         'weight' => 2,
     ]);
 
-    expect((new UserSignalService)->getMaxThreshold($signal->id))->toBe(150)
+    expect((new UserSignalService)->getMaxThreshold($signal->id))->toBe(300)
         ->and((new UserSignalService)->getMaxThreshold(999))->toBe(0);
+});
+
+it('caps a one-metric slider at a 100 percent move times its multiplier', function () {
+    $signal = makeSignal([], ['weight' => 4]);
+
+    expect((new UserSignalService)->getMaxThreshold($signal->id))->toBe(400);
 });
 
 it('skips paused signals', function () {
@@ -218,6 +248,8 @@ it('adds points for a rise only when direction is up', function () {
 
     $up = makeSignal(['name' => 'up', 'threshold' => 1], ['operator' => '+']);
     $down = makeSignal(['name' => 'down', 'threshold' => 1], ['operator' => '-']);
+    seedLevelingMove($up->userSignalMetrics()->first(), 10);
+    seedLevelingMove($down->userSignalMetrics()->first(), 10);
 
     (new UserSignalService)->updateDailyScores(since: Carbon::parse('2024-03-07'));
 
@@ -228,6 +260,86 @@ it('adds points for a rise only when direction is up', function () {
         ->and($upDay->signal_value)->toEqual(100)
         ->and($downDay->score)->toEqual(0.0)
         ->and($downDay->signal_value)->toBeNull();
+});
+
+it('scores one metric as the percent change times its multiplier', function () {
+    seedPrices('2024-02-06', '2024-03-10', close: 100, change1d: 10);
+    DailyPrice::where('date', '2024-03-08')->update(['close' => 120]);
+
+    $signal = makeSignal(['threshold' => 1000], ['operator' => '+-', 'weight' => 4]);
+
+    (new UserSignalService)->updateDailyScores(
+        userSignalId: $signal->id,
+        since: Carbon::parse('2024-03-07'),
+    );
+
+    $day = UserSignalDailyScore::orderBy('date')->first();
+
+    expect($day->score)->toEqualWithDelta(80, 0.01)
+        ->and($day->signal_value)->toBeNull()
+        ->and($signal->fresh()->warning)->toBeFalsy();
+});
+
+it('multiplies each metric percent even when a leveling percent is stored', function () {
+    seedPrices('2024-02-06', '2024-03-10', close: 100, change1d: 10);
+    DailyPrice::where('date', '2024-03-08')->update(['close' => 120]);
+    DailyPrice::where('date', '2024-03-09')->update(['close' => 240]);
+
+    $signal = makeSignal(['name' => 'two-metrics', 'threshold' => 1000], ['operator' => '+-', 'weight' => 4]);
+    $first = $signal->userSignalMetrics()->first();
+    seedLevelingMove($first, 10);
+    $second = UserSignalMetric::create([
+        'user_signal_id' => $signal->id,
+        'metric_id' => Metric::create([
+            'name' => 'Close again',
+            'column_name' => 'close',
+            'data_limited_at' => '2009-10-05',
+        ])->id,
+        'frequency_id' => $first->frequency_id,
+        'operator' => '+-',
+        'weight' => 4,
+    ]);
+    seedLevelingMove($second, 10);
+
+    (new UserSignalService)->updateDailyScores(
+        userSignalId: $signal->id,
+        since: Carbon::parse('2024-03-07'),
+    );
+
+    $scores = UserSignalDailyScore::orderBy('date')->get();
+
+    expect($scores[0]->score)->toEqualWithDelta(160, 0.01)
+        ->and($scores[1]->score)->toEqualWithDelta(800, 0.01)
+        ->and($scores[1]->signal_value)->toBeNull();
+});
+
+it('still scores a row when no leveling percent is stored', function () {
+    seedPrices('2024-02-06', '2024-03-10', close: 100, change1d: 10);
+    DailyPrice::where('date', '2024-03-08')->update(['close' => 110]);
+    $signal = makeSignal(['name' => 'missing-level', 'threshold' => 1000], ['operator' => '+-', 'weight' => 4]);
+    $first = $signal->userSignalMetrics()->first();
+    UserSignalMetric::create([
+        'user_signal_id' => $signal->id,
+        'metric_id' => Metric::create([
+            'name' => 'Close two',
+            'column_name' => 'close',
+            'data_limited_at' => '2009-10-05',
+        ])->id,
+        'frequency_id' => $first->frequency_id,
+        'operator' => '+-',
+        'weight' => 4,
+    ]);
+
+    (new UserSignalService)->updateDailyScores(
+        userSignalId: $signal->id,
+        since: Carbon::parse('2024-03-07'),
+    );
+
+    $day = UserSignalDailyScore::orderBy('date')->first();
+
+    expect($day->score)->toEqualWithDelta(80, 0.01)
+        ->and($day->signal_value)->toBeNull()
+        ->and($signal->fresh()->warning)->toBeFalsy();
 });
 
 it('does not open a trade when the forward price is still unknown', function () {
@@ -247,6 +359,22 @@ it('does not open a trade when the forward price is still unknown', function () 
         ->and($scores[1]->signal_value)->toEqual(100)
         ->and($scores[1]->quarantined)->toBeFalsy()
         ->and($scores[2]->quarantined)->toBeTruthy();
+});
+
+it('clears a leftover total when a signal has no metrics', function () {
+    $signal = makeSignal(['total_signal_value' => 250, 'total_simulated_trades' => 4]);
+    $signal->userSignalMetrics()->delete();
+    UserSignalDailyScore::create([
+        'date' => '2024-03-08',
+        'user_signal_id' => $signal->id,
+        'score' => 10,
+    ]);
+
+    (new UserSignalService)->updateDailyScores(userSignalId: $signal->id);
+
+    expect(UserSignalDailyScore::count())->toBe(0)
+        ->and((float) $signal->fresh()->total_signal_value)->toEqual(0.0)
+        ->and($signal->fresh()->total_simulated_trades)->toBe(0);
 });
 
 it('throws when a metric id does not exist', function () {
