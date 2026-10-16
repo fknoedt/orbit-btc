@@ -27,37 +27,17 @@ class EditUserSignal extends EditRecord
 
     public $threshold;
 
-    public function getTitle(): string
+    public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
     {
-        return 'Signal: ' . $this->record->name;
+        return new \Illuminate\Support\HtmlString(
+            '<span class="font-medium text-gray-500 dark:text-gray-400">Signal: </span>'
+            . e($this->record->name)
+        );
     }
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->threshold = $data['threshold'] ?? 0;
-
-        // Load the userSignalMetrics relationship
-        $record = $this->getRecord();
-        $metrics = $record->userSignalMetrics()->get();
-
-        if ($metrics->isNotEmpty()) {
-            // Update oscillation_threshold_enabled in the database
-            foreach ($metrics as $metric) {
-                $shouldEnable = !empty($metric->oscillation_threshold);
-                if ($metric->oscillation_threshold_enabled !== $shouldEnable) {
-                    // Clean up
-                    if (!$shouldEnable) {
-                        $metric->oscillation_threshold = null;
-                    }
-                    $metric->oscillation_threshold_enabled = $shouldEnable;
-                    $metric->save();
-                }
-            }
-
-            // Reload the updated metrics to ensure the form uses the latest data
-            $data['userSignalMetrics'] = $record->userSignalMetrics()->get()->toArray();
-            $this->form->fill($data);
-        }
 
         return $data;
     }
@@ -127,22 +107,6 @@ class EditUserSignal extends EditRecord
     {
         $this->originalRecord = $this->getRecord()->toArray();
         $this->originalMetrics = $this->getRecord()->userSignalMetrics->toArray();
-
-        $livewire = $this->form->getLivewire();
-        $formData = $livewire->data;
-
-        if (!empty($formData['userSignalMetrics'])) {
-            $updatedMetrics = [];
-            foreach ($formData['userSignalMetrics'] as $key => $item) {
-                if (!($item['oscillation_threshold_enabled'] ?? false)) {
-                    $item['oscillation_threshold'] = null;
-                }
-                $updatedMetrics[$key] = $item;
-            }
-
-            $formData['userSignalMetrics'] = $updatedMetrics;
-            $livewire->data = $formData;
-        }
     }
 
     /**

@@ -22,33 +22,17 @@ class ViewUserSignal extends ViewRecord
 
     public $threshold;
 
-    public function getTitle(): string
+    public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
     {
-        return 'Signal: ' . $this->record->name;
+        return new \Illuminate\Support\HtmlString(
+            '<span class="font-medium text-gray-500 dark:text-gray-400">Signal: </span>'
+            . e($this->record->name)
+        );
     }
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->threshold = $data['threshold'] ?? 0;
-
-        // Load the userSignalMetrics relationship
-        $record = $this->getRecord();
-        $metrics = $record->userSignalMetrics()->get();
-
-        if ($metrics->isNotEmpty()) {
-            // Update oscillation_threshold_enabled in the database based on oscillation_threshold
-            foreach ($metrics as $metric) {
-                $shouldEnable = !empty($metric->oscillation_threshold);
-                if ($metric->oscillation_threshold_enabled !== $shouldEnable) {
-                    $metric->oscillation_threshold_enabled = $shouldEnable;
-                    $metric->save();
-                }
-            }
-
-            // Reload the updated metrics to ensure the form uses the latest data
-            $data['userSignalMetrics'] = $record->userSignalMetrics()->get()->toArray();
-            $this->form->fill($data);
-        }
 
         return $data;
     }

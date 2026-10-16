@@ -151,7 +151,7 @@
                                                 style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0.25rem 0;">
                                                 <span class="!text-white">💡 {{ $metric['metric_name'] }} ({{ $metric['frequency'] }})</span>
                                                 <span class="!text-white">{{ $metric['operator']->value == '+' ? '↑ up variations only' : ($metric['operator'] === '-' ? '↓ down variations only' : '↑↓ up or down variations') }}</span>
-                                                <span class="!text-white">⚖️ x{{ $metric['weight'] }}</span>
+                                                <span class="!text-white">Importance {{ $metric['weight'] }}</span>
                                             </div>
                                         @endforeach
                                     @else

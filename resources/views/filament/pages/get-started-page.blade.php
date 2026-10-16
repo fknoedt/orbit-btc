@@ -105,7 +105,7 @@
                         </svg>
                     </div>
                     <p class="text-gray-700 dark:text-gray-300 mt-4">
-                        A signal blends one or more metrics, each with its own weight, into a formula. Set a threshold, a time horizon, and whether a hit means buy or sell. Orbit replays that formula against historical data, and can email you when the combined daily score fires.
+                        A signal blends one or more metrics, each with its own importance, into a formula. Set a threshold, a time horizon, and whether a hit means buy or sell. Orbit replays that formula against historical data, and can email you when the combined daily score fires.
                     </p>
                     <div class="checklist-container">
                         <div class="checklist-item {{ $this->getChecklistStatus()['user-signals'] ? 'checked' : '' }}">

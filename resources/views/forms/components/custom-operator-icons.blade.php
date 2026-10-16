@@ -3,38 +3,22 @@
     $currentValue = $getState();
 @endphp
 
-<div class="space-y-2">
-    <div class="flex items-center gap-x-3 justify-between">
-        <label class="fi-fo-field-wrp-label inline-flex items-center gap-x-3">
-            <span class="text-sm font-medium leading-6 text-gray-950 dark:text-white">
-                Direction
-                <sup class="text-danger-600 dark:text-danger-400 font-medium">*</sup>
-            </span>
-        </label>
-        <div class="fi-fo-field-wrp-hint flex items-center gap-x-3 text-sm">
-            <span class="fi-fo-field-wrp-hint-label text-gray-500 fi-color-gray" style="--c-400:var(--gray-400);--c-600:var(--gray-600);">
-            </span>
-        </div>
-    </div>
-
-    <div class="flex" style="gap: 8px;">
+<x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
+    <div class="dir-pills">
         @foreach ($operators as $operator)
             @php
                 $id = $statePath . '-' . str_replace('+', 'plus', str_replace('-', 'minus', $operator->value));
                 $isSelected = $currentValue === $operator->value;
-                // Define tooltip based on the icon
-                $tooltip = match ($operator->getIcon()) {
-                    'arrow-up' => 'Metric value moved up',
-                    'arrow-down' => 'Metric value moved down',
-                    'arrows-up-down' => 'Metric value moved either way',
+                $word = match ($operator->getIcon()) {
+                    'arrow-up' => 'Up',
+                    'arrow-down' => 'Down',
+                    'arrows-up-down' => 'Both',
                     default => '',
                 };
-                // Define selected color based on the icon
-                $selectedColor = match ($operator->getIcon()) {
-                    'arrow-up' => '#34D399', // Light green
-                    'arrow-down' => '#F87171', // Light red
-                    'arrows-up-down' => '#2563eb', // Blue
-                    'default' => '#2563eb',
+                $tone = match ($operator->getIcon()) {
+                    'arrow-up' => 'is-up',
+                    'arrow-down' => 'is-down',
+                    default => 'is-both',
                 };
             @endphp
             <label for="{{ $id }}" class="flex items-center cursor-pointer">
@@ -47,30 +31,21 @@
                     style="display: none;"
                     {{ $isSelected ? 'checked' : '' }}
                 >
-                <span
-                    title="{{ $tooltip }}"
-                    style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 9999px; background-color: {{ $isSelected ? '#dbeafe' : 'transparent' }}; transition: all 0.2s;"
-                >
-                    <span class="inline-block">
-                        @switch($operator->getIcon())
-                            @case('arrow-up')
-                                <x-heroicon-o-arrow-up style="width: 20px; height: 20px; stroke-width: 2; color: {{ $isSelected ? $selectedColor : $operator->getColor() }};" />
-                                @break
-                            @case('arrow-down')
-                                <x-heroicon-o-arrow-down style="width: 20px; height: 20px; stroke-width: 2; color: {{ $isSelected ? $selectedColor : $operator->getColor() }};" />
-                                @break
-                            @case('arrows-up-down')
-                                <x-heroicon-o-arrows-up-down style="width: 20px; height: 20px; stroke-width: 2; color: {{ $isSelected ? $selectedColor : $operator->getColor() }};" />
-                                @break
-                        @endswitch
-                    </span>
+                <span class="dir-pill {{ $tone }} {{ $isSelected ? 'is-selected' : '' }}">
+                    @switch($operator->getIcon())
+                        @case('arrow-up')
+                            <x-heroicon-o-arrow-up style="width: 16px; height: 16px; stroke-width: 2; color: currentColor;" />
+                            @break
+                        @case('arrow-down')
+                            <x-heroicon-o-arrow-down style="width: 16px; height: 16px; stroke-width: 2; color: currentColor;" />
+                            @break
+                        @case('arrows-up-down')
+                            <x-heroicon-o-arrows-up-down style="width: 16px; height: 16px; stroke-width: 2; color: currentColor;" />
+                            @break
+                    @endswitch
+                    {{ $word }}
                 </span>
             </label>
         @endforeach
     </div>
-
-    <!-- Add validation error feedback -->
-    @error($statePath)
-    <span class="text-sm text-danger-600 dark:text-danger-400">{{ $message }}</span>
-    @enderror
-</div>
+</x-dynamic-component>

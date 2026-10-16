@@ -9,11 +9,13 @@ use App\Clients\FmpClient;
 use App\Console\Commands\BgeometricsDailyStatsCommand;
 use App\Console\Commands\CryptoCompareDailyStatsCommand;
 use App\Models\DailyPrice;
+use App\Models\LevelingMove;
 use App\Models\UserSignalDailyScore;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class Kernel extends ConsoleKernel
 {
@@ -125,6 +127,11 @@ class Kernel extends ConsoleKernel
                 break;
             }
         }
+
+        $schedule->command('btc:update-leveling-moves')
+            ->everyThirtyMinutes()->when($this->shouldUpdateLevelingMoves())
+            ->sendOutputTo($logPath . 'update-leveling-moves.log')
+            ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:update-all-user-signal-scores')
             ->everyThirtyMinutes()->when($this->shouldUpdateUserSignals())
@@ -243,6 +250,32 @@ class Kernel extends ConsoleKernel
         }
 
         Log::info('Not necessary to run Mempool stats update');
+
+        return false;
+    }
+
+    /** True when a newer daily price exists than the percents already stored. */
+    private function shouldUpdateLevelingMoves(): bool
+    {
+        if (! Schema::hasTable('leveling_moves')) {
+            return false;
+        }
+
+        $lastDailyPrice = DailyPrice::max('date');
+        if (! $lastDailyPrice) {
+            Log::info('Not necessary to run leveling move update');
+
+            return false;
+        }
+
+        $lastCovered = LevelingMove::max('price_date');
+        if (! $lastCovered || $lastCovered < $lastDailyPrice) {
+            Log::info('Running leveling move update');
+
+            return true;
+        }
+
+        Log::info('Not necessary to run leveling move update');
 
         return false;
     }
