@@ -82,6 +82,11 @@ class Kernel extends ConsoleKernel
             ->sendOutputTo($logPath . 'update-bollinger-bands.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
+        $schedule->command('btc:update-roi')
+            ->everyThirtyMinutes()->when($this->shouldUpdateRoi())
+            ->sendOutputTo($logPath . 'update-roi.log')
+            ->emailOutputOnFailure($emailErrorsTo);
+
         $schedule->command('btc:update-us-treasury-stats')
             ->everyThirtyMinutes()->when($this->shouldUpdateTbillOutstanding())
             ->sendOutputTo($logPath . 'update-tbill-outstanding.log')
@@ -327,6 +332,18 @@ class Kernel extends ConsoleKernel
         }
 
         Log::info('Not necessary to run US T-bill Outstanding stats update');
+
+        return false;
+    }
+
+    private function shouldUpdateRoi(): bool
+    {
+        if (DailyPrice::getLastEmptyRoiDay()) {
+            Log::info('Running ROI stats update');
+            return true;
+        }
+
+        Log::info('Not necessary to run ROI stats update');
 
         return false;
     }

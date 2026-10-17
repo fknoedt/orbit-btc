@@ -342,6 +342,83 @@ class PriceHistoryService
         return (new DailyStatsService())->fillStats($fillStats);
     }
 
+    /**
+     * Trailing percent return of the daily close.
+     * roi_30d looks back 30 days and roi_1yr looks back 365. A day stays empty
+     * when that earlier close is missing or zero. Stored values are left as they are.
+     */
+    public function updateRoi(string $since = null): int
+    {
+        if (! $since) {
+            $since = DailyPrice::getLastEmptyRoiDay();
+
+            if (! $since) {
+                return 0;
+            }
+        }
+
+        if ($since < DailyPrice::START_OF_ROI_30D) {
+            $since = DailyPrice::START_OF_ROI_30D;
+        }
+
+        $historyFrom = Carbon::parse($since)->subDays(365)->format($this->systemDateFormat);
+        $rows = DailyPrice::where('date', '>=', $historyFrom)
+            ->select(['date', 'close'])
+            ->orderBy('date', 'asc')
+            ->get()
+            ->toArray();
+
+        $prices = [];
+        foreach ($rows as $row) {
+            $prices[Carbon::parse($row['date'])->format($this->systemDateFormat)] = $row['close'];
+        }
+
+        $fill30 = [];
+        $fillYear = [];
+        foreach ($prices as $date => $close) {
+            if ($date < $since || ! is_numeric($close)) {
+                continue;
+            }
+
+            $close = (float) $close;
+            if ($date >= DailyPrice::START_OF_ROI_30D) {
+                $previous = $this->closeOn($prices, Carbon::parse($date)->subDays(30)->format($this->systemDateFormat));
+                if ($previous !== null) {
+                    $fill30[$date] = ['roi_30d' => ($close - $previous) / $previous * 100];
+                }
+            }
+
+            if ($date >= DailyPrice::START_OF_ROI_1YR) {
+                $previous = $this->closeOn($prices, Carbon::parse($date)->subDays(365)->format($this->systemDateFormat));
+                if ($previous !== null) {
+                    $fillYear[$date] = ['roi_1yr' => ($close - $previous) / $previous * 100];
+                }
+            }
+        }
+
+        $stats = new DailyStatsService();
+        $updated = 0;
+        if ($fill30 !== []) {
+            $updated += $stats->fillStats($fill30);
+        }
+        if ($fillYear !== []) {
+            $updated += $stats->fillStats($fillYear);
+        }
+
+        return $updated;
+    }
+
+    /** Earlier close used as the base of a return. Missing and zero closes are skipped. */
+    private function closeOn(array $prices, string $date): ?float
+    {
+        $close = $prices[$date] ?? null;
+        if (! is_numeric($close) || (float) $close == 0.0) {
+            return null;
+        }
+
+        return (float) $close;
+    }
+
     public function updateFuturePriceChange(string $since = null, OutputStyle $output = null, bool $dryRun = false): int
     {
         if (! $output) {

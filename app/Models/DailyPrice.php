@@ -17,6 +17,12 @@ class DailyPrice extends Model
     public const string START_OF_BOLLINGER_BANDS = '2012-01-01';
     public const string START_OF_TBILL_OUTSTANDING = '2010-01-01';
 
+    /** 30 days after the first close, 2009-10-05. */
+    public const string START_OF_ROI_30D = '2009-11-04';
+
+    /** 365 days after the first close, 2009-10-05. */
+    public const string START_OF_ROI_1YR = '2010-10-05';
+
     protected $guarded = ['id'];
 
     public function dataSource(): BelongsTo
@@ -63,6 +69,22 @@ class DailyPrice extends Model
                 return $query->whereNull('us_tbill_net_issuance')
                     ->orWhereNull('us_tbill_normalized_qe');
             })
+            ->orderBy('date', 'asc')
+            ->pluck('date')
+            ->first();
+    }
+
+    public static function getLastEmptyRoiDay(): ?string
+    {
+        return self::where(function ($query) {
+            $query->where(function ($query) {
+                $query->where('date', '>=', self::START_OF_ROI_30D)
+                    ->whereNull('roi_30d');
+            })->orWhere(function ($query) {
+                $query->where('date', '>=', self::START_OF_ROI_1YR)
+                    ->whereNull('roi_1yr');
+            });
+        })
             ->orderBy('date', 'asc')
             ->pluck('date')
             ->first();

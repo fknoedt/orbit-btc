@@ -32,6 +32,8 @@ beforeEach(function () {
         $table->float('price_change_10d')->nullable();
         $table->float('price_change_14d')->nullable();
         $table->float('price_change_30d')->nullable();
+        $table->float('roi_30d')->nullable();
+        $table->float('roi_1yr')->nullable();
         $table->timestamps();
     });
 });
@@ -101,4 +103,49 @@ it('writes the 1-day future percent change', function () {
 
     expect(DailyPrice::where('date', '2024-03-09')->value('price_change_1d'))->toEqual(10)
         ->and(DailyPrice::where('date', '2024-03-10')->value('price_change_1d'))->toBeNull();
+});
+
+it('writes the 30-day and 365-day return of the close', function () {
+    insertCloses('2023-01-01', 366, function (int $i) {
+        if ($i === 0) {
+            return 50;
+        }
+        if ($i === 335) {
+            return 80;
+        }
+
+        return 100;
+    });
+
+    // 2023-12-02 (index 335) is the 30-day base for 2024-01-01. Days before --since stay empty.
+    expect((new PriceHistoryService)->updateRoi('2024-01-01'))->toBe(2)
+        ->and(DailyPrice::where('date', '2023-12-02')->value('roi_30d'))->toBeNull()
+        ->and(DailyPrice::where('date', '2024-01-01')->value('roi_30d'))->toEqual(25)
+        ->and(DailyPrice::where('date', '2024-01-01')->value('roi_1yr'))->toEqual(100);
+});
+
+it('leaves the return empty when the earlier close is missing or zero', function () {
+    DailyPrice::create(['date' => '2024-03-01', 'close' => 0]);
+    DailyPrice::create(['date' => '2024-03-31', 'close' => 110]);
+    DailyPrice::create(['date' => '2024-05-01', 'close' => 120]);
+
+    expect((new PriceHistoryService)->updateRoi('2024-03-31'))->toBe(0)
+        ->and(DailyPrice::where('date', '2024-03-31')->value('roi_30d'))->toBeNull()
+        ->and(DailyPrice::where('date', '2024-05-01')->value('roi_30d'))->toBeNull();
+});
+
+it('keeps a return that is already stored', function () {
+    insertCloses('2024-03-01', 31, fn (int $i) => $i === 30 ? 110 : 100);
+    DailyPrice::where('date', '2024-03-31')->update(['roi_30d' => 99]);
+
+    (new PriceHistoryService)->updateRoi('2024-03-31');
+
+    expect(DailyPrice::where('date', '2024-03-31')->value('roi_30d'))->toEqual(99);
+});
+
+it('ignores an empty return from before the series starts', function () {
+    DailyPrice::create(['date' => '2009-10-06', 'close' => 1]);
+    DailyPrice::create(['date' => '2024-06-01', 'close' => 2]);
+
+    expect(DailyPrice::getLastEmptyRoiDay())->toBe('2024-06-01');
 });
