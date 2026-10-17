@@ -69,8 +69,16 @@ trait UserSignalChart
                 : 0;
         }, $this->fullDates);
 
-        $userSignal = UserSignal::findOrFail($userSignalId);
+        $userSignal = UserSignal::with([
+            'userSignalMetrics.metric' => fn ($query) => $query->withTrashed(),
+            'userSignalMetrics.frequency',
+        ])->findOrFail($userSignalId);
         $threshold = $userSignal->threshold ?? 0;
+        $metricLines = $this->metricLines(
+            $userSignal->userSignalMetrics->sortByDesc('weight')->values(),
+            $dailyPrices,
+            $this->fullDates,
+        );
         $maxPrice = !empty($prices) ? round(max($prices), -3) : 1000;
         $minPrice = $maxPrice / 2;
 
@@ -87,19 +95,25 @@ trait UserSignalChart
                 '#1968E7' // blue price -- didn't change 🤯
             );
 
-        return [
-            'series' => [
-                [
-                    'name' => 'Daily Signal',
-                    'type' => 'column',
-                    'data' => $scores,
-                ],
-                [
-                    'name' => 'BTC Price',
-                    'type' => 'area',
-                    'data' => $prices,
-                ]
+        $series = [
+            [
+                'name' => 'Daily Signal',
+                'type' => 'column',
+                'data' => $scores,
             ],
+            [
+                'name' => 'BTC Price',
+                'type' => 'area',
+                'data' => $prices,
+            ],
+            ...$metricLines['series'],
+        ];
+        $strokes = [0, 2, ...$metricLines['strokes']];
+        $colors = ['#897F7F', $areaColor, ...$metricLines['colors']];
+        $fills = ['solid', 'gradient', ...$metricLines['fills']];
+
+        return [
+            'series' => $series,
             'chart' => [
                 'height' => 350,
                 'width' => '100%',
@@ -119,10 +133,14 @@ trait UserSignalChart
                 ],
             ],
             'stroke' => [
-                'width' => [0, 2]
+                // One width per series. A shorter list gives later lines a width of 0, so they never appear.
+                'width' => $strokes,
             ],
             'title' => [
-                'text' => 'BTC Price x Signal Score per day since ' . Carbon::now()->subMonths($monthsBack)->format('d M Y'),
+                'text' => ($metricLines['series'] === []
+                    ? 'BTC Price x Signal Score per day since '
+                    : 'BTC price, daily signal, and metrics since ')
+                    . Carbon::now()->subMonths($monthsBack)->format('d M Y'),
             ],
             'dataLabels' => [
                 'enabled' => false,
@@ -161,9 +179,12 @@ trait UserSignalChart
                     'decimalsInFloat' => 0,
                     'tickAmount' => 10,
                 ],
+                ...$metricLines['axes'],
             ],
             'tooltip' => [
                 'theme' => 'dark',
+                'shared' => true,
+                'intersect' => false,
             ],
             'grid' => [
                 'yaxis' => [
@@ -174,12 +195,15 @@ trait UserSignalChart
                 'borderColor' => '#e7e7e7',
                 'strokeDashArray' => 0,
             ],
-            'colors' => [
-                '#897F7F',
-                $areaColor
+            'colors' => $colors,
+            'legend' => [
+                // Each name takes its line color, so the labels stay readable in dark and light.
+                'labels' => [
+                    'useSeriesColors' => true,
+                ],
             ],
             'fill' => [
-                'type' => ['solid', 'gradient'],
+                'type' => $fills,
                 'gradient' => [
                     'shade' => 'light',
                     'type' => 'vertical',
@@ -207,6 +231,119 @@ trait UserSignalChart
                 ],
             ]
         ];
+    }
+
+    /**
+     * One raw line per metric, each on its own hidden axis.
+     *
+     * ApexCharts 3.45 maps series[i] to yaxis[i]. One shared axis would draw a metric
+     * near 1 as a flat line against the Bitcoin price. seriesName has to equal that
+     * series name, or a hidden axis is ignored when the two indexes differ. show false
+     * and floating keep the extra axis from narrowing the plot. A missing stroke width
+     * or fill type leaves the later line blank, so each series gets its own entry.
+     * Null stays null. The default stroke curve is the string "smooth", and that is
+     * what breaks the line at a null. An array of curves skips that break, so the
+     * curve is left as it is and the price area stays smooth.
+     *
+     * @param  iterable<int, \App\Models\UserSignalMetric>  $signalMetrics
+     * @param  array<string, array<string, mixed>>  $dailyPrices
+     * @param  list<string>  $dates
+     * @return array{series: list<array>, axes: list<array>, colors: list<string>, strokes: list<int>, fills: list<string>}
+     */
+    private function metricLines(iterable $signalMetrics, array $dailyPrices, array $dates): array
+    {
+        $series = [];
+        $axes = [];
+        $colors = [];
+        $strokes = [];
+        $fills = [];
+        $usedNames = [];
+        $palette = ['#38bdf8', '#a78bfa', '#fbbf24', '#34d399', '#fb7185', '#22d3ee'];
+
+        foreach ($signalMetrics as $signalMetric) {
+            $metric = $signalMetric->metric;
+            if ($metric === null) {
+                continue;
+            }
+            $column = $metric->column_name ?? null;
+            if (! is_string($column) || $column === '') {
+                continue;
+            }
+
+            $label = $metric->name ?: $column;
+            $frequency = $signalMetric->frequency?->name;
+            if (is_string($frequency) && $frequency !== '') {
+                $label .= ' (' . $frequency . ')';
+            }
+            if (isset($usedNames[$label])) {
+                $usedNames[$label]++;
+                $label .= ' ' . $usedNames[$label];
+            } else {
+                $usedNames[$label] = 1;
+            }
+
+            $points = [];
+            $min = null;
+            $max = null;
+            foreach ($dates as $date) {
+                $raw = $dailyPrices[$date][$column] ?? null;
+                if ($raw === null || $raw === '' || ! is_numeric($raw)) {
+                    $points[] = null;
+                    continue;
+                }
+                $value = (float) $raw;
+                $points[] = $value;
+                $min = $min === null ? $value : min($min, $value);
+                $max = $max === null ? $value : max($max, $value);
+            }
+
+            $series[] = [
+                'name' => $label,
+                'type' => 'line',
+                'data' => $points,
+            ];
+            $axes[] = $this->metricAxis($label, $min, $max);
+            $color = is_string($metric->color ?? null) && preg_match('/^#[0-9A-Fa-f]{6}$/', $metric->color) === 1
+                ? $metric->color
+                : $palette[count($colors) % count($palette)];
+            $colors[] = $color;
+            $strokes[] = 2;
+            $fills[] = 'solid';
+        }
+
+        return compact('series', 'axes', 'colors', 'strokes', 'fills');
+    }
+
+    /** Hidden scale for one metric line. The tooltip still shows the real number. */
+    private function metricAxis(string $label, ?float $min, ?float $max): array
+    {
+        $axis = [
+            'seriesName' => $label,
+            'show' => false,
+            'floating' => true,
+            'labels' => ['show' => false],
+            'axisBorder' => ['show' => false],
+            'axisTicks' => ['show' => false],
+        ];
+
+        if ($min === null || $max === null) {
+            $axis['decimalsInFloat'] = 2;
+
+            return $axis;
+        }
+
+        $span = $max - $min;
+        $pad = $span > 0 ? $span * 0.08 : (abs($max) * 0.05 ?: 1.0);
+        $axis['min'] = $min - $pad;
+        $axis['max'] = $max + $pad;
+        if ($axis['min'] >= $axis['max']) {
+            $axis['max'] = $axis['min'] + 1;
+        }
+
+        $scale = max(abs($min), abs($max), $span);
+        $axis['decimalsInFloat'] = $scale < 1 ? 3 : ($scale < 10 ? 2 : 0);
+
+        return $axis;
     }
 
     public function getChartData(): array
