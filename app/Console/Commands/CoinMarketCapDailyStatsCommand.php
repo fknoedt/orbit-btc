@@ -16,7 +16,7 @@ class CoinMarketCapDailyStatsCommand extends Command
 {
     protected const string CMC_API_VERSION = 'v3';
 
-    protected const int SYNC_UP_TO_X_PAST_DAYS = 60;
+    public const int SYNC_UP_TO_X_PAST_DAYS = 60;
 
     /**
      * The name and signature of the console command.

@@ -93,6 +93,20 @@ it('computes mayer multiple as close over the 200-day average', function () {
     expect(DailyPrice::where('date', '2024-03-10')->value('mayer_multiple'))->toEqual(2);
 });
 
+it('computes mayer multiple when a calendar day inside the window is missing', function () {
+    insertCloses('2023-08-23', 199, fn () => 100);
+    $missing = Carbon::parse('2023-08-23')->addDays(199);
+    DailyPrice::create([
+        'date' => $missing->copy()->addDay()->toDateString(),
+        'close' => 100,
+    ]);
+    $target = $missing->copy()->addDays(2)->toDateString();
+    DailyPrice::create(['date' => $target, 'close' => 200]);
+
+    expect((new PriceHistoryService)->updateMayerMultiple($target))->toBe(1)
+        ->and(DailyPrice::where('date', $target)->value('mayer_multiple'))->toEqual(2);
+});
+
 it('writes the 1-day future percent change', function () {
     Carbon::setTestNow('2024-03-10 12:00:00');
     DailyPrice::create(['date' => '2024-03-09', 'close' => 100]);
@@ -143,9 +157,44 @@ it('keeps a return that is already stored', function () {
     expect(DailyPrice::where('date', '2024-03-31')->value('roi_30d'))->toEqual(99);
 });
 
-it('ignores an empty return from before the series starts', function () {
+it('ignores an empty return that has no earlier close', function () {
     DailyPrice::create(['date' => '2009-10-06', 'close' => 1]);
     DailyPrice::create(['date' => '2024-06-01', 'close' => 2]);
 
-    expect(DailyPrice::getLastEmptyRoiDay())->toBe('2024-06-01');
+    expect(DailyPrice::getLastEmptyRoiDay())->toBeNull();
+});
+
+it('returns the next empty return that has an earlier close', function () {
+    DailyPrice::create(['date' => '2024-01-01', 'close' => 100]);
+    DailyPrice::create(['date' => '2024-01-31', 'close' => 110]);
+    DailyPrice::create(['date' => '2024-03-01', 'close' => 120]);
+
+    expect(DailyPrice::getLastEmptyRoiDay())->toBe('2024-01-31');
+});
+
+it('ignores a forward return whose later close is missing', function () {
+    Carbon::setTestNow('2026-10-16');
+    DailyPrice::create([
+        'date' => '2026-02-01',
+        'close' => 100,
+        'price_change_1d' => 1,
+        'price_change_3d' => 1,
+        'price_change_5d' => 1,
+        'price_change_10d' => 1,
+        'price_change_14d' => 1,
+    ]);
+
+    expect(DailyPrice::getLastEmptyFuturePriceDay())->toBeNull();
+
+    Carbon::setTestNow();
+});
+
+it('returns the first day whose forward close is already stored', function () {
+    Carbon::setTestNow('2024-03-10');
+    DailyPrice::create(['date' => '2024-03-08', 'close' => 100]);
+    DailyPrice::create(['date' => '2024-03-09', 'close' => 110]);
+
+    expect(DailyPrice::getLastEmptyFuturePriceDay())->toBe('2024-03-08');
+
+    Carbon::setTestNow();
 });

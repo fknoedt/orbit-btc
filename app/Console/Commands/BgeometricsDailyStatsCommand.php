@@ -71,17 +71,35 @@ class BgeometricsDailyStatsCommand extends Command
         $this->output->info("Running daily stats since {$since} to " . implode(', ', array_keys($endpoints)));
 
         $totalRecordsUpdated = 0;
+        $failures = [];
         foreach ($endpoints as $endpoint => $resultField) {
             $this->output->writeln(" - {$endpoint}");
 
-            $result = $client->getEndpoint($endpoint, ['startday' => $since], $fromFile);
+            try {
+                $result = $client->getEndpoint($endpoint, ['startday' => $since], $fromFile);
+                if ($result === []) {
+                    $this->output->writeln("{$endpoint} returned no values");
+                    continue;
+                }
 
-            $recordsUpdated = $dailyStatsService->fillStats($result, true);
+                $recordsUpdated = $dailyStatsService->fillStats($result, true);
+            } catch (\Throwable $exception) {
+                $failures[] = "{$endpoint}: {$exception->getMessage()}";
+                $this->output->error("{$endpoint} failed: {$exception->getMessage()}");
+                continue;
+            }
+
             $totalRecordsUpdated += $recordsUpdated;
 
             $columnName = $client->getEndpointToColumnName($endpoint);
 
             $this->info("{$recordsUpdated} daily_prices.{$columnName} updated");
+        }
+
+        if ($failures !== []) {
+            throw new \RuntimeException(
+                'BGeometrics endpoints failed: ' . implode('; ', $failures)
+            );
         }
 
         $this->output->success("{$totalRecordsUpdated} records updated. All done ✅");

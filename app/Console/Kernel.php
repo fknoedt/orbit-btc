@@ -4,12 +4,14 @@ namespace App\Console;
 
 use App\Clients\BgeometricsClient;
 use App\Clients\CoinMetricsClient;
-use App\Clients\CurlCryptoQuantClient;
-use App\Clients\FmpClient;
 use App\Console\Commands\BgeometricsDailyStatsCommand;
+use App\Console\Commands\CoinMarketCapDailyStatsCommand;
+use App\Console\Commands\CoinmetricsDailyStatsCommand;
 use App\Console\Commands\CryptoCompareDailyStatsCommand;
+use App\Console\Commands\UsTreasuryCommand;
 use App\Models\DailyPrice;
 use App\Models\LevelingMove;
+use App\Models\Metric;
 use App\Models\UserSignalDailyScore;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
@@ -58,7 +60,7 @@ class Kernel extends ConsoleKernel
             ->emailOutputOnFailure($emailErrorsTo);*/
 
         $schedule->command('btc:coinmetrics-daily-stats --force')
-            ->everyThirtyMinutes()->when($this->shouldUpdateStats(CoinMetricsClient::METRIC_TO_COLUMN_NAME))
+            ->everyThirtyMinutes()->when(fn () => $this->shouldUpdateCoinMetrics())
             ->sendOutputTo($logPath . 'coinmetrics-daily-stats.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
@@ -87,8 +89,9 @@ class Kernel extends ConsoleKernel
             ->sendOutputTo($logPath . 'update-roi.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
+        // The Treasury file updates once a day. Retry hourly only while the tip is behind.
         $schedule->command('btc:update-us-treasury-stats')
-            ->everyThirtyMinutes()->when($this->shouldUpdateTbillOutstanding())
+            ->hourly()->when($this->shouldUpdateTbillOutstanding())
             ->sendOutputTo($logPath . 'update-tbill-outstanding.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
@@ -102,6 +105,9 @@ class Kernel extends ConsoleKernel
             ->sendOutputTo($logPath . 'crypto-quant-daily-stats.log')
             ->emailOutputOnFailure($emailErrorsTo);*/
 
+        /* CryptoCompare's free key is past the 100 calls/month cap, and the
+           columns it fills are deactivated. Those columns stay empty, so the
+           every-30-minute job never rested.
         $schedule->command(
             'btc:cryptocompare-daily-stats --ignore-errors'
         )
@@ -114,24 +120,29 @@ class Kernel extends ConsoleKernel
                 'exchanges_volume'
             ]))
             ->sendOutputTo($logPath . 'cryptocompare-daily-stats.log')
-            ->emailOutputOnFailure($emailErrorsTo);
+            ->emailOutputOnFailure($emailErrorsTo);*/
 
-        $bgEndpoints = BgeometricsClient::getEndpointsAsColumnNames();
-
-        // bgeometrics limits the free plan at 4 requests/hour
-        foreach (array_chunk($bgEndpoints, BgeometricsClient::MAX_REQUESTS_PER_RUN, true) as $endpoints) {
-            if ($this->shouldUpdateBgeometricsStats(array_values($endpoints))) {
-                $schedule->command(
-                    'btc:bgeometrics-daily-stats',
-                    [implode(',', array_keys($endpoints))]
-                )
-                    ->hourly()
-                    ->sendOutputTo($logPath . 'bgeometrics-daily-stats.log')
-                    ->emailOutputOnFailure($emailErrorsTo);
-                // limit reached
-                break;
-            }
+        // Four requests per hour. Rotate which stale endpoints run, or the
+        // first chunk stays due forever and the later metrics never update.
+        $bgDue = $this->bgeometricsEndpointsDue();
+        $bgChunks = array_chunk($bgDue, BgeometricsClient::MAX_REQUESTS_PER_RUN, true);
+        if ($bgChunks !== []) {
+            $bgChunk = $bgChunks[now()->hour % count($bgChunks)];
+            $schedule->command(
+                'btc:bgeometrics-daily-stats',
+                [implode(',', array_keys($bgChunk))]
+            )
+                ->hourly()
+                ->sendOutputTo($logPath . 'bgeometrics-daily-stats.log')
+                ->emailOutputOnFailure($emailErrorsTo);
         }
+
+        // Before scores, so a metric with a new first day is usable the same morning.
+        // 06:30 UTC is before the 07:15 monitoring report.
+        $schedule->command('btc:update-data-limited-at')
+            ->everyThirtyMinutes()->when(fn () => $this->shouldUpdateDataLimitedAt())
+            ->sendOutputTo($logPath . 'update-data-limited-at.log')
+            ->emailOutputOnFailure($emailErrorsTo);
 
         $schedule->command('btc:update-leveling-moves')
             ->everyThirtyMinutes()->when($this->shouldUpdateLevelingMoves())
@@ -143,6 +154,7 @@ class Kernel extends ConsoleKernel
             ->sendOutputTo($logPath . 'update-all-user-signal-scores.log')
             ->emailOutputOnFailure($emailErrorsTo);
 
+        // 07:15 UTC is before 10:00 America/New_York, so the report still judges yesterday.
         $schedule->command('btc:daily-prices-monitoring --send-email')
             ->dailyAt('7:15')
             ->sendOutputTo($logPath . 'daily-prices-monitoring.log')
@@ -195,6 +207,51 @@ class Kernel extends ConsoleKernel
         return false;
     }
 
+    /**
+     * True when a daily feed's latest value is inside the window it fetches
+     * and older than yesterday minus that metric's max_delayed_days.
+     * Holes behind a tip that is still inside the allowed lag do not count.
+     * A series that ended before the window is left for a manual backfill.
+     */
+    private function dailyColumnsAreBehind(array $columns, string $since): bool
+    {
+        $delays = Metric::withTrashed()
+            ->whereIn('column_name', $columns)
+            ->pluck('max_delayed_days', 'column_name');
+
+        foreach ($columns as $column) {
+            $latest = DailyPrice::whereNotNull($column)->max('date');
+            if ($latest === null) {
+                return true;
+            }
+
+            $latest = substr((string) $latest, 0, 10);
+            $allowedThrough = Carbon::yesterday()
+                ->subDays((int) ($delays[$column] ?? 0))
+                ->toDateString();
+
+            if ($latest >= $since && $latest < $allowedThrough) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function shouldUpdateCoinMetrics(): bool
+    {
+        $since = Carbon::now()->subDays(CoinmetricsDailyStatsCommand::SINCE_DAYS_AGO)->toDateString();
+        if ($this->dailyColumnsAreBehind(array_values(CoinMetricsClient::METRIC_TO_COLUMN_NAME), $since)) {
+            Log::info('Running stats update');
+
+            return true;
+        }
+
+        Log::info('Not necessary to run stats update');
+
+        return false;
+    }
+
     private function shouldUpdateCryptoCompareStats(array $columnsToUpdate): bool
     {
         $since = Carbon::now()->subDays(CryptoCompareDailyStatsCommand::FETCH_DAYS_AGO)->format('Y-m-d');
@@ -215,30 +272,41 @@ class Kernel extends ConsoleKernel
         return false;
     }
 
-    private function shouldUpdateBgeometricsStats(array $columnsToUpdate): bool
+    /** @return array<string, string> endpoint => daily_prices column */
+    private function bgeometricsEndpointsDue(): array
     {
-        $since = Carbon::now()->subDays(BgeometricsDailyStatsCommand::SINCE_DAYS_AGO)->format('Y-m-d');
-        $pricesMissingStats = DailyPrice::where('date', '>', $since)
-            ->where('date', '<=', Carbon::now()->format('Y-m-d'))
-            ->where(function ($q) use ($columnsToUpdate) {
-                foreach ($columnsToUpdate as $column) {
-                    $q->orWhereNull($column);
-                }
-            })->count();
-        if ($pricesMissingStats) {
-            Log::info('Running BG stats update');
-            return true;
+        $since = Carbon::now()->subDays(BgeometricsDailyStatsCommand::SINCE_DAYS_AGO)->toDateString();
+        $endpoints = BgeometricsClient::getEndpointsAsColumnNames();
+        $deactivated = Metric::onlyTrashed()
+            ->whereIn('column_name', array_values($endpoints))
+            ->pluck('column_name')
+            ->all();
+
+        $due = [];
+        foreach ($endpoints as $endpoint => $column) {
+            if (in_array($column, $deactivated, true)) {
+                continue;
+            }
+            if ($this->dailyColumnsAreBehind([$column], $since)) {
+                $due[$endpoint] = $column;
+            }
         }
 
-        Log::info('Not necessary to run BG stats update');
+        if ($due !== []) {
+            Log::info('Running BG stats update');
+        } else {
+            Log::info('Not necessary to run BG stats update');
+        }
 
-        return false;
+        return $due;
     }
 
     private function shouldUpdateCmcStats(): bool
     {
-        if (DailyPrice::where('date', '>', self::STATS_START_DATE)->whereNull('fear_and_greed')->count()) {
+        $since = Carbon::now()->subDays(CoinMarketCapDailyStatsCommand::SYNC_UP_TO_X_PAST_DAYS)->toDateString();
+        if ($this->dailyColumnsAreBehind(['fear_and_greed'], $since)) {
             Log::info('Running CMC stats update');
+
             return true;
         }
 
@@ -249,8 +317,11 @@ class Kernel extends ConsoleKernel
 
     private function shouldUpdateHashrate(): bool
     {
-        if (DailyPrice::where('date', '>', self::STATS_START_DATE)->whereNull('average_hashrate')->count()) {
+        // MempoolClient::HASHRATE_TIME_PERIOD is 1 month.
+        $since = Carbon::now()->subMonth()->toDateString();
+        if ($this->dailyColumnsAreBehind(['average_hashrate'], $since)) {
             Log::info('Running Mempool stats update');
+
             return true;
         }
 
@@ -326,12 +397,30 @@ class Kernel extends ConsoleKernel
 
     private function shouldUpdateTbillOutstanding(): bool
     {
-        if (DailyPrice::getLastEmptyTbillOutstandingDay()) {
+        $since = Carbon::now()->subMonths(UsTreasuryCommand::SINCE_MONTHS_AGO)->toDateString();
+        if ($this->dailyColumnsAreBehind(
+            ['us_tbill_net_issuance', 'us_tbill_normalized_qe'],
+            $since
+        )) {
             Log::info('Running US T-bill Outstanding stats update');
+
             return true;
         }
 
         Log::info('Not necessary to run US T-bill Outstanding stats update');
+
+        return false;
+    }
+
+    private function shouldUpdateDataLimitedAt(): bool
+    {
+        if (now()->format('H:i') === '06:30' || Metric::withTrashed()->whereNull('data_limited_at')->exists()) {
+            Log::info('Running data_limited_at update');
+
+            return true;
+        }
+
+        Log::info('Not necessary to run data_limited_at update');
 
         return false;
     }

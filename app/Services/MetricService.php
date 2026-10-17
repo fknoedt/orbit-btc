@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\DailyPrice;
 use App\Models\Metric;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class MetricService
 {
@@ -77,5 +79,58 @@ class MetricService
         }
 
         return $this->allMetricsByKey[$id];
+    }
+
+    /**
+     * Point each metric at the first day its daily_prices column has a value.
+     * A column with no values keeps the date already stored.
+     *
+     * @return list<array{column: string, from: ?string, to: string}>
+     */
+    public function syncDataLimitedAt(): array
+    {
+        $columns = Schema::getColumnListing('daily_prices');
+        $changes = [];
+
+        foreach (Metric::withTrashed()->orderBy('id')->get() as $metric) {
+            if (! in_array($metric->column_name, $columns, true)) {
+                continue;
+            }
+
+            $firstValuedDay = DailyPrice::whereNotNull($metric->column_name)->min('date');
+            if (! $firstValuedDay) {
+                continue;
+            }
+
+            $firstValuedDay = substr((string) $firstValuedDay, 0, 10);
+            $stored = $metric->data_limited_at
+                ? substr((string) $metric->data_limited_at, 0, 10)
+                : null;
+
+            if ($stored === $firstValuedDay) {
+                continue;
+            }
+
+            $metric->data_limited_at = $firstValuedDay;
+            $metric->save();
+            $changes[] = [
+                'column' => $metric->column_name,
+                'from' => $stored,
+                'to' => $firstValuedDay,
+            ];
+        }
+
+        if ($changes !== []) {
+            foreach ([
+                'all-metrics',
+                'all-metrics-with-trash',
+                'all-metrics-with-data-source',
+                'all-metrics-with-trash-with-data-source',
+            ] as $cacheKey) {
+                Cache::forget($cacheKey);
+            }
+        }
+
+        return $changes;
     }
 }

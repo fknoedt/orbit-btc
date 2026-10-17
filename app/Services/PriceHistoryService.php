@@ -174,7 +174,9 @@ class PriceHistoryService
     }
 
     /**
-     * Mayer Multiple is the average of the last 200 days' price
+     * Mayer Multiple is the close divided by the average of the previous 200 closes.
+     * The day being filled is not part of that average. A missing calendar day is
+     * skipped, so the target day is still written when 200 earlier closes exist.
      * @see https://charts.bitbo.io/mayer-multiple-bars/
      */
     public function updateMayerMultiple(string $since = null): int
@@ -188,30 +190,37 @@ class PriceHistoryService
             }
         }
 
-        $startDate = Carbon::createFromFormat($this->systemDateFormat, $since)
-            ->subDays(200)->format($this->systemDateFormat);
+        $prior = DailyPrice::where('date', '<', $since)
+            ->select(['date', 'close'])
+            ->orderBy('date', 'desc')
+            ->limit(200)
+            ->get()
+            ->reverse()
+            ->values()
+            ->toArray();
 
-        $prices = DailyPrice::where('date', '>=', $startDate)
+        if (count($prior) < 200) {
+            return 0;
+        }
+
+        $days = DailyPrice::where('date', '>=', $since)
             ->select(['date', 'close'])
             ->orderBy('date', 'asc')
             ->get()
-            ->keyBy('date')
             ->toArray();
 
-        $last200prices = array_slice($prices, 0, 200, true);
-        $prices = array_slice($prices, 200);
+        if ($days === []) {
+            return 0;
+        }
+
         $fillStats = [];
+        foreach ($days as $day) {
+            $average = array_sum(array_column($prior, 'close')) / 200;
+            $fillStats[$day['date']]['mayer_multiple'] = $day['close'] / $average;
 
-        do {
-            $nextDay = array_shift($prices);
-            $average = array_sum(array_column($last200prices, 'close')) / 200;
-            $mayerMultiple = $nextDay['close'] / $average;
-
-            $fillStats[$nextDay['date']]['mayer_multiple'] = $mayerMultiple;
-
-            array_shift($last200prices);
-            $last200prices[$nextDay['date']] = $nextDay;
-        } while (! empty($prices));
+            array_shift($prior);
+            $prior[] = $day;
+        }
 
         return (new DailyStatsService())->fillStats($fillStats);
     }

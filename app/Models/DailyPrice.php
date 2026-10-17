@@ -74,9 +74,13 @@ class DailyPrice extends Model
             ->first();
     }
 
+    /**
+     * First day that can still receive an ROI value.
+     * A null return whose earlier close is missing or zero is left alone.
+     */
     public static function getLastEmptyRoiDay(): ?string
     {
-        return self::where(function ($query) {
+        $rows = self::where(function ($query) {
             $query->where(function ($query) {
                 $query->where('date', '>=', self::START_OF_ROI_30D)
                     ->whereNull('roi_30d');
@@ -86,23 +90,98 @@ class DailyPrice extends Model
             });
         })
             ->orderBy('date', 'asc')
-            ->pluck('date')
-            ->first();
+            ->get(['date', 'close', 'roi_30d', 'roi_1yr']);
+
+        if ($rows->isEmpty()) {
+            return null;
+        }
+
+        $lookbacks = [];
+        foreach ($rows as $row) {
+            $date = substr((string) $row->date, 0, 10);
+            if ($date >= self::START_OF_ROI_30D && $row->roi_30d === null) {
+                $lookbacks[] = Carbon::parse($date)->subDays(30)->toDateString();
+            }
+            if ($date >= self::START_OF_ROI_1YR && $row->roi_1yr === null) {
+                $lookbacks[] = Carbon::parse($date)->subDays(365)->toDateString();
+            }
+        }
+
+        $closes = [];
+        foreach (self::whereIn('date', array_unique($lookbacks))->pluck('close', 'date') as $date => $close) {
+            $closes[substr((string) $date, 0, 10)] = $close;
+        }
+
+        foreach ($rows as $row) {
+            $date = substr((string) $row->date, 0, 10);
+            if (! is_numeric($row->close) || (float) $row->close == 0.0) {
+                continue;
+            }
+
+            if ($date >= self::START_OF_ROI_30D && $row->roi_30d === null) {
+                $previous = $closes[Carbon::parse($date)->subDays(30)->toDateString()] ?? null;
+                if (is_numeric($previous) && (float) $previous != 0.0) {
+                    return $date;
+                }
+            }
+
+            if ($date >= self::START_OF_ROI_1YR && $row->roi_1yr === null) {
+                $previous = $closes[Carbon::parse($date)->subDays(365)->toDateString()] ?? null;
+                if (is_numeric($previous) && (float) $previous != 0.0) {
+                    return $date;
+                }
+            }
+        }
+
+        return null;
     }
 
+    /**
+     * First day with a forward return that can be filled from a later close.
+     * A horizon still in the future, or aimed at a missing day, does not count.
+     */
     public static function getLastEmptyFuturePriceDay(): ?string
     {
-        return self::where('date', '>=', Carbon::now()->subDays(self::FUTURE_PRICE_MAX_DAYS_AGO))
-            ->where(function ($query) {
-                return $query->whereNull('price_change_1d')
-                    ->orWhereNull('price_change_3d')
-                    ->orWhereNull('price_change_5d')
-                    ->orWhereNull('price_change_10d')
-                    ->orWhereNull('price_change_14d')
-                    ->orWhereNull('price_change_30d');
-            })
+        $today = Carbon::now()->startOfDay();
+        $windowStart = $today->copy()->subDays(self::FUTURE_PRICE_MAX_DAYS_AGO)->toDateString();
+        $horizons = [1, 3, 5, 10, 14, 30];
+        $columns = ['date', 'close'];
+        foreach ($horizons as $days) {
+            $columns[] = 'price_change_' . $days . 'd';
+        }
+
+        $rows = self::where('date', '>=', $windowStart)
             ->orderBy('date', 'asc')
-            ->pluck('date')
-            ->first();
+            ->get($columns);
+
+        $closes = [];
+        foreach ($rows as $row) {
+            $closes[substr((string) $row->date, 0, 10)] = $row->close;
+        }
+
+        foreach ($rows as $row) {
+            $date = substr((string) $row->date, 0, 10);
+            if ($date >= $today->toDateString()) {
+                continue;
+            }
+
+            foreach ($horizons as $days) {
+                if ($row->{'price_change_' . $days . 'd'} !== null) {
+                    continue;
+                }
+
+                $later = Carbon::parse($date)->addDays($days)->toDateString();
+                if ($later > $today->toDateString()) {
+                    continue;
+                }
+
+                $close = $closes[$later] ?? null;
+                if (is_numeric($close) && (float) $close != 0.0) {
+                    return $date;
+                }
+            }
+        }
+
+        return null;
     }
 }
