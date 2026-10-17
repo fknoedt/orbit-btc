@@ -37,9 +37,9 @@ Buy gains when the forward price change is positive. Sell flips the sign. P&L is
 
 After a booked trade the wait (quarantine) equals the horizon, so the next trade can start on day N+1. The chart badge stays **Quarantined since last purchase.** One open trade is the whole wait. Reset the wait at the start of each signal in `updateDailyScores`. `MAX_DAYS_BACK` is 1096.
 
-A metric with an empty `data_limited_at` throws during scoring. Leave those metrics unused. Coin Metrics rows other than the two ROI metrics (exchange flows, active addresses, and the rest of that set) are in that state.
+A metric with an empty `data_limited_at` throws during scoring. `btc:update-data-limited-at` sets that date to the first day the column has a value, including deactivated metrics. A column with no values keeps the date it already has. The schedule runs this at 06:45 UTC and whenever a date is still empty, before signal scores.
 
-`roi_30d` and `roi_1yr` are the trailing percent return of the daily close, `(close - close then) / close then * 100`, over 30 and 365 calendar days. `btc:update-roi` fills empty days from `daily_prices.close`. It starts at 2009-11-04 and 2010-10-05 (first close 2009-10-05 plus that window). A day stays empty when that earlier close is missing or zero. Stored Coin Metrics numbers stay as they are. The command does not rescore. It runs every 30 minutes while an empty day remains. The 2010 price hole, and 2026-04-02 on the 30-day return, stay empty.
+`roi_30d` and `roi_1yr` are the trailing percent return of the daily close, `(close - close then) / close then * 100`, over 30 and 365 calendar days. `btc:update-roi` fills empty days from `daily_prices.close`. It starts at 2009-11-04 and 2010-10-05 (first close 2009-10-05 plus that window). A day stays empty when that earlier close is missing or zero. Stored Coin Metrics numbers stay as they are. The command does not rescore. The schedule runs it while a day can still be filled from an earlier close. Days whose lookback close is missing, including the 2010 price hole and 2026-04-02, stay empty and do not keep the job running.
 
 MVRV, NUPL, and realized cap are one realized-cap fact. Do not treat them as independent confirmation. NUPL and NRPL also cross zero, so a percent change on them is unstable.
 
@@ -81,4 +81,5 @@ The metrics step styles live in `resources/views/forms/components/metric-step-st
 
 - `btc:update-leveling-moves` fills an empty `leveling_moves` table from `daily_prices`. It does not need a full score run. Do not use `schedule:run-all`. That command ignores the clock and runs every scheduled task.
 - `btc:update-roi` fills empty `roi_30d` and `roi_1yr` from the daily close. It does not call an API and it does not rescore. Omit `--since` when older empty days should be filled too.
+- `btc:update-data-limited-at` sets `metrics.data_limited_at` from the first stored value of that column. Run it after a backfill that reaches further back than the scheduled 06:45 UTC pass.
 - `btc:daily-prices-monitoring` compares `daily_prices` columns with metrics. Run it without `--send-email`.
